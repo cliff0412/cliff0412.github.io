@@ -12,18 +12,18 @@
     
         <meta name="keywords" content="" />
     
-    <meta name="description" content="区块链中VRF的应用及原理解析该文来自 黄祺 Tarax Network 联合创始人 &amp;amp; CTO  https://github.com/pinqy520/vrf.js 什么是可验证随机函数  This is a sample image added via Markdown in an HTML figure. Also, I got a new camera  and took a p">
+    <meta name="description" content="区块链中VRF的应用及原理解析该文来自 黄祺 Tarax Network 联合创始人 &amp;amp; CTO  https://github.com/pinqy520/vrf.js 什么是可验证随机函数  可验证随机函数可以看作是一个随机预言机，意思是说我可以通过任意的一个输入，获得一个随机数输出：  对于不同的 Input，Output 的值是随机的，并且均匀分布在值域范围内。 对于相同的 Inpu">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VRF">
 <meta property="og:url" content="http://wyang008.github.io/2018/08/16/VRF/index.html">
 <meta property="og:site_name" content="andyBlock">
-<meta property="og:description" content="区块链中VRF的应用及原理解析该文来自 黄祺 Tarax Network 联合创始人 &amp;amp; CTO  https://github.com/pinqy520/vrf.js 什么是可验证随机函数  This is a sample image added via Markdown in an HTML figure. Also, I got a new camera  and took a p">
+<meta property="og:description" content="区块链中VRF的应用及原理解析该文来自 黄祺 Tarax Network 联合创始人 &amp;amp; CTO  https://github.com/pinqy520/vrf.js 什么是可验证随机函数  可验证随机函数可以看作是一个随机预言机，意思是说我可以通过任意的一个输入，获得一个随机数输出：  对于不同的 Input，Output 的值是随机的，并且均匀分布在值域范围内。 对于相同的 Inpu">
 <meta property="og:locale" content="zh-tw">
 <meta property="og:image" content="http://wyang008.github.io/content/images/vrf/intro.PNG">
-<meta property="og:updated_time" content="2018-08-16T15:08:32.766Z">
+<meta property="og:updated_time" content="2018-08-16T15:21:10.273Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="VRF">
-<meta name="twitter:description" content="区块链中VRF的应用及原理解析该文来自 黄祺 Tarax Network 联合创始人 &amp;amp; CTO  https://github.com/pinqy520/vrf.js 什么是可验证随机函数  This is a sample image added via Markdown in an HTML figure. Also, I got a new camera  and took a p">
+<meta name="twitter:description" content="区块链中VRF的应用及原理解析该文来自 黄祺 Tarax Network 联合创始人 &amp;amp; CTO  https://github.com/pinqy520/vrf.js 什么是可验证随机函数  可验证随机函数可以看作是一个随机预言机，意思是说我可以通过任意的一个输入，获得一个随机数输出：  对于不同的 Input，Output 的值是随机的，并且均匀分布在值域范围内。 对于相同的 Inpu">
 <meta name="twitter:image" content="http://wyang008.github.io/content/images/vrf/intro.PNG">
     
 
@@ -169,15 +169,29 @@
         
         <div class="article-entry" itemprop="articleBody">
             <h1 id="区块链中VRF的应用及原理解析"><a href="#区块链中VRF的应用及原理解析" class="headerlink" title="区块链中VRF的应用及原理解析"></a>区块链中VRF的应用及原理解析</h1><p>该文来自 黄祺 Tarax Network 联合创始人 &amp; CTO  <a href="https://github.com/pinqy520/vrf.js" target="_blank" rel="noopener">https://github.com/pinqy520/vrf.js</a></p>
-<h2 id="什么是可验证随机函数"><a href="#什么是可验证随机函数" class="headerlink" title="什么是可验证随机函数"></a>什么是可验证随机函数</h2><figure class="left-align quarter-width"><img src="/content/images/vrf/intro.PNG" alt="VRF"><figcaption><br>  This is a sample image added via Markdown in an HTML figure. Also, I got a new camera<br>  and took a pretty cool picture of a helicopter.<br></figcaption><br></figure>
+<h2 id="什么是可验证随机函数"><a href="#什么是可验证随机函数" class="headerlink" title="什么是可验证随机函数"></a>什么是可验证随机函数</h2><figure class="left-align quarter-width"><img src="/content/images/vrf/intro.PNG" alt="VRF"><br></figure>
 
+<p>可验证随机函数可以看作是一个随机预言机，意思是说我可以通过任意的一个输入，获得一个随机数输出：</p>
+<ol>
+<li>对于不同的 Input，Output 的值是随机的，并且均匀分布在值域范围内。</li>
+<li>对于相同的 Input，它得到的 Output 一定是相同的。<br>但是可验证随机函数比随机预言机多了一个非交互的零知识证明，可以用来该随机数输出的正确性，表明这个随机数的确是某个人生成的。</li>
+</ol>
+<h4 id="可验证随机函数它包含四个函数"><a href="#可验证随机函数它包含四个函数" class="headerlink" title="可验证随机函数它包含四个函数"></a>可验证随机函数它包含四个函数</h4><figure class="left-align quarter-width"><img src="/content/images/vrf/functions.PNG" alt="四个函数"><br></figure>
+
+<ol>
+<li>生成密钥，生成一个公钥私钥对。</li>
+<li>生成随机数输出。</li>
+<li>计算零知识证明。</li>
+<li>验证随机数输出。<br>生成随机数和其证明的过程在本机执行，输入是私钥和一个值。输出就是随机数本数以及它的零知识证明。<br>其他节点收到该输入和证明之后，结合生成该随机数的节点的公钥，和即可对该随机数处进行验证。</li>
+</ol>
+<h4 id="那么通过这四个函数，以及他们的输出，我们如何来进行随机选点呢？"><a href="#那么通过这四个函数，以及他们的输出，我们如何来进行随机选点呢？" class="headerlink" title="那么通过这四个函数，以及他们的输出，我们如何来进行随机选点呢？"></a>那么通过这四个函数，以及他们的输出，我们如何来进行随机选点呢？</h4><figure class="left-align quarter-width"><img src="/content/images/vrf/proof.PNG" alt="生成随机数和证明"><br></figure><br><figure class="left-align quarter-width"><img src="/content/images/vrf/verify.PNG" alt="随机数的验证"><br></figure><br><figure class="left-align quarter-width"><img src="/content/images/vrf/sortition.PNG" alt="sortition"><br></figure>
         </div>
         <footer class="article-footer">
             
 
 
 
-    <a data-url="http://wyang008.github.io/2018/08/16/VRF/" data-id="cjkwoq1af0000notv8figl6ym" class="article-share-link"><i class="fa fa-share"></i>Share</a>
+    <a data-url="http://wyang008.github.io/2018/08/16/VRF/" data-id="cjkwpbeby00012wtvwqewu6ry" class="article-share-link"><i class="fa fa-share"></i>Share</a>
 <script>
     (function ($) {
         $('body').on('click', function() {
