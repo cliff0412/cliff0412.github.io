@@ -14,6 +14,8 @@ hexo -h
 npx hexo <command>
 hexo new [layout] <title> ## e.g hexo new page --path about/me "About me
 hexo generate ## 生成静态文件
+hexo publish [layout] <filename>
+hexo server
 ```
 ## project structure
 ```
