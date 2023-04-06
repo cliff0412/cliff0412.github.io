@@ -16,6 +16,7 @@ hexo new [layout] <title> ## e.g hexo new page --path about/me "About me
 hexo generate ## 生成静态文件
 hexo publish [layout] <filename>
 hexo server
+hexo clean && hexo deploy
 ```
 ## project structure
 ```
