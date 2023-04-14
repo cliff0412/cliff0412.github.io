@@ -138,13 +138,14 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 <p>To judge whether the first instruction of the destination is JUMPDEST, two points must be guaranteed: first, its value is the value of the opcode of the JUMPDEST instruction; second, it is an instruction, not ordinary data.</p>
 <p>Let’s introduce how Contract.validJumpdest works. In addition to comparing opcode (this is very simple), Contract will also create a bit vector object (ie bitvec, bit vector). This object will analyze the contract instructions from the beginning to the end. If the byte at a certain offset of the contract belongs to ordinary data, the “bit” corresponding to the offset value in bitvec is set to 1, and if it is an instruction, it is set to 0. In Contract.validJumpdest, it is judged whether this is a normal instruction by checking whether the “bit” of the offset value of the jump destination in this bit vector object is 0</p>
 <h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
-<li>[yangzhe_blog]<a target="_blank" rel="noopener" href="https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter">https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter</a></li>
+<li><a target="_blank" rel="noopener" href="https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter">yangzhe_blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.evm.codes/?fork=shanghai">op code manual</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/13/evm/" data-id="clgfvpx4h0001llsj8tpagdl8" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/13/evm/" data-id="clgfw2tdh00008nsj25b71381" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -184,7 +185,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgfvpx4e0000llsjfcpf3f23" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgfw2tdj00018nsjepe08ti4" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -235,7 +236,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgfvpx4i0002llsj9gys2k63" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgfw2tdl00038nsj6zagb3ri" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
