@@ -6,7 +6,7 @@ tags: [blockchain,geth]
 
 # overall
 the code is under path `core/vm`
-overview of the whole evm module ![evm](/images/geth.evm.architecture.png)
+overview of the whole evm module ![evm](/images/evm.drawio.google.png)
 
 the core is `EVM` struct (in evm.go), with main function in creating or call contract. a new `EVM` object is created every time when processing a transaction. inside the EVM struct, the main items are `Interpreter`, and `StateDB` (for state persistence). `Interpreter` loops through contract call instructions.Before each instruction is executed, some checks are performed to ensure sufficient gas and stack space. actual instruction execution code is recorded in `JumpTable` (256 sized array of `operation`)
 
@@ -59,3 +59,49 @@ A -> contractB - delegateCall -> libC
 `EVM.DelegateCall` sets the caller (msg.sender) of the "library contract" (libC) to A, rather than contractB; sets the address of the "library contract" (libC) to contractB. 
 `EVM.CallCode` is similar to `EVM.DelegateCall`. the only difference is that `EVM.CallCode` only change the address of the "library contract" (libC) to contractB, without chanding the caller to A.
 `EVM.StaticCall` is similar to `EVM.Call`, the only difference is that EVM.StaticCall does not allow execution of instructions that modify permanently stored data
+
+during contract call, it first check whether it is precompiled contract. some precompiled contracts are
+- common.BytesToAddress([]byte{1}): &ecrecover{},
+- common.BytesToAddress([]byte{2}): &sha256hash{},
+- common.BytesToAddress([]byte{3}): &ripemd160hash{},
+- common.BytesToAddress([]byte{4}): &dataCopy{},
+
+# EVMInterpreter
+The interpreter object EVMInterpreter is used to interpret and execute specified contract instructions. However, note that the actual instruction interpretation and execution is not really completed by the interpreter object, but by the operation object JumpTable. The interpreter object is only responsible for parsing instruction codes one by one, and then obtains the corresponding operation object, and check objects such as the stack before calling the operation.execute function that actually executre the instruction. It can also be said that the interpreter object is only responsible for the scheduling of interpretation.
+
+## intrinsic gas
+The intrinsic gas for a transaction is the amount of gas that the transaction uses before any code runs. It is a constant transaction fee (currently 21000 gas) plus a fee for every byte of data supplied with the transaction (4 gas for a zero byte, 68 gas for non-zeros). These constants are all currently defined for geth in params/protocol_params.go.
+
+## gas cost
+the gas cost of each instruction is stored in `JumpTable.operation.dynamicGas` or `JumpTable.operation.constantGas`. constantGas means the operation gas cost is a fixed constant. dynamicGas is a function which will return gas during runtime.
+
+In fact, not only the interpretation and execution of the instruction itself consumes gas, but also consumes gas when using memory storage and StateDB permanent storage. For most instructions, the latter two are not used (memory & storage), but for some instructions (such as CODECOPY or SSTORE), their gasCost function will take memory and StateDB usage into account.
+
+a method `memoryGasCost`is used to calculate the gas consumption of memory usage. only when the required space size exceeds the current space size, the excess part needs to consume gas.
+
+# JumpTable
+jumptable is 256 sized array of `operation`
+
+## jump instruction
+Among the instructions of the contract, there are two jump instructions (excluding CALL): JUMP and JUMPI. Their special feature is that the first instruction of the target address after the jump must be JUMPDEST
+```
+func opJump(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+    pos := stack.pop()
+    if !contract.validJumpdest(pos) {
+        nop := contract.GetOp(pos.Uint64())
+        return nil, fmt.Errorf("invalid jump destination (%v) %v", nop, pos)
+    }
+    *pc = pos.Uint64()
+
+    interpreter.intPool.put(pos)
+    return nil, nil
+}
+```
+A function interprets and executes the JUMP instruction. The code first fetches a value from the stack as the jump destination. This value is actually an offset relative to field 0 of the contract code. Then the code will call Contract.validJumpdest to determine whether the first instruction of this destination is JUMPDEST, if it is not, an error will occur.
+
+To judge whether the first instruction of the destination is JUMPDEST, two points must be guaranteed: first, its value is the value of the opcode of the JUMPDEST instruction; second, it is an instruction, not ordinary data.
+
+Let's introduce how Contract.validJumpdest works. In addition to comparing opcode (this is very simple), Contract will also create a bit vector object (ie bitvec, bit vector). This object will analyze the contract instructions from the beginning to the end. If the byte at a certain offset of the contract belongs to ordinary data, the "bit" corresponding to the offset value in bitvec is set to 1, and if it is an instruction, it is set to 0. In Contract.validJumpdest, it is judged whether this is a normal instruction by checking whether the "bit" of the offset value of the jump destination in this bit vector object is 0
+
+# references
+- [yangzhe_blog]https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter
