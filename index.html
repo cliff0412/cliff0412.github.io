@@ -93,7 +93,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="overall"><a href="#overall" class="headerlink" title="overall"></a>overall</h1><p>the code is under path <code>core/vm</code><br>overview of the whole evm module <img src="/images/geth.evm.architecture.png" alt="evm"></p>
+        <h1 id="overall"><a href="#overall" class="headerlink" title="overall"></a>overall</h1><p>the code is under path <code>core/vm</code><br>overview of the whole evm module <img src="/images/evm.drawio.google.png" alt="evm"></p>
 <p>the core is <code>EVM</code> struct (in evm.go), with main function in creating or call contract. a new <code>EVM</code> object is created every time when processing a transaction. inside the EVM struct, the main items are <code>Interpreter</code>, and <code>StateDB</code> (for state persistence). <code>Interpreter</code> loops through contract call instructions.Before each instruction is executed, some checks are performed to ensure sufficient gas and stack space. actual instruction execution code is recorded in <code>JumpTable</code> (256 sized array of <code>operation</code>)</p>
 <p>depending on the version of Ethereum, JumpTable may point to four different instruction sets: constantinopleInstructionSet, byzantiumInstructionSet, homesteadInstructionSet, frontierInstructionSet. Most of the instructions of these four sets of instruction sets are the same, but as the version is updated, the new version supports more instruction sets than the old version.</p>
 <h1 id="evm"><a href="#evm" class="headerlink" title="evm"></a>evm</h1><p>The <code>EVM</code> object is the most important object exported by the evm module, which represents an Ethereum virtual machine</p>
@@ -119,11 +119,32 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 <p>as an example</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A -&gt; contractB - delegateCall -&gt; libC</span><br></pre></td></tr></table></figure>
 <p><code>EVM.DelegateCall</code> sets the caller (msg.sender) of the “library contract” (libC) to A, rather than contractB; sets the address of the “library contract” (libC) to contractB.<br><code>EVM.CallCode</code> is similar to <code>EVM.DelegateCall</code>. the only difference is that <code>EVM.CallCode</code> only change the address of the “library contract” (libC) to contractB, without chanding the caller to A.<br><code>EVM.StaticCall</code> is similar to <code>EVM.Call</code>, the only difference is that EVM.StaticCall does not allow execution of instructions that modify permanently stored data</p>
+<p>during contract call, it first check whether it is precompiled contract. some precompiled contracts are</p>
+<ul>
+<li>common.BytesToAddress([]byte{1}): &amp;ecrecover{},</li>
+<li>common.BytesToAddress([]byte{2}): &amp;sha256hash{},</li>
+<li>common.BytesToAddress([]byte{3}): &amp;ripemd160hash{},</li>
+<li>common.BytesToAddress([]byte{4}): &amp;dataCopy{},</li>
+</ul>
+<h1 id="EVMInterpreter"><a href="#EVMInterpreter" class="headerlink" title="EVMInterpreter"></a>EVMInterpreter</h1><p>The interpreter object EVMInterpreter is used to interpret and execute specified contract instructions. However, note that the actual instruction interpretation and execution is not really completed by the interpreter object, but by the operation object JumpTable. The interpreter object is only responsible for parsing instruction codes one by one, and then obtains the corresponding operation object, and check objects such as the stack before calling the operation.execute function that actually executre the instruction. It can also be said that the interpreter object is only responsible for the scheduling of interpretation.</p>
+<h2 id="intrinsic-gas"><a href="#intrinsic-gas" class="headerlink" title="intrinsic gas"></a>intrinsic gas</h2><p>The intrinsic gas for a transaction is the amount of gas that the transaction uses before any code runs. It is a constant transaction fee (currently 21000 gas) plus a fee for every byte of data supplied with the transaction (4 gas for a zero byte, 68 gas for non-zeros). These constants are all currently defined for geth in params&#x2F;protocol_params.go.</p>
+<h2 id="gas-cost"><a href="#gas-cost" class="headerlink" title="gas cost"></a>gas cost</h2><p>the gas cost of each instruction is stored in <code>JumpTable.operation.dynamicGas</code> or <code>JumpTable.operation.constantGas</code>. constantGas means the operation gas cost is a fixed constant. dynamicGas is a function which will return gas during runtime.</p>
+<p>In fact, not only the interpretation and execution of the instruction itself consumes gas, but also consumes gas when using memory storage and StateDB permanent storage. For most instructions, the latter two are not used (memory &amp; storage), but for some instructions (such as CODECOPY or SSTORE), their gasCost function will take memory and StateDB usage into account.</p>
+<p>a method <code>memoryGasCost</code>is used to calculate the gas consumption of memory usage. only when the required space size exceeds the current space size, the excess part needs to consume gas.</p>
+<h1 id="JumpTable"><a href="#JumpTable" class="headerlink" title="JumpTable"></a>JumpTable</h1><p>jumptable is 256 sized array of <code>operation</code></p>
+<h2 id="jump-instruction"><a href="#jump-instruction" class="headerlink" title="jump instruction"></a>jump instruction</h2><p>Among the instructions of the contract, there are two jump instructions (excluding CALL): JUMP and JUMPI. Their special feature is that the first instruction of the target address after the jump must be JUMPDEST</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">func opJump(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) &#123;</span><br><span class="line">    pos := stack.pop()</span><br><span class="line">    if !contract.validJumpdest(pos) &#123;</span><br><span class="line">        nop := contract.GetOp(pos.Uint64())</span><br><span class="line">        return nil, fmt.Errorf(&quot;invalid jump destination (%v) %v&quot;, nop, pos)</span><br><span class="line">    &#125;</span><br><span class="line">    *pc = pos.Uint64()</span><br><span class="line"></span><br><span class="line">    interpreter.intPool.put(pos)</span><br><span class="line">    return nil, nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>A function interprets and executes the JUMP instruction. The code first fetches a value from the stack as the jump destination. This value is actually an offset relative to field 0 of the contract code. Then the code will call Contract.validJumpdest to determine whether the first instruction of this destination is JUMPDEST, if it is not, an error will occur.</p>
+<p>To judge whether the first instruction of the destination is JUMPDEST, two points must be guaranteed: first, its value is the value of the opcode of the JUMPDEST instruction; second, it is an instruction, not ordinary data.</p>
+<p>Let’s introduce how Contract.validJumpdest works. In addition to comparing opcode (this is very simple), Contract will also create a bit vector object (ie bitvec, bit vector). This object will analyze the contract instructions from the beginning to the end. If the byte at a certain offset of the contract belongs to ordinary data, the “bit” corresponding to the offset value in bitvec is set to 1, and if it is an instruction, it is set to 0. In Contract.validJumpdest, it is judged whether this is a normal instruction by checking whether the “bit” of the offset value of the jump destination in this bit vector object is 0</p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li>[yangzhe_blog]<a target="_blank" rel="noopener" href="https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter">https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter</a></li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/13/evm/" data-id="clgf99lve00014ysj23sb78nw" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/13/evm/" data-id="clgfvpx4h0001llsj8tpagdl8" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -163,7 +184,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgf99lvb00004ysj88urc1rw" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgfvpx4e0000llsjfcpf3f23" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -214,7 +235,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgf99lvf00024ysj0t3c6huz" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgfvpx4i0002llsj9gys2k63" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
