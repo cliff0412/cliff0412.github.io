@@ -54,7 +54,7 @@ The Kademlia protocol includes four remote RPC operations: PING, STORE, FIND_NOD
 # node join
 
 # references
-- ![kademlia paper](https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)
-- ![go implementation](https://github.com/libp2p/go-libp2p-kad-dht)
-- ![kademlia stanford](https://codethechange.stanford.edu/guides/guide_kademlia.html)
-- ![zhihu](https://zhuanlan.zhihu.com/p/388994038)
+- [kademlia paper](https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)
+- [go implementation](https://github.com/libp2p/go-libp2p-kad-dht)
+- [kademlia stanford](https://codethechange.stanford.edu/guides/guide_kademlia.html)
+- [zhihu](https://zhuanlan.zhihu.com/p/388994038)
