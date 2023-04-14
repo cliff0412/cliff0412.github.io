@@ -6,17 +6,18 @@
   
   <title>understanding of kademlia protocol | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="overviewMost of the decentralized networks use P2P protocols, especially in blockchain technology. Usually, a distributed hash table DHT (Distributed Hash Table) is used, and the Kademlia protocol is">
+  <meta name="description" content="IntroductionKademlia, a peer-to-peer distributed hash table(DHT). Some other DHT techniques are Chord. In the Kad network, each node has a unique 160-bit ID (ETH account address is 20 bytes, which is">
 <meta property="og:type" content="article">
 <meta property="og:title" content="understanding of kademlia protocol">
 <meta property="og:url" content="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="overviewMost of the decentralized networks use P2P protocols, especially in blockchain technology. Usually, a distributed hash table DHT (Distributed Hash Table) is used, and the Kademlia protocol is">
+<meta property="og:description" content="IntroductionKademlia, a peer-to-peer distributed hash table(DHT). Some other DHT techniques are Chord. In the Kad network, each node has a unique 160-bit ID (ETH account address is 20 bytes, which is">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cliff0412.github.io/images/kademlia.subtree.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/kademlia.locating.png">
 <meta property="og:image" content="https://cliff0412.github.io/images/kademlia.onlineprob.png">
 <meta property="article:published_time" content="2023-01-15T03:00:30.000Z">
-<meta property="article:modified_time" content="2023-04-14T03:57:02.040Z">
+<meta property="article:modified_time" content="2023-04-14T07:33:16.860Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="blockchain">
 <meta name="twitter:card" content="summary">
@@ -99,16 +100,15 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h1><p>Most of the decentralized networks use P2P protocols, especially in blockchain technology. Usually, a distributed hash table DHT (Distributed Hash Table) is used, and the Kademlia protocol is one of the DHT technologies.</p>
-<h1 id="node-tree"><a href="#node-tree" class="headerlink" title="node tree"></a>node tree</h1><p>In the Kad network, all nodes are regarded as the leaves of a binary tree, and the position of each node is uniquely determined by the shortest prefix of its ID value, and each node has a 160bit ID (ETH account address is 20 bytes, which is 160 bits) value as an identifier.</p>
-<p>The ID value is expressed in binary form; the nth bit of the binary corresponds to the nth layer of the binary tree; if the bit is 1, it enters the left subtree, and if it is 0, it enters the right subtree; the last leaf node on the binary tree corresponds to a node</p>
-<p>Each node is a 160-bit binary representation, so there are up to 160 layers, but there are not so many layers in reality. Because the shortest unique prefix is used, leaf nodes will appear at any number of layers. As follows<br><img src="/images/kademlia.subtree.png" alt="subtree of node 0011"></p>
-<h1 id="sub-tree-of-a-node"><a href="#sub-tree-of-a-node" class="headerlink" title="sub-tree of a node"></a>sub-tree of a node</h1><p>For any node, the binary tree can be decomposed into a series of continuous subtrees that do not contain itself. The highest-level subtree is composed of the other half of the whole tree that does not contain itself; the next level of subtree is composed of the remaining half that does not contain itself; and so on, until the complete tree is split. As shown above.</p>
-<p>The part contained by the dotted line is the subtree of node 0011, and the whole subtree of the part that does not contain the node itself is split from each bifurcation point</p>
-<p>For each node, when it splits the subtree from its own perspective, it will get n subtrees; for each subtree, if it can know a node inside, then it can use these n nodes to perform recursive routing to reach any node of the entire binary tree. </p>
-<h1 id="node-distance"><a href="#node-distance" class="headerlink" title="node distance"></a>node distance</h1><p>The Kad algorithm uses an XOR operation to calculate the distance between nodes</p>
-<h1 id="k-bucket"><a href="#k-bucket" class="headerlink" title="k bucket"></a>k bucket</h1><p>After each node completes subtree splitting, it needs to record K nodes in each subtree. The K value mentioned here is a system-level constant (must be an even number). It is set by the software system using Kad (for example, the Kad network used by BT download, K is set to 8). K-buckets are actually routing tables. For a node, if it splits n subtrees from its own perspective, it needs to maintain n routing tables, and the upper limit of nodes in each routing table is K</p>
-<h1 id="update-of-k-bucket"><a href="#update-of-k-bucket" class="headerlink" title="update of k bucket"></a>update of k bucket</h1><p>There are mainly the following ways to update the K bucket:</p>
+        <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>Kademlia, a peer-to-peer distributed hash table(DHT). Some other DHT techniques are Chord. In the Kad network, each node has a unique 160-bit ID (ETH account address is 20 bytes, which is 160 bits) &lt;key,value&gt; pairs are stored in nodes whose ID is ‘close’ to the key for some notion of closeness. </p>
+<h1 id="system-description"><a href="#system-description" class="headerlink" title="system description"></a>system description</h1><p>Kad effectively treats nodes as leaves in a binary tree, with each nodes’s position determined by the shortest unique prefix of its ID. Figure 1 shows the position of a node with unique prefix 0011 in an example.</p>
+<p><img src="/images/kademlia.subtree.png" alt="Figure 1"><br>for any given node, the binary tree is divided into a series of successively lower subtrees that don’t contain the node.<br> The highest-level subtree is composed of the other half of the whole tree that does not contain itself; the next level of subtree is composed of the remaining half that does not contain itself; and so on, until the complete tree is split into n subtrees. As shown in the figure, the part contained by the dotted line is the subtree of node 0011.</p>
+<p>if there is at least one node knwon in each subtree (in total, at least n nodes), a  recursive routing algorithm can be used to reach any node within the binary tree. Figure 2 shows an example of node 0011 locating node 1110 by successively querying the best node it knows of to find contacts in lower and lower subtrees; finaly the lookup converges to the target node.</p>
+<p><img src="/images/kademlia.locating.png" alt="Figure 2"></p>
+<h2 id="node-distance-XOR-metric"><a href="#node-distance-XOR-metric" class="headerlink" title="node distance: XOR metric"></a>node distance: XOR metric</h2><p>Node’s id is 160 bit. Keys are also 160 bit. The Kad algorithm uses an XOR operation to calculate the distance between nodes.<br>d(x,y) &#x3D; x XOR y</p>
+<h2 id="node-state"><a href="#node-state" class="headerlink" title="node state"></a>node state</h2><p>for each 0 &lt;&#x3D; i &lt; 160, every node keeps k &lt;IP address, UDP port, node ID&gt; triples (as a list) for nodes of distance between 2^i and 2^i+1 from itself. it is called k-buckets.<br>each k-bucket is kept sorted by time last seen–least recently seen node at the head, most-recently seen at the tail.<br>for small values of i, the k-buckets will generally be empty (as no approriate nodes will exist).</p>
+<p> The K value mentioned here is a system-level constant (must be an even number). It is set by the software system using Kad (for example, the Kad network used by BT download, K is set to 8). </p>
+<h2 id="update-of-k-bucket"><a href="#update-of-k-bucket" class="headerlink" title="update of k bucket"></a>update of k bucket</h2><p>There are mainly the following ways to update the K bucket:</p>
 <ul>
 <li>Actively collect nodes: Any node can initiate a FIND_NODE (query node) request to refresh the node information in the K-bucket.</li>
 <li>Passive collection node: When receiving requests from other nodes (such as: FIND_NODE, FIND_VALUE), it will add the node ID of the other party to a certain K-bucket.</li>
@@ -116,14 +116,17 @@
 </ul>
 <p>The update principle is to insert the latest node into the tail of the queue, and not to remove the online nodes in the queue.</p>
 <p>According to the K-bucket update principle, nodes with a long online time are more likely to remain in the K-bucket list. Therefore, by keeping the nodes with a long online time in the K-bucket, Kad will significantly increase the number of nodes in the K-bucket. it can defend against DOS attacks to a certain extent, because only when the old node fails, Kad will update the K bucket information, which avoids flooding routing information through the addition of new nodes<br><img src="/images/kademlia.onlineprob.png" alt="probability of continuous online agains onlie duration"></p>
-<h1 id="RPC-method"><a href="#RPC-method" class="headerlink" title="RPC method"></a>RPC method</h1><p>The Kademlia protocol includes four remote RPC operations: PING, STORE, FIND_NODE, FIND_VALUE.</p>
+<h2 id="RPC-method"><a href="#RPC-method" class="headerlink" title="RPC method"></a>RPC method</h2><p>The Kademlia protocol includes four remote RPC operations: PING, STORE, FIND_NODE, FIND_VALUE.</p>
 <ul>
-<li>The purpose of the PING operation is to detect a node to determine whether it is still online.</li>
-<li>The function of the STORE operation is to notify a node to store a &lt;key, value&gt; pair for future query needs.</li>
-<li>The FIND_NODE operation takes a 160bit ID as a parameter. The receiver of this operation returns the (IP address, UDP port, Node ID) information of K nodes that it knows are closer to the target ID. The information of these nodes can be obtained from a single K-bucket, or from multiple K-buckets. In either case, the receiver will return the information of K nodes to the operation initiator. </li>
-<li>The FIND_VALUE operation is similar to the FIND_NODE operation, the difference is that it only needs to return the (IP address, UDP port, Node ID) information of a node</li>
+<li>PING probes a node to see if it is online.</li>
+<li>STORE instructs a node to store a &lt;key,value&gt; pair for later retrieval.</li>
+<li>FIND_NODE takes a 160bit ID as an argument. The receiver of this operation returns the (IP address, UDP port, Node ID) information of K nodes that it knows are closer to the target ID. The information of these nodes can be obtained from a single K-bucket, or from multiple K-buckets. In either case, the receiver will return the information of K nodes to the operation initiator. </li>
+<li>The FIND_VALUE operation is similar to the FIND_NODE operation, with one exception. if the RPC receipients has received a STORE RPC for the key, it just returns the stored value.</li>
 </ul>
-<h1 id="node-query-routing"><a href="#node-query-routing" class="headerlink" title="node query routing"></a>node query routing</h1><h1 id="node-join"><a href="#node-join" class="headerlink" title="node join"></a>node join</h1><h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<h2 id="node-lookup"><a href="#node-lookup" class="headerlink" title="node lookup"></a>node lookup</h2><p>Kad participant must locate the k closest nodes to some given node ID. Kad employs a recursive algorithm for node lookups. It recursively send FIND_NODE requests to \alpha (out of k) closest nodes it knows of. </p>
+<h2 id="find-a-lt-key-value-gt-pair"><a href="#find-a-lt-key-value-gt-pair" class="headerlink" title="find a &lt;key,value&gt; pair"></a>find a &lt;key,value&gt; pair</h2><p>to find a &lt;key,value&gt; pair, a node starts by performing a lookup to find the k nodes with IDs closest to the key. However, value lookups use FIND_VLAUE rather than FIND_NODE RPCs.</p>
+<h2 id="node-join"><a href="#node-join" class="headerlink" title="node join"></a>node join</h2><p>to join the network, a node u must have a contact to an already participating node w.</p>
+<h2 id="routing-table"><a href="#routing-table" class="headerlink" title="routing table"></a>routing table</h2><h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
 <li><a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf">kademlia paper</a></li>
 <li><a target="_blank" rel="noopener" href="https://github.com/libp2p/go-libp2p-kad-dht">go implementation</a></li>
 <li><a target="_blank" rel="noopener" href="https://codethechange.stanford.edu/guides/guide_kademlia.html">kademlia stanford</a></li>
@@ -133,7 +136,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clgg0pwi8000030sj79ge36qf" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clgg8gcd50002jbsjhn771e3k" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
