@@ -104,4 +104,5 @@ To judge whether the first instruction of the destination is JUMPDEST, two point
 Let's introduce how Contract.validJumpdest works. In addition to comparing opcode (this is very simple), Contract will also create a bit vector object (ie bitvec, bit vector). This object will analyze the contract instructions from the beginning to the end. If the byte at a certain offset of the contract belongs to ordinary data, the "bit" corresponding to the offset value in bitvec is set to 1, and if it is an instruction, it is set to 0. In Contract.validJumpdest, it is judged whether this is a normal instruction by checking whether the "bit" of the offset value of the jump destination in this bit vector object is 0
 
 # references
-- [yangzhe_blog]https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter
+- [yangzhe_blog](https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter)
+- [op code manual](https://www.evm.codes/?fork=shanghai)
