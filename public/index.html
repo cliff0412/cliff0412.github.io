@@ -71,10 +71,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-evm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-blockchain.kademlia" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/04/13/evm/" class="article-date">
-  <time class="dt-published" datetime="2023-04-13T08:24:54.000Z" itemprop="datePublished">2023-04-13</time>
+    <a href="/2023/01/15/blockchain.kademlia/" class="article-date">
+  <time class="dt-published" datetime="2023-01-15T03:00:30.000Z" itemprop="datePublished">2023-01-15</time>
 </a>
     
   </div>
@@ -85,7 +85,77 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/04/13/evm/">geth evm source analysis</a>
+      <a class="p-name article-title" href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h1><p>Most of the decentralized networks use P2P protocols, especially in blockchain technology. Usually, a distributed hash table DHT (Distributed Hash Table) is used, and the Kademlia protocol is one of the DHT technologies.</p>
+<h1 id="node-tree"><a href="#node-tree" class="headerlink" title="node tree"></a>node tree</h1><p>In the Kad network, all nodes are regarded as the leaves of a binary tree, and the position of each node is uniquely determined by the shortest prefix of its ID value, and each node has a 160bit ID (ETH account address is 20 bytes, which is 160 bits) value as an identifier.</p>
+<p>The ID value is expressed in binary form; the nth bit of the binary corresponds to the nth layer of the binary tree; if the bit is 1, it enters the left subtree, and if it is 0, it enters the right subtree; the last leaf node on the binary tree corresponds to a node</p>
+<p>Each node is a 160-bit binary representation, so there are up to 160 layers, but there are not so many layers in reality. Because the shortest unique prefix is used, leaf nodes will appear at any number of layers. As follows<br><img src="/images/kademlia.subtree.png" alt="subtree of node 0011"></p>
+<h1 id="sub-tree-of-a-node"><a href="#sub-tree-of-a-node" class="headerlink" title="sub-tree of a node"></a>sub-tree of a node</h1><p>For any node, the binary tree can be decomposed into a series of continuous subtrees that do not contain itself. The highest-level subtree is composed of the other half of the whole tree that does not contain itself; the next level of subtree is composed of the remaining half that does not contain itself; and so on, until the complete tree is split. As shown above.</p>
+<p>The part contained by the dotted line is the subtree of node 0011, and the whole subtree of the part that does not contain the node itself is split from each bifurcation point</p>
+<p>For each node, when it splits the subtree from its own perspective, it will get n subtrees; for each subtree, if it can know a node inside, then it can use these n nodes to perform recursive routing to reach any node of the entire binary tree. </p>
+<h1 id="node-distance"><a href="#node-distance" class="headerlink" title="node distance"></a>node distance</h1><p>The Kad algorithm uses an XOR operation to calculate the distance between nodes</p>
+<h1 id="k-bucket"><a href="#k-bucket" class="headerlink" title="k bucket"></a>k bucket</h1><p>After each node completes subtree splitting, it needs to record K nodes in each subtree. The K value mentioned here is a system-level constant (must be an even number). It is set by the software system using Kad (for example, the Kad network used by BT download, K is set to 8). K-buckets are actually routing tables. For a node, if it splits n subtrees from its own perspective, it needs to maintain n routing tables, and the upper limit of nodes in each routing table is K</p>
+<h1 id="update-of-k-bucket"><a href="#update-of-k-bucket" class="headerlink" title="update of k bucket"></a>update of k bucket</h1><p>There are mainly the following ways to update the K bucket:</p>
+<ul>
+<li>Actively collect nodes: Any node can initiate a FIND_NODE (query node) request to refresh the node information in the K-bucket.</li>
+<li>Passive collection node: When receiving requests from other nodes (such as: FIND_NODE, FIND_VALUE), it will add the node ID of the other party to a certain K-bucket.</li>
+<li>Detect invalid nodes: By initiating a PING request, determine whether a node in the K-bucket is online, and then clean up which offline nodes in the K-bucket.</li>
+</ul>
+<p>The update principle is to insert the latest node into the tail of the queue, and not to remove the online nodes in the queue.</p>
+<p>According to the K-bucket update principle, nodes with a long online time are more likely to remain in the K-bucket list. Therefore, by keeping the nodes with a long online time in the K-bucket, Kad will significantly increase the number of nodes in the K-bucket. it can defend against DOS attacks to a certain extent, because only when the old node fails, Kad will update the K bucket information, which avoids flooding routing information through the addition of new nodes<br><img src="/images/kademlia.onlineprob.png" alt="probability of continuous online agains onlie duration"></p>
+<h1 id="RPC-method"><a href="#RPC-method" class="headerlink" title="RPC method"></a>RPC method</h1><p>The Kademlia protocol includes four remote RPC operations: PING, STORE, FIND_NODE, FIND_VALUE.</p>
+<ul>
+<li>The purpose of the PING operation is to detect a node to determine whether it is still online.</li>
+<li>The function of the STORE operation is to notify a node to store a &lt;key, value&gt; pair for future query needs.</li>
+<li>The FIND_NODE operation takes a 160bit ID as a parameter. The receiver of this operation returns the (IP address, UDP port, Node ID) information of K nodes that it knows are closer to the target ID. The information of these nodes can be obtained from a single K-bucket, or from multiple K-buckets. In either case, the receiver will return the information of K nodes to the operation initiator. </li>
+<li>The FIND_VALUE operation is similar to the FIND_NODE operation, the difference is that it only needs to return the (IP address, UDP port, Node ID) information of a node</li>
+</ul>
+<h1 id="node-query-routing"><a href="#node-query-routing" class="headerlink" title="node query routing"></a>node query routing</h1><h1 id="node-join"><a href="#node-join" class="headerlink" title="node join"></a>node join</h1><h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><img src="https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf" alt="kademlia paper"></li>
+<li><img src="https://github.com/libp2p/go-libp2p-kad-dht" alt="go implementation"></li>
+<li><img src="https://codethechange.stanford.edu/guides/guide_kademlia.html" alt="kademlia stanford"></li>
+<li><img src="https://zhuanlan.zhihu.com/p/388994038" alt="zhihu"></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clgg0n4190000wmsj2f5t3pyb" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth.evm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/08/geth.evm/" class="article-date">
+  <time class="dt-published" datetime="2023-01-08T08:24:54.000Z" itemprop="datePublished">2023-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/08/geth.evm/">geth evm source analysis</a>
     </h1>
   
 
@@ -146,7 +216,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/13/evm/" data-id="clgfyggab0001visj1f2d558w" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clgg0n41c0001wmsjh09b49zl" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -186,7 +256,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgfygga80000visj15evfg1q" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgg0n41f0004wmsjec55b442" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -237,7 +307,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgfyggac0002visjas3s2otj" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgg0n41e0003wmsj9j6ceeru" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
@@ -272,7 +342,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/geth/" style="font-size: 10px;">geth</a>
+      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/geth/" style="font-size: 10px;">geth</a>
     </div>
   </div>
 
@@ -281,7 +351,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li></ul>
     </div>
   </div>
 
@@ -294,7 +364,11 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       <ul>
         
           <li>
-            <a href="/2023/04/13/evm/">geth evm source analysis</a>
+            <a href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/08/geth.evm/">geth evm source analysis</a>
           </li>
         
           <li>
