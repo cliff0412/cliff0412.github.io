@@ -69,6 +69,9 @@ during contract call, it first check whether it is precompiled contract. some pr
 # EVMInterpreter
 The interpreter object EVMInterpreter is used to interpret and execute specified contract instructions. However, note that the actual instruction interpretation and execution is not really completed by the interpreter object, but by the operation object JumpTable. The interpreter object is only responsible for parsing instruction codes one by one, and then obtains the corresponding operation object, and check objects such as the stack before calling the operation.execute function that actually executre the instruction. It can also be said that the interpreter object is only responsible for the scheduling of interpretation.
 
+## execution layout
+![layout](/images/evm.layout.png)
+
 ## intrinsic gas
 The intrinsic gas for a transaction is the amount of gas that the transaction uses before any code runs. It is a constant transaction fee (currently 21000 gas) plus a fee for every byte of data supplied with the transaction (4 gas for a zero byte, 68 gas for non-zeros). These constants are all currently defined for geth in params/protocol_params.go.
 
