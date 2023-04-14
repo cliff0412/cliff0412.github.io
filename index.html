@@ -127,6 +127,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 <li>common.BytesToAddress([]byte{4}): &amp;dataCopy{},</li>
 </ul>
 <h1 id="EVMInterpreter"><a href="#EVMInterpreter" class="headerlink" title="EVMInterpreter"></a>EVMInterpreter</h1><p>The interpreter object EVMInterpreter is used to interpret and execute specified contract instructions. However, note that the actual instruction interpretation and execution is not really completed by the interpreter object, but by the operation object JumpTable. The interpreter object is only responsible for parsing instruction codes one by one, and then obtains the corresponding operation object, and check objects such as the stack before calling the operation.execute function that actually executre the instruction. It can also be said that the interpreter object is only responsible for the scheduling of interpretation.</p>
+<h2 id="execution-layout"><a href="#execution-layout" class="headerlink" title="execution layout"></a>execution layout</h2><p><img src="/images/evm.layout.png" alt="layout"></p>
 <h2 id="intrinsic-gas"><a href="#intrinsic-gas" class="headerlink" title="intrinsic gas"></a>intrinsic gas</h2><p>The intrinsic gas for a transaction is the amount of gas that the transaction uses before any code runs. It is a constant transaction fee (currently 21000 gas) plus a fee for every byte of data supplied with the transaction (4 gas for a zero byte, 68 gas for non-zeros). These constants are all currently defined for geth in params&#x2F;protocol_params.go.</p>
 <h2 id="gas-cost"><a href="#gas-cost" class="headerlink" title="gas cost"></a>gas cost</h2><p>the gas cost of each instruction is stored in <code>JumpTable.operation.dynamicGas</code> or <code>JumpTable.operation.constantGas</code>. constantGas means the operation gas cost is a fixed constant. dynamicGas is a function which will return gas during runtime.</p>
 <p>In fact, not only the interpretation and execution of the instruction itself consumes gas, but also consumes gas when using memory storage and StateDB permanent storage. For most instructions, the latter two are not used (memory &amp; storage), but for some instructions (such as CODECOPY or SSTORE), their gasCost function will take memory and StateDB usage into account.</p>
@@ -145,7 +146,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/13/evm/" data-id="clgfw2tdh00008nsj25b71381" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/13/evm/" data-id="clgfyggab0001visj1f2d558w" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -185,7 +186,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgfw2tdj00018nsjepe08ti4" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgfygga80000visj15evfg1q" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -236,7 +237,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgfw2tdl00038nsj6zagb3ri" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgfyggac0002visjas3s2otj" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
