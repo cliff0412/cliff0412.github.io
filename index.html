@@ -97,14 +97,22 @@
 <p><img src="/images/trie.prefix.png" alt="prefix trie"><br>In general, the nodes of a Trie look like this:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ [Ia, Ib, … I*], value]</span><br></pre></td></tr></table></figure>
 <p>[Ia, Ib, … I*] is the index array of the node, which takes the next character in the key as the index, and each element I* points to the corresponding child node. value represents the value</p>
-<h1 id="MPT"><a href="#MPT" class="headerlink" title="MPT"></a>MPT</h1><ul>
+<h1 id="MPT"><a href="#MPT" class="headerlink" title="MPT"></a>MPT</h1><p>Each block of Ethereum contains three MPT trees, respectively</p>
+<ul>
+<li>Transaction tree</li>
+<li>Receipt tree</li>
+<li>State tree</li>
+</ul>
+<p>In the figure below are two block headers, where state root, tx root receipt root stores the roots of the three trees, and the second block shows when the data of account 175 changes (27 -&gt; 45). Only need to store some of the data related to this account, and the data in the old block can still be accessed normally. (This is somewhat similar to the implementation of an immutable data structure in a functional programming language.) The detailed structure is</p>
+<p><img src="/images/mpt.state.ref.png" alt="state reference"></p>
+<ul>
 <li>use []byte as key, other than string</li>
 <li>nibble: the smallest unit of the key type (4 bit)</li>
 <li>Use hashes to refer to nodes instead of memory pointers</li>
 </ul>
 <p>there are two types of node: full nodes (fullNode) and short nodes (shortNode). Full nodes have 17 elements, while shortNode nodes have two elements. Their schematic expressions are as follows</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fullNode: [i0, i1, i2, … i15, hash]  </span><br><span class="line">shortNode： [ [k0, k1, … kn], hash ] // first element is an array</span><br></pre></td></tr></table></figure>
-<p>if the hash pointing to a value, it is a leaf node; if pointing another node, a non leaf node.</p>
+<p>if the hash pointing to a value, it is a leaf node; if pointing another node, a non leaf node. shortNode contains extension and leaf node. full node is branch node.</p>
 <p><img src="/images/mpt.png" alt="mpt"></p>
 <p>Use the upper 4 bits of the first byte of the []byte value composed of nibbles as storage flag. The 0th bit stores the parity information, and the 1st bit stores the type represented by the value</p>
 <table>
@@ -147,6 +155,7 @@
 </tr>
 </tbody></table>
 <p>this encoding method is only used when accessing the database. After reading into memory, the key is directly stored in []byte type</p>
+<p>In the trie module, there is a <code>Database</code> object, which you can understand as a cache layer of the underlying database. In actual use, the Trie object uses the Database as a database. However, the important function of Database is not caching, but the reference counting of node data during caching, and provides Database.Reference and Database.Dereference to reference and dereference a trie node. If the reference count of a node becomes 0, the node will be deleted from memory, so it will not be written to the real database</p>
 <h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/agiletechvn/go-ethereum-code-analysis/blob/master/trie-analysis.md">github</a></li>
 </ul>
@@ -154,7 +163,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clghhkx8j00003hsj2qrfchd4" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clghhzge40000lksjevsh1tuc" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -226,7 +235,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clghhkx8l00013hsj5ohzee5v" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clghhzge60001lksj2pudbm9q" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
@@ -315,7 +324,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clghhkx8p000a3hsjbj1f6ghb" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clghhzge90004lksj7b3ab9cd" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -355,7 +364,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clghhkx8n00033hsj0kaa4tyf" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clghhzge80003lksj84h13gr8" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -406,7 +415,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clghhkx8n00043hsj1j7369d6" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clghhzge90005lksjeqga4elb" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
