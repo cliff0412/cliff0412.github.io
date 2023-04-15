@@ -26,6 +26,8 @@ shortNode： [ [k0, k1, … kn], hash ] // first element is an array
 ```
 if the hash pointing to a value, it is a leaf node; if pointing another node, a non leaf node.
 
+![mpt](/images/mpt.png)
+
 Use the upper 4 bits of the first byte of the []byte value composed of nibbles as storage flag. The 0th bit stores the parity information, and the 1st bit stores the type represented by the value
 |hex char| bits | pointing to | odd/even | 2nd niddle padding |
 | -----|:----:|:----:|:----:|-------|
