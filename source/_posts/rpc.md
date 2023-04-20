@@ -1,7 +1,7 @@
 ---
 title: rpc
 date: 2023-01-29 14:23:08
-tags:
+tags: [blockchain, geth]
 ---
 
 
