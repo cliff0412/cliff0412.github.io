@@ -1,7 +1,7 @@
 ---
-title: geth.get.start
+title: geth.start
 date: 2023-02-02 18:15:12
-tags:
+tags: [blockchain,geth]
 ---
 
 # build from source
@@ -48,6 +48,8 @@ geth --sepolia --config geth-config.toml
 ```
 
 # how geth starts
+
+![geth starts](/images/geth_starts.drawio.png)
 the main func is in cmd/geth/main.go
 ```go
 func main() {
