@@ -21,7 +21,7 @@ Each block of Ethereum contains three MPT trees, respectively
 - Receipt tree
 - State tree
 
-In the figure below are two block headers, where state root, tx root receipt root stores the roots of the three trees, and the second block shows when the data of account 175 changes (27 -> 45). Only need to store some of the data related to this account, and the data in the old block can still be accessed normally. (This is somewhat similar to the implementation of an immutable data structure in a functional programming language.) The detailed structure is
+In the figure below are two block headers, where state root, tx root receipt root stores the roots of the three trees, and the second block shows when the data of account 175 changes (27 -> 45). Only need to store 3 nodes related to this account, and the data in the old block can still be accessed normally. (This is somewhat similar to the implementation of an immutable data structure in a functional programming language.) The detailed structure is
 
 ![state reference](/images/mpt.state.ref.png)
 
@@ -52,3 +52,5 @@ In the trie module, there is a `Database` object, which you can understand as a 
 
 # reference
 - [github](https://github.com/agiletechvn/go-ethereum-code-analysis/blob/master/trie-analysis.md)
+- [yangzhe's blog](http://yangzhe.me/2019/01/12/ethereum-trie-part-1/)
+- [yangzhe's blod](http://yangzhe.me/2019/01/18/ethereum-trie-part-2/)

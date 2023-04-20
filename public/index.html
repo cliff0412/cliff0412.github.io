@@ -71,6 +71,64 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rpc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/29/rpc/" class="article-date">
+  <time class="dt-published" datetime="2023-01-29T06:23:08.000Z" itemprop="datePublished">2023-01-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/29/rpc/">rpc</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h1><p>package rpc implements bi-directional JSON-RPC 2.0 on multiple transports (http, ws, ipc, stdio). After creating a server or client instance, objects can be registered to make<br>them visible as ‘services’. Exported methods that follow specific conventions can be<br>called remotely. It also has support for the publish&#x2F;subscribe pattern.</p>
+<h2 id="rpc-methods"><a href="#rpc-methods" class="headerlink" title="rpc methods"></a>rpc methods</h2><p>Methods that satisfy the following criteria are made available for remote access:</p>
+<ul>
+<li>method must be exported</li>
+<li>method returns 0, 1 (response or error) or 2 (response and error) values</li>
+</ul>
+<p>The server offers the ServeCodec method which accepts a ServerCodec instance. It will read<br>requests from the codec, process the request and sends the response back to the client<br>using the codec. The server can execute requests concurrently. Responses can be sent back<br>to the client out of order.</p>
+<p>An example server which uses the JSON codec:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> CalculatorService <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Add(a, b <span class="type">int</span>) <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Div(a, b <span class="type">int</span>) (<span class="type">int</span>, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> b == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>, errors.New(<span class="string">&quot;divide by zero&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> a/b, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">calculator := <span class="built_in">new</span>(CalculatorService)</span><br><span class="line">server := NewServer()</span><br><span class="line">server.RegisterName(<span class="string">&quot;calculator&quot;</span>, calculator)</span><br><span class="line">l, _ := net.ListenUnix(<span class="string">&quot;unix&quot;</span>, &amp;net.UnixAddr&#123;Net: <span class="string">&quot;unix&quot;</span>, Name: <span class="string">&quot;/tmp/calculator.sock&quot;</span>&#125;)</span><br><span class="line">server.ServeListener(l)</span><br></pre></td></tr></table></figure>
+
+<h2 id="subscriptions"><a href="#subscriptions" class="headerlink" title="subscriptions"></a>subscriptions</h2><p>The package also supports the publish subscribe pattern through the use of subscriptions.<br>A method that is considered eligible for notifications must satisfy the following<br>criteria:</p>
+<ul>
+<li>method must be exported</li>
+<li>first method argument type must be context.Context</li>
+<li>method must have return types (rpc.Subscription, error)</li>
+</ul>
+<p>An example method:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *BlockChainService)</span></span> NewBlocks(ctx context.Context) (rpc.Subscription, <span class="type">error</span>) &#123;</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Reverse-Calls"><a href="#Reverse-Calls" class="headerlink" title="Reverse Calls"></a>Reverse Calls</h2><p>In any method handler, an instance of rpc.Client can be accessed through the<br>ClientFromContext method. Using this client instance, server-to-client method calls can be<br>performed on the RPC connection.<br>*&#x2F;</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/29/rpc/" data-id="clgoquuvv00070lsj0kria9u9" data-title="rpc" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-MPT" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/01/22/MPT/" class="article-date">
@@ -103,7 +161,7 @@
 <li>Receipt tree</li>
 <li>State tree</li>
 </ul>
-<p>In the figure below are two block headers, where state root, tx root receipt root stores the roots of the three trees, and the second block shows when the data of account 175 changes (27 -&gt; 45). Only need to store some of the data related to this account, and the data in the old block can still be accessed normally. (This is somewhat similar to the implementation of an immutable data structure in a functional programming language.) The detailed structure is</p>
+<p>In the figure below are two block headers, where state root, tx root receipt root stores the roots of the three trees, and the second block shows when the data of account 175 changes (27 -&gt; 45). Only need to store 3 nodes related to this account, and the data in the old block can still be accessed normally. (This is somewhat similar to the implementation of an immutable data structure in a functional programming language.) The detailed structure is</p>
 <p><img src="/images/mpt.state.ref.png" alt="state reference"></p>
 <ul>
 <li>use []byte as key, other than string</li>
@@ -158,12 +216,14 @@
 <p>In the trie module, there is a <code>Database</code> object, which you can understand as a cache layer of the underlying database. In actual use, the Trie object uses the Database as a database. However, the important function of Database is not caching, but the reference counting of node data during caching, and provides Database.Reference and Database.Dereference to reference and dereference a trie node. If the reference count of a node becomes 0, the node will be deleted from memory, so it will not be written to the real database</p>
 <h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/agiletechvn/go-ethereum-code-analysis/blob/master/trie-analysis.md">github</a></li>
+<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/01/12/ethereum-trie-part-1/">yangzhe’s blog</a></li>
+<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/01/18/ethereum-trie-part-2/">yangzhe’s blod</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clghhzge40000lksjevsh1tuc" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clgoquuvp00000lsjenr5auun" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -235,7 +295,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clghhzge60001lksj2pudbm9q" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clgoquuvs00010lsjfxbd998o" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
@@ -324,7 +384,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clghhzge90004lksj7b3ab9cd" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clgoquuvu00040lsjc3n6e1t6" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -364,7 +424,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clghhzge80003lksj84h13gr8" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgoquuvt00030lsjh0gc331s" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -415,7 +475,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clghhzge90005lksjeqga4elb" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgoquuvu00050lsj72enda3b" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
@@ -472,6 +532,10 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       <ul>
         
           <li>
+            <a href="/2023/01/29/rpc/">rpc</a>
+          </li>
+        
+          <li>
             <a href="/2023/01/22/MPT/">MPT</a>
           </li>
         
@@ -485,10 +549,6 @@ during create contract, an object <code>Contract</code> is created. A Contract o
         
           <li>
             <a href="/2022/11/28/eth-sign/">eth_sign</a>
-          </li>
-        
-          <li>
-            <a href="/2022/11/27/hello-world/">how to use hexo</a>
           </li>
         
       </ul>
