@@ -406,6 +406,11 @@
   "resolved" "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz"
   "version" "1.1.1"
 
+"ejs@^1.0.0":
+  "integrity" "sha512-hK3tEqj0pP7UF5UHKNiRvm3zCaYk7UI4EBJ6wwN5O2qX1WdSovmqvUHEbNOJuglXzVkk/H0r7vgst3mVcQXrPA=="
+  "resolved" "https://registry.npmjs.org/ejs/-/ejs-1.0.0.tgz"
+  "version" "1.0.0"
+
 "ejs@^3.1.6":
   "integrity" "sha512-/sXZeMlhS0ArkfX2Aw780gJzXSMPnKjtspYZv+f3NiKLlubezAHDU5+9xz6gd3/NhG3txQCo6xlglmTS+oTGEQ=="
   "resolved" "https://registry.npmjs.org/ejs/-/ejs-3.1.8.tgz"
@@ -680,6 +685,13 @@
   "integrity" "sha512-8oo1iozloZo7TojPVYg4IxL3SJKCBdSJ908fTlIxIK7TWJIKdYnQlW31+12DBJ0NhVZA/lZisPObGF08wT8fKw=="
   "resolved" "https://registry.npmjs.org/hexo-pagination/-/hexo-pagination-3.0.0.tgz"
   "version" "3.0.0"
+
+"hexo-pdf@^1.1.1":
+  "integrity" "sha512-oC5HMJ8KcJF7zTMe8l+BbXPY0myFMAbWiqQOAuEpR9ZegurAkjVAAT97rJl/idF3yIL5iJg5KXPX0tkjZd0tyA=="
+  "resolved" "https://registry.npmjs.org/hexo-pdf/-/hexo-pdf-1.1.1.tgz"
+  "version" "1.1.1"
+  dependencies:
+    "ejs" "^1.0.0"
 
 "hexo-renderer-ejs@^2.0.0":
   "integrity" "sha512-qCjE1IdwgDgv65qyb0KMVCwCdSVAkH0vwAe9XihjvaKWkmb9dtt8DgErOdqCXn0HReSyWiEVP2BrLRj3gyHwOQ=="
