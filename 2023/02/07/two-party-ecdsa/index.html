@@ -16,7 +16,7 @@
 <meta property="og:image" content="https://cliff0412.github.io/images/two_party_ecdsa/schnorr_ecdsa_comparison.png">
 <meta property="og:image" content="https://cliff0412.github.io/images/two_party_ecdsa/paillier_enc.png">
 <meta property="article:published_time" content="2023-02-07T06:29:26.000Z">
-<meta property="article:modified_time" content="2023-04-23T08:26:34.868Z">
+<meta property="article:modified_time" content="2023-04-23T13:15:41.325Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta property="article:tag" content="mpc">
@@ -111,17 +111,18 @@
 <p>In this paper, we consider the specific case of two parties (and thus no honest majority) and con-struct a protocol that is approximately two orders of magnitude faster than the previous best.</p>
 <h2 id="Comparing-ECDSA-signing-to-EC-Schnorr-signing"><a href="#Comparing-ECDSA-signing-to-EC-Schnorr-signing" class="headerlink" title="Comparing ECDSA signing to EC-Schnorr signing"></a>Comparing ECDSA signing to EC-Schnorr signing</h2><p>In both cases, the public verification key is an elliptic curve point \( Q \) and the private signing key is \( x \) such that \( Q &#x3D; x \cdot G \), where \( G \) is the generator point of an EC group of order \( q \).<br><img src="/images/two_party_ecdsa/schnorr_ecdsa_comparison.png" alt="schnorr ecdsa comparison"></p>
 <p>Observe that Schnorr signing can be easily distributed since the private key \( x \) and the value k are both used in a linear equation.  In contrast, in ECDSA signing, the equation for computing \( s \) includes \( k^{-1} \). Now, given shares \(k_1\), \(k_2\) such that \(k_1 + k_2 &#x3D; k \bmod q\) .It is very difficult to compute \(k_1^{\prime}\), \(k_2^{\prime}\) such  that \(k_1^{\prime} + k_2^{\prime} &#x3D; k^{-1} \bmod q\)</p>
-<p>two-party protocols for ECDSA signing use multiplicative sharing of \( x \) and of \( k \). That is, the parties hold \(x_1\), \(x_2\)  such that \(x_1 \cdot x_2 &#x3D; x \bmod q\), and in each signing operation they generate \(k_1\), \(k_2\) such that \(k_1 \cdot k_2 &#x3D; k \bmod q\). This enables them to easily compute \(k^{-1}\) since each party can locally compute  \(k_i^{\prime} &#x3D; k_i^{-1} \bmod q\), and then \(k_1^{\prime}\), \(k_2^{\prime}\) are multiplicative shares of \(k^{-1}\). The parties can then use additively homomorphic encryption – specifically Paillier encryption  – in order to combine their equations. For example, \(P_1\) can compute \(c_1 &#x3D; Enc_{pk}(k_1^{-1} \cdot H(m))\) and \(c_2 &#x3D; Enc_{pk}(k_1^{-1} \cdot x_1 \cdot r)\) . Then, using scar multiplication (denoted ⊙) and homomorphic addition (denoted ⊕), P2 can compute \( (k_2^{-1} ⊙ c_1 ) ⊕ [( k_2^{-1} \cdot x_2)  ⊙ c_2 ]\), which will be an encryption of </p>
+<p>two-party protocols for ECDSA signing use multiplicative sharing of \( x \) and of \( k \). That is, the parties hold \(x_1\), \(x_2\)  such that \(x_1 \cdot x_2 &#x3D; x \bmod q\), and in each signing operation they generate \(k_1\), \(k_2\) such that \(k_1 \cdot k_2 &#x3D; k \bmod q\). This enables them to easily compute \(k^{-1}\) since each party can locally compute  \(k_i^{\prime} &#x3D; k_i^{-1} \bmod q\), and then \(k_1^{\prime}\), \(k_2^{\prime}\) are multiplicative shares of \(k^{-1}\). The parties can then use additively homomorphic encryption – specifically Paillier encryption  – in order to combine their equations. For example, \(P_1\) can compute \(c_1 &#x3D; Enc_{pk}(k_1^{-1} \cdot H(m))\) and \(c_2 &#x3D; Enc_{pk}(k_1^{-1} \cdot x_1 \cdot r)\) . Then, using scar multiplication (denoted ⊙) and homomorphic addition (denoted ⊕), \( P_2 \) can compute \( (k_2^{-1} ⊙ c_1 ) ⊕ [( k_2^{-1} \cdot x_2)  ⊙ c_2 ]\), which will be an encryption of </p>
 <p><img src="/images/two_party_ecdsa/paillier_enc.png" alt="paillier encryption"></p>
 <p>However, proving that each party worked correctly is extremely difficult. For example, the first party must prove that the Paillier encryption includes \(k_1^{-1}\) when the second party only has \(R_1 &#x3D; k_1 \cdot G\). it must prove that the Paillier encryptions are to values in the expected range, and more. This can be done, but it results in a protocol that is very expensive.</p>
-<h2 id="their-results"><a href="#their-results" class="headerlink" title="their results"></a>their results</h2><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<h2 id="their-results"><a href="#their-results" class="headerlink" title="their results"></a>their results</h2><p>[WIP]</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2017/552.pdf">original papger</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clgt5b9qb000h4ysj3rlj2y9h" data-title="two_party_ecdsa" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clgugkqi4000c33sjdx7wf729" data-title="two_party_ecdsa" class="article-share-link">Share</a>
       
       
       
@@ -132,6 +133,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2023/04/23/paillier-encryption/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          paillier encryption
+        
+      </div>
+    </a>
   
   
     <a href="/2023/02/02/geth-get-start/" id="article-nav-older" class="article-nav-link-wrap">
@@ -166,7 +176,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/cryptography/" style="font-size: 10px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15px;">geth</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a>
+      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/cryptography/" style="font-size: 13.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a>
     </div>
   </div>
 
@@ -175,7 +185,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li></ul>
     </div>
   </div>
 
@@ -186,6 +196,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/04/23/paillier-encryption/">paillier encryption</a>
+          </li>
         
           <li>
             <a href="/2023/02/07/two-party-ecdsa/">two_party_ecdsa</a>
@@ -201,10 +215,6 @@
         
           <li>
             <a href="/2023/01/22/MPT/">MPT</a>
-          </li>
-        
-          <li>
-            <a href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
           </li>
         
       </ul>
