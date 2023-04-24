@@ -1,5 +1,5 @@
 ---
-title: two_party_ecdsa
+title: two party ecdsa
 date: 2023-02-07 14:29:26
 tags: [cryptography,mpc,ecdsa]
 ---
