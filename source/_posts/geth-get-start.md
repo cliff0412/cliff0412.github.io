@@ -1,6 +1,6 @@
 ---
 title: geth start
-date: 2023-02-02 18:15:12
+date: 2022-11-01 18:15:12
 tags: [blockchain,geth]
 ---
 
@@ -98,8 +98,10 @@ func geth(ctx *cli.Context) error {
 ```
 In the geth() function, there are three important function calls, namely: `prepare()`, `makeFullNode()`, and `startNode()`.
 
+### prepare
 The implementation of the prepare() function is in the current main.go file. It is mainly used to set some configurations required for node initialization.
 
+### makeFullNode
 The implementation of the `makeFullNode()` function is located in the `cmd/geth/config.go` file. It will load the context of the command and apply user given configuration; and generate instances of `stack` and `backend`. Among them, `stack` is an instance of `Node` type (Node is the top-level instance in the life cycle of geth. It is responsible for managing high-level abstractions such as P2P Server, Http Server, and Database in the node. The definition of the Node type is located in the `node/node.go` file), which is initialized by calling `makeConfigNode()` function through `makeFullNode()` function. inside `makeFullNode`, it calls `node.New(&cfg.Node)` to initiate a node. During instantiating of node, it invokes `rpc.NewServer()` to create a new rpc server and put in the field `inprocHandler`. it registers `rpc` api namespace by default.
 
 The `backend` here is an interface of `ethapi.Backend` type, which provides the basic functions needed to obtain the runtime of the Ethereum execution layer. Its definition is located in `internal/ethapi/backend.go`. Since there are many functions in this interface, we have selected some of the key functions as below for a glimpse of its functionality. `backend` is created by calling `backend, eth := utils.RegisterEthService(stack, &cfg.Eth)`. Inside, it calls `eth.New(stack, cfg)` to create `backend` instance. During `backend` initiating, it opens database (`chainDb, err := stack.OpenDatabaseWithFreezer("chaindata", config.DatabaseCache, config.DatabaseHandles, config.DatabaseFreezer, "eth/db/chaindata/", false)`). Further, it creates consensus engine, `engine := ethconfig.CreateConsensusEngine(stack, &ethashConfig, cliqueConfig, config.Miner.Notify, config.Miner.Noverify, chainDb)`. goerli testnet use POA consensus (clique). 
@@ -154,3 +156,130 @@ type Backend interface {
 ```
 
 If readers want to customize some new RPC APIs, they can define functions in the /internal/ethapi.Backend interface and add specific implementations to EthAPIBackend
+
+### startNode
+The last key function, `startNode()`, is to officially start an Ethereum execution layer node. It starts the Stack instance (Node) by calling the utils.StartNode() function which triggers the Node.Start() function. In the Node.Start() function, it traverses the backend instances registered in `Node.lifecycles` and starts them. In addition, in the startNode() function, the unlockAccounts() function is still called, and the unlocked wallet is registered in the stack, and the RPClient module that interacts with local Geth is created through the stack.Attach() function
+
+At the end of the geth() function, the function executes `stack.Wait()`, so that the main thread enters the blocking state, and the services of other functional modules are distributed to other sub-coroutines for maintenance
+
+## Node
+As we mentioned earlier, the Node type belongs to the top-level instance in the life cycle of geth, and it is responsible for being the administrator of the high-level abstract module communicating with the outside world, such as managing rpc server, http server, Web Socket, and P2P Server external interface . At the same time, Node maintains the back-end instances and services (lifecycles []Lifecycle) required for node operation, such as the Ethereum type we mentioned above that is responsible for the specific Service
+```go
+type Node struct {
+	eventmux      *event.TypeMux
+	config        *Config
+	accman        *accounts.Manager
+	log           log.Logger
+	keyDir        string        // key store directory
+	keyDirTemp    bool          // If true, key directory will be removed by Stop
+	dirLock       *flock.Flock  // prevents concurrent use of instance directory
+	stop          chan struct{} // Channel to wait for termination notifications
+	server        *p2p.Server   // Currently running P2P networking layer
+	startStopLock sync.Mutex    // Start/Stop are protected by an additional lock
+	state         int           // Tracks state of node lifecycle
+
+	lock          sync.Mutex
+	lifecycles    []Lifecycle // All registered backends, services, and auxiliary services that have a lifecycle
+	rpcAPIs       []rpc.API   // List of APIs currently provided by the node
+	http          *httpServer //
+	ws            *httpServer //
+	httpAuth      *httpServer //
+	wsAuth        *httpServer //
+	ipc           *ipcServer  // Stores information about the ipc http server
+	inprocHandler *rpc.Server // In-process RPC request handler to process the API requests
+
+	databases map[*closeTrackingDB]struct{} // All open databases
+}
+```
+
+### close node
+As mentioned earlier, the main thread of the entire program is blocked because of calling `stack.Wait()`. We can see that a channel called `stop` is declared in the Node structure. Since this Channel has not been assigned a value, the main process of the entire geth enters the blocking state, and continues to execute other business coroutines concurrently
+```go
+// Wait blocks until the node is closed.
+func (n *Node) Wait() {
+ <-n.stop
+}
+```
+When the Channel n.stop is assigned a value, the geth main function will stop the current blocking state and start to perform a series of corresponding resource release operations.
+It is worth noting that in the current codebase of go-ethereum, the blocking state of the main process is not ended directly by assigning a value to the stop channel, but a more concise and rude way is used: call the close() function directly Close the Channel. We can find the related implementation in node.doClose(). close() is a native function of go language, used when closing Channel.
+```go
+// doClose releases resources acquired by New(), collecting errors.
+func (n *Node) doClose(errs []error) error {
+ // Close databases. This needs the lock because it needs to
+ // synchronize with OpenDatabase*.
+ n.lock.Lock()
+ n.state = closedState
+ errs = append(errs, n.closeDatabases()...)
+ n.lock.Unlock()
+
+ if err := n.accman.Close(); err != nil {
+  errs = append(errs, err)
+ }
+ if n.keyDirTemp {
+  if err := os.RemoveAll(n.keyDir); err != nil {
+   errs = append(errs, err)
+  }
+ }
+
+ // Release instance directory lock.
+ n.closeDataDir()
+
+ // Unblock n.Wait.
+ close(n.stop)
+
+ // Report any errors that might have occurred.
+ switch len(errs) {
+ case 0:
+  return nil
+ case 1:
+  return errs[0]
+ default:
+  return fmt.Errorf("%v", errs)
+ }
+}
+```
+
+## Ethereum Backend
+We can find the definition of the Ethereum structure in eth/backend.go. The member variables and receiving methods contained in this structure implement all the functions and data structures required by an Ethereum full node. We can see in the following code definition that the Ethereum structure contains several core data structures such as TxPool, Blockchain, consensus.Engine, and miner as member variables.
+```go
+type Ethereum struct {
+	config *ethconfig.Config
+
+	// Handlers
+	txPool             *txpool.TxPool
+	blockchain         *core.BlockChain
+	handler            *handler
+	ethDialCandidates  enode.Iterator
+	snapDialCandidates enode.Iterator
+	merger             *consensus.Merger
+
+	// DB interfaces
+	chainDb ethdb.Database // Block chain database
+
+	eventMux       *event.TypeMux
+	engine         consensus.Engine
+	accountManager *accounts.Manager
+
+	bloomRequests     chan chan *bloombits.Retrieval // Channel receiving bloom data retrieval requests
+	bloomIndexer      *core.ChainIndexer             // Bloom indexer operating during block imports
+	closeBloomHandler chan struct{}
+
+	APIBackend *EthAPIBackend
+
+	miner     *miner.Miner
+	gasPrice  *big.Int
+	etherbase common.Address
+
+	networkID     uint64
+	netRPCService *ethapi.NetAPI
+
+	p2pServer *p2p.Server
+
+	lock sync.RWMutex // Protects the variadic fields (e.g. gas price and etherbase)
+
+	shutdownTracker *shutdowncheck.ShutdownTracker // Tracks if and when the node has shutdown ungracefully
+}
+```
+Nodes start and stop Mining by calling `Ethereum.StartMining()` and `Ethereum.StopMining()`. Setting the profit account of Mining is achieved by calling `Ethereum.SetEtherbase()`
+Here we pay extra attention to the member variable `handler`. The definition of `handler` is in `eth/handler.go`.
+From a macro point of view, the main workflow of a node needs to: 1. Obtain/synchronize Transaction and Block data from the network 2. Add the Block obtained from the network to the Blockchain. The handler is responsible for providing the function of synchronizing blocks and transaction data, for example, `downloader.Downloader` is responsible for synchronizing Block from the network, and `fetcher.TxFetcher` is responsible for synchronizing transactions from the network
