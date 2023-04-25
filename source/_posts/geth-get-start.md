@@ -1,17 +1,17 @@
 ---
-title: geth.start
+title: geth start
 date: 2023-02-02 18:15:12
 tags: [blockchain,geth]
 ---
 
-# build from source
+## build from source
 ```
 git clone https://github.com/ethereum/go-ethereum.git
 cd go-ethereum
 make geth
 ```
 
-# understanding geth config
+## understanding geth config
 geth config type is defined in /cmd/geth/config.go
 ```go
 type gethConfig struct {
@@ -21,15 +21,16 @@ type gethConfig struct {
 	Metrics  metrics.Config
 }
 ```
-- ethconfig (eth/ethconfig/config.go)
-contains configuration options for of the ETH and LES protocols, such as NetworkId, SyncMode, txpool.Config, database options
-- nodeConfig (node/config.go)
+- **ethconfig** (eth/ethconfig/config.go)
+contains configuration options for of the ETH and LES(light node) protocols, such as NetworkId, SyncMode, txpool.Config, database options
+- **nodeConfig** (node/config.go)
 represents a small collection of configuration values to fine tune the P2P network layer of a protocol stack. These values can be further extended by all registered services. such as p2p.Config, DataDir, KeyStoreDir, HTTPHost, HTTPModules(eth,net,web3), WSHost
-- metrics.Config (metrics/config.go)
+- **metrics.Config** (metrics/config.go)
 contains the configuration for the metric collection, such as InfluxDBEndpoint, etc
-- ethstatsConfig
+- **ethstatsConfig**
+only one URL entry
 
-geth provides default config in the above files. user config file path is given be the below flag
+geth provides default config in the above files. user config file path is given by the below flag
 ```go
 configFileFlag = &cli.StringFlag{
 		Name:     "config",
@@ -47,10 +48,22 @@ to specify path to config file
 geth --sepolia --config geth-config.toml
 ```
 
-# how geth starts
+## key configs
+- [Eth].TxLookupLimit 
+Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain), default: 2350000
+- [Node].BootstrapNodes
+used to establish connectivity with the rest of the network.
+geth provides default bootstrapNodes in file `params/bootnodes.go`
+- [Metrics_AND_STATS].ethstats
+Reporting URL of a ethstats service (nodename:secret@host:port), [more detail](https://geth.ethereum.org/docs/monitoring/ethstats)
+- SyncMode
+- TrieDirtyCache
+- NoPruning
+- TrieCleanCacheJournal e.g triecache
+## how geth starts
 
 ![geth starts](/images/geth_starts.drawio.png)
-the main func is in cmd/geth/main.go
+the main func is in `cmd/geth/main.go`
 ```go
 func main() {
 	if err := app.Run(os.Args); err != nil {
@@ -67,9 +80,7 @@ func init() {
     // ....
 }
 ```
-geth is the main entry point into the system if no special subcommand is run.
-It creates a default node based on the command line arguments and runs it in
-blocking mode, waiting for it to be shut down.
+geth is the main entry point into the system if no special subcommand is run. It creates a default node based on the command line arguments and runs it in blocking mode, waiting for it to be shut down.
 ```go
 func geth(ctx *cli.Context) error {
 	if args := ctx.Args().Slice(); len(args) > 0 {
@@ -89,9 +100,9 @@ In the geth() function, there are three important function calls, namely: `prepa
 
 The implementation of the prepare() function is in the current main.go file. It is mainly used to set some configurations required for node initialization.
 
-The implementation of the makeFullNode() function is located in the cmd/geth/config.go file. It will load the context of the command when Geth starts into the configuration, and generate two instances of `stack` and `backend`. Among them, stack is an instance of `Node` type, which is initialized by calling `makeConfigNode()` function through `makeFullNode()` function. Node is the top-level instance in the life cycle of geth. It is responsible for managing high-level abstractions such as P2P Server, Http Server, and Database in the node. The definition of the Node type is located in the node/node.go file.
+The implementation of the `makeFullNode()` function is located in the `cmd/geth/config.go` file. It will load the context of the command and apply user given configuration; and generate instances of `stack` and `backend`. Among them, `stack` is an instance of `Node` type (Node is the top-level instance in the life cycle of geth. It is responsible for managing high-level abstractions such as P2P Server, Http Server, and Database in the node. The definition of the Node type is located in the `node/node.go` file), which is initialized by calling `makeConfigNode()` function through `makeFullNode()` function. inside `makeFullNode`, it calls `node.New(&cfg.Node)` to initiate a node. During instantiating of node, it invokes `rpc.NewServer()` to create a new rpc server and put in the field `inprocHandler`. it registers `rpc` api namespace by default.
 
-The `backend` here is an interface of `ethapi.Backend` type, which provides the basic functions needed to obtain the runtime of the Ethereum execution layer. Its definition is located in internal/ethapi/backend.go. Since there are many functions in this interface, we have selected some of the key functions so that everyone can understand the basic functions provided by this interface, as shown below
+The `backend` here is an interface of `ethapi.Backend` type, which provides the basic functions needed to obtain the runtime of the Ethereum execution layer. Its definition is located in `internal/ethapi/backend.go`. Since there are many functions in this interface, we have selected some of the key functions as below for a glimpse of its functionality. `backend` is created by calling `backend, eth := utils.RegisterEthService(stack, &cfg.Eth)`. Inside, it calls `eth.New(stack, cfg)` to create `backend` instance. During `backend` initiating, it opens database (`chainDb, err := stack.OpenDatabaseWithFreezer("chaindata", config.DatabaseCache, config.DatabaseHandles, config.DatabaseFreezer, "eth/db/chaindata/", false)`). Further, it creates consensus engine, `engine := ethconfig.CreateConsensusEngine(stack, &ethashConfig, cliqueConfig, config.Miner.Notify, config.Miner.Noverify, chainDb)`. goerli testnet use POA consensus (clique). 
 ```go
 type Backend interface {
 	SyncProgress() ethereum.SyncProgress

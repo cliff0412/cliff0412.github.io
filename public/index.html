@@ -139,7 +139,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clgugnus4000iarsj6owtapjp" data-title="paillier encryption" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clgw33x3c0007j7sj3ay1eola" data-title="paillier encryption" class="article-share-link">Share</a>
       
       
       
@@ -196,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clgugnus4000karsj5tibdam9" data-title="two party ecdsa" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clgw33x3f000lj7sje8u61p0e" data-title="two party ecdsa" class="article-share-link">Share</a>
       
       
       
@@ -224,7 +224,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/02/02/geth-get-start/">geth.start</a>
+      <a class="p-name article-title" href="/2023/02/02/geth-get-start/">geth start</a>
     </h1>
   
 
@@ -232,17 +232,17 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="build-from-source"><a href="#build-from-source" class="headerlink" title="build from source"></a>build from source</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/ethereum/go-ethereum.git</span><br><span class="line">cd go-ethereum</span><br><span class="line">make geth</span><br></pre></td></tr></table></figure>
+        <h2 id="build-from-source"><a href="#build-from-source" class="headerlink" title="build from source"></a>build from source</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/ethereum/go-ethereum.git</span><br><span class="line">cd go-ethereum</span><br><span class="line">make geth</span><br></pre></td></tr></table></figure>
 
-<h1 id="understanding-geth-config"><a href="#understanding-geth-config" class="headerlink" title="understanding geth config"></a>understanding geth config</h1><p>geth config type is defined in &#x2F;cmd&#x2F;geth&#x2F;config.go</p>
+<h2 id="understanding-geth-config"><a href="#understanding-geth-config" class="headerlink" title="understanding geth config"></a>understanding geth config</h2><p>geth config type is defined in &#x2F;cmd&#x2F;geth&#x2F;config.go</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> gethConfig <span class="keyword">struct</span> &#123;</span><br><span class="line">	Eth      ethconfig.Config</span><br><span class="line">	Node     node.Config</span><br><span class="line">	Ethstats ethstatsConfig</span><br><span class="line">	Metrics  metrics.Config</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
-<li>ethconfig (eth&#x2F;ethconfig&#x2F;config.go)<br>contains configuration options for of the ETH and LES protocols, such as NetworkId, SyncMode, txpool.Config, database options</li>
-<li>nodeConfig (node&#x2F;config.go)<br>represents a small collection of configuration values to fine tune the P2P network layer of a protocol stack. These values can be further extended by all registered services. such as p2p.Config, DataDir, KeyStoreDir, HTTPHost, HTTPModules(eth,net,web3), WSHost</li>
-<li>metrics.Config (metrics&#x2F;config.go)<br>contains the configuration for the metric collection, such as InfluxDBEndpoint, etc</li>
-<li>ethstatsConfig</li>
+<li><strong>ethconfig</strong> (eth&#x2F;ethconfig&#x2F;config.go)<br>contains configuration options for of the ETH and LES(light node) protocols, such as NetworkId, SyncMode, txpool.Config, database options</li>
+<li><strong>nodeConfig</strong> (node&#x2F;config.go)<br>represents a small collection of configuration values to fine tune the P2P network layer of a protocol stack. These values can be further extended by all registered services. such as p2p.Config, DataDir, KeyStoreDir, HTTPHost, HTTPModules(eth,net,web3), WSHost</li>
+<li><strong>metrics.Config</strong> (metrics&#x2F;config.go)<br>contains the configuration for the metric collection, such as InfluxDBEndpoint, etc</li>
+<li><strong>ethstatsConfig</strong><br>only one URL entry</li>
 </ul>
-<p>geth provides default config in the above files. user config file path is given be the below flag</p>
+<p>geth provides default config in the above files. user config file path is given by the below flag</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">configFileFlag = &amp;cli.StringFlag&#123;</span><br><span class="line">		Name:     <span class="string">&quot;config&quot;</span>,</span><br><span class="line">		Usage:    <span class="string">&quot;TOML configuration file&quot;</span>,</span><br><span class="line">		Category: flags.EthCategory,</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
 
 <p>The config file should be a .toml file. A convenient way to create a config file is to get Geth to create one for you and use it as a template. To do this, use the dumpconfig command, saving the result to a .toml file. Note that you also need to explicitly provide the network_id on the command line for the public testnets such as Sepolia or Geoerli:</p>
@@ -250,16 +250,25 @@
 <p>to specify path to config file</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">geth --sepolia --config geth-config.toml</span><br></pre></td></tr></table></figure>
 
-<h1 id="how-geth-starts"><a href="#how-geth-starts" class="headerlink" title="how geth starts"></a>how geth starts</h1><p><img src="/images/geth_starts.drawio.png" alt="geth starts"><br>the main func is in cmd&#x2F;geth&#x2F;main.go</p>
+<h2 id="key-configs"><a href="#key-configs" class="headerlink" title="key configs"></a>key configs</h2><ul>
+<li>[Eth].TxLookupLimit<br>Number of recent blocks to maintain transactions index for (default &#x3D; about one year, 0 &#x3D; entire chain), default: 2350000</li>
+<li>[Node].BootstrapNodes<br>used to establish connectivity with the rest of the network.<br>geth provides default bootstrapNodes in file <code>params/bootnodes.go</code></li>
+<li>[Metrics_AND_STATS].ethstats<br>Reporting URL of a ethstats service (nodename:secret@host:port), <a target="_blank" rel="noopener" href="https://geth.ethereum.org/docs/monitoring/ethstats">more detail</a></li>
+<li>SyncMode</li>
+<li>TrieDirtyCache</li>
+<li>NoPruning</li>
+<li>TrieCleanCacheJournal e.g triecache</li>
+</ul>
+<h2 id="how-geth-starts"><a href="#how-geth-starts" class="headerlink" title="how geth starts"></a>how geth starts</h2><p><img src="/images/geth_starts.drawio.png" alt="geth starts"><br>the main func is in <code>cmd/geth/main.go</code></p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> err := app.Run(os.Args); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Fprintln(os.Stderr, err)</span><br><span class="line">		os.Exit(<span class="number">1</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>the main() function is very short, and its main function is to start a tool for parsing command line commands: <code>gopkg.in/urfave/cli.v1</code>. Going deeper, we will find that <code>app.Action = geth</code> will be called when the cli app is initialized to call the geth() function</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// Initialize the CLI app and start Geth</span></span><br><span class="line">	app.Action = geth</span><br><span class="line">    <span class="comment">// ....</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>geth is the main entry point into the system if no special subcommand is run.<br>It creates a default node based on the command line arguments and runs it in<br>blocking mode, waiting for it to be shut down.</p>
+<p>geth is the main entry point into the system if no special subcommand is run. It creates a default node based on the command line arguments and runs it in blocking mode, waiting for it to be shut down.</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">geth</span><span class="params">(ctx *cli.Context)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> args := ctx.Args().Slice(); <span class="built_in">len</span>(args) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> fmt.Errorf(<span class="string">&quot;invalid command: %q&quot;</span>, args[<span class="number">0</span>])</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	prepare(ctx)</span><br><span class="line">	stack, backend := makeFullNode(ctx)</span><br><span class="line">	<span class="keyword">defer</span> stack.Close()</span><br><span class="line"></span><br><span class="line">	startNode(ctx, stack, backend, <span class="literal">false</span>)</span><br><span class="line">	stack.Wait()</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>In the geth() function, there are three important function calls, namely: <code>prepare()</code>, <code>makeFullNode()</code>, and <code>startNode()</code>.</p>
 <p>The implementation of the prepare() function is in the current main.go file. It is mainly used to set some configurations required for node initialization.</p>
-<p>The implementation of the makeFullNode() function is located in the cmd&#x2F;geth&#x2F;config.go file. It will load the context of the command when Geth starts into the configuration, and generate two instances of <code>stack</code> and <code>backend</code>. Among them, stack is an instance of <code>Node</code> type, which is initialized by calling <code>makeConfigNode()</code> function through <code>makeFullNode()</code> function. Node is the top-level instance in the life cycle of geth. It is responsible for managing high-level abstractions such as P2P Server, Http Server, and Database in the node. The definition of the Node type is located in the node&#x2F;node.go file.</p>
-<p>The <code>backend</code> here is an interface of <code>ethapi.Backend</code> type, which provides the basic functions needed to obtain the runtime of the Ethereum execution layer. Its definition is located in internal&#x2F;ethapi&#x2F;backend.go. Since there are many functions in this interface, we have selected some of the key functions so that everyone can understand the basic functions provided by this interface, as shown below</p>
+<p>The implementation of the <code>makeFullNode()</code> function is located in the <code>cmd/geth/config.go</code> file. It will load the context of the command and apply user given configuration; and generate instances of <code>stack</code> and <code>backend</code>. Among them, <code>stack</code> is an instance of <code>Node</code> type (Node is the top-level instance in the life cycle of geth. It is responsible for managing high-level abstractions such as P2P Server, Http Server, and Database in the node. The definition of the Node type is located in the <code>node/node.go</code> file), which is initialized by calling <code>makeConfigNode()</code> function through <code>makeFullNode()</code> function. inside <code>makeFullNode</code>, it calls <code>node.New(&amp;cfg.Node)</code> to initiate a node. During instantiating of node, it invokes <code>rpc.NewServer()</code> to create a new rpc server and put in the field <code>inprocHandler</code>. it registers <code>rpc</code> api namespace by default.</p>
+<p>The <code>backend</code> here is an interface of <code>ethapi.Backend</code> type, which provides the basic functions needed to obtain the runtime of the Ethereum execution layer. Its definition is located in <code>internal/ethapi/backend.go</code>. Since there are many functions in this interface, we have selected some of the key functions as below for a glimpse of its functionality. <code>backend</code> is created by calling <code>backend, eth := utils.RegisterEthService(stack, &amp;cfg.Eth)</code>. Inside, it calls <code>eth.New(stack, cfg)</code> to create <code>backend</code> instance. During <code>backend</code> initiating, it opens database (<code>chainDb, err := stack.OpenDatabaseWithFreezer(&quot;chaindata&quot;, config.DatabaseCache, config.DatabaseHandles, config.DatabaseFreezer, &quot;eth/db/chaindata/&quot;, false)</code>). Further, it creates consensus engine, <code>engine := ethconfig.CreateConsensusEngine(stack, &amp;ethashConfig, cliqueConfig, config.Miner.Notify, config.Miner.Noverify, chainDb)</code>. goerli testnet use POA consensus (clique). </p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Backend <span class="keyword">interface</span> &#123;</span><br><span class="line">	SyncProgress() ethereum.SyncProgress</span><br><span class="line">	SuggestGasTipCap(ctx context.Context) (*big.Int, <span class="type">error</span>)</span><br><span class="line">	ChainDb() ethdb.Database</span><br><span class="line">	AccountManager() *accounts.Manager</span><br><span class="line">	ExtRPCEnabled() <span class="type">bool</span></span><br><span class="line">	RPCGasCap() <span class="type">uint64</span>            <span class="comment">// global gas cap for eth_call over rpc: DoS protection</span></span><br><span class="line">	RPCEVMTimeout() time.Duration <span class="comment">// global timeout for eth_call over rpc: DoS protection</span></span><br><span class="line">	RPCTxFeeCap() <span class="type">float64</span>         <span class="comment">// global tx fee cap for all transaction related APIs</span></span><br><span class="line">	UnprotectedAllowed() <span class="type">bool</span>     <span class="comment">// allows only for EIP155 transactions.</span></span><br><span class="line">	SetHead(number <span class="type">uint64</span>)</span><br><span class="line">	HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, <span class="type">error</span>)</span><br><span class="line">	HeaderByHash(ctx context.Context, hash common.Hash) (*types.Header, <span class="type">error</span>)</span><br><span class="line">	HeaderByNumberOrHash(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash) (*types.Header, <span class="type">error</span>)</span><br><span class="line">	CurrentHeader() *types.Header</span><br><span class="line">	CurrentBlock() *types.Header</span><br><span class="line">	BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, <span class="type">error</span>)</span><br><span class="line">	BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, <span class="type">error</span>)</span><br><span class="line">	BlockByNumberOrHash(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash) (*types.Block, <span class="type">error</span>)</span><br><span class="line">	StateAndHeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*state.StateDB, *types.Header, <span class="type">error</span>)</span><br><span class="line">	StateAndHeaderByNumberOrHash(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash) (*state.StateDB, *types.Header, <span class="type">error</span>)</span><br><span class="line">	PendingBlockAndReceipts() (*types.Block, types.Receipts)</span><br><span class="line">	GetReceipts(ctx context.Context, hash common.Hash) (types.Receipts, <span class="type">error</span>)</span><br><span class="line">	GetTd(ctx context.Context, hash common.Hash) *big.Int</span><br><span class="line">	GetEVM(ctx context.Context, msg *core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config) (*vm.EVM, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">error</span>, <span class="type">error</span>)</span><br><span class="line">	SubscribeChainEvent(ch <span class="keyword">chan</span>&lt;- core.ChainEvent) event.Subscription</span><br><span class="line">	SubscribeChainHeadEvent(ch <span class="keyword">chan</span>&lt;- core.ChainHeadEvent) event.Subscription</span><br><span class="line">	SubscribeChainSideEvent(ch <span class="keyword">chan</span>&lt;- core.ChainSideEvent) event.Subscription</span><br><span class="line">	SendTx(ctx context.Context, signedTx *types.Transaction) <span class="type">error</span></span><br><span class="line">	GetTransaction(ctx context.Context, txHash common.Hash) (*types.Transaction, common.Hash, <span class="type">uint64</span>, <span class="type">uint64</span>, <span class="type">error</span>)</span><br><span class="line">	GetPoolTransactions() (types.Transactions, <span class="type">error</span>)</span><br><span class="line">	GetPoolTransaction(txHash common.Hash) *types.Transaction</span><br><span class="line">	GetPoolNonce(ctx context.Context, addr common.Address) (<span class="type">uint64</span>, <span class="type">error</span>)</span><br><span class="line">	Stats() (pending <span class="type">int</span>, queued <span class="type">int</span>)</span><br><span class="line">	TxPoolContent() (<span class="keyword">map</span>[common.Address]types.Transactions, <span class="keyword">map</span>[common.Address]types.Transactions)</span><br><span class="line">	TxPoolContentFrom(addr common.Address) (types.Transactions, types.Transactions)</span><br><span class="line">	SubscribeNewTxsEvent(<span class="keyword">chan</span>&lt;- core.NewTxsEvent) event.Subscription</span><br><span class="line">	ChainConfig() *params.ChainConfig</span><br><span class="line">	Engine() consensus.Engine</span><br><span class="line">	GetBody(ctx context.Context, hash common.Hash, number rpc.BlockNumber) (*types.Body, <span class="type">error</span>)</span><br><span class="line">	GetLogs(ctx context.Context, blockHash common.Hash, number <span class="type">uint64</span>) ([][]*types.Log, <span class="type">error</span>)</span><br><span class="line">	SubscribeRemovedLogsEvent(ch <span class="keyword">chan</span>&lt;- core.RemovedLogsEvent) event.Subscription</span><br><span class="line">	SubscribeLogsEvent(ch <span class="keyword">chan</span>&lt;- []*types.Log) event.Subscription</span><br><span class="line">	SubscribePendingLogsEvent(ch <span class="keyword">chan</span>&lt;- []*types.Log) event.Subscription</span><br><span class="line">	BloomStatus() (<span class="type">uint64</span>, <span class="type">uint64</span>)</span><br><span class="line">	ServiceFilter(ctx context.Context, session *bloombits.MatcherSession)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>If readers want to customize some new RPC APIs, they can define functions in the &#x2F;internal&#x2F;ethapi.Backend interface and add specific implementations to EthAPIBackend</p>
@@ -267,7 +276,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/02/geth-get-start/" data-id="clgugnus10004arsjedb78rqz" data-title="geth.start" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/02/geth-get-start/" data-id="clgw33x3b0005j7sjc3hjaa6w" data-title="geth start" class="article-share-link">Share</a>
       
       
       
@@ -327,7 +336,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/29/rpc/" data-id="clgugnus4000harsj63wverep" data-title="rpc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/29/rpc/" data-id="clgw33x3e000jj7sj11tg8mnj" data-title="rpc" class="article-share-link">Share</a>
       
       
       
@@ -435,7 +444,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clgugnurw0000arsjah81a5d9" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clgw33x360000j7sjav772nrq" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -507,7 +516,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clgugnurz0001arsjcv4c78ge" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clgw33x380001j7sjgmr6gdq1" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
@@ -596,12 +605,51 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clgugnus20007arsj1bz27m0l" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clgw33x3e000ij7sj75ecalw2" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
 
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth-fine-tune" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/01/geth-fine-tune/" class="article-date">
+  <time class="dt-published" datetime="2023-01-01T08:29:43.000Z" itemprop="datePublished">2023-01-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/01/geth-fine-tune/">geth_fine_tune</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>If we’re a full node on mainnet without –cache specified, bump default cache allowance<br>ctx.Set(utils.CacheFlag.Name, strconv.Itoa(4096))</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clgw33x3a0003j7sj1m6fbfdg" data-title="geth_fine_tune" class="article-share-link">Share</a>
+      
+      
+      
     </footer>
   </div>
   
@@ -636,7 +684,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgugnus00003arsjgzm656gv" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clgw33x3b0004j7sjekb1eusg" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -687,7 +735,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgugnus10005arsjevw3ghmi" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clgw33x3c0008j7sjeck3b6cp" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
@@ -752,7 +800,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
           </li>
         
           <li>
-            <a href="/2023/02/02/geth-get-start/">geth.start</a>
+            <a href="/2023/02/02/geth-get-start/">geth start</a>
           </li>
         
           <li>
