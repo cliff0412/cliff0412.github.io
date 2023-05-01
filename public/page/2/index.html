@@ -150,7 +150,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/01/geth.0.get.start/" data-id="clh4v8gnm0005izsj985idjae" data-title="geth start" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/01/geth.0.get.start/" data-id="clh4xbfmz0005c2sj5qnv2ykr" data-title="geth start" class="article-share-link">Share</a>
       
       
       
@@ -164,9 +164,81 @@
 
 
   
-    <article id="post-rust-ownership" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-rust-04-lifetime" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/10/11/rust-ownership/" class="article-date">
+    <a href="/2022/10/18/rust-04-lifetime/" class="article-date">
+  <time class="dt-published" datetime="2022-10-18T13:33:26.000Z" itemprop="datePublished">2022-10-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/10/18/rust-04-lifetime/">rust lifetime</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="lifetime"><a href="#lifetime" class="headerlink" title="lifetime"></a>lifetime</h2><ul>
+<li>Every reference in Rust has its own lifecycle</li>
+<li>most of the time, Rust’s lifetime is implicit and can be inferred</li>
+<li>There are two types of life cycle: input life cycle and output life cycle</li>
+<li>‘static is a special life cycle annotation</li>
+</ul>
+<h3 id="Example-of-lifetime-out-of-scope"><a href="#Example-of-lifetime-out-of-scope" class="headerlink" title="Example of lifetime out of scope"></a>Example of lifetime out of scope</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span>;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">y</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">        <span class="comment">// x = y; // this is allowed</span></span><br><span class="line">        x = &amp;y; <span class="comment">// not allowed. borrowed value (y) does not live long enough</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Str:&#123;&#125;&quot;</span>, x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="lifetime-checker"><a href="#lifetime-checker" class="headerlink" title="lifetime checker"></a>lifetime checker</h3><p>Rust compiler’s borrow checker to determine whether a borrow is legal</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If it returns a reference value, no matter how simple your function is written, it will always report an error `missing lifetime specifier.`</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">longest</span>(x:&amp;<span class="type">str</span>, y:&amp;<span class="type">str</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span> &#123; <span class="comment">/// this function&#x27;s return type contains a borrowed value, but the signature does not say whether it is borrowed from `x` or `y`</span></span><br><span class="line">    <span class="keyword">if</span> x.<span class="title function_ invoke__">len</span>() &gt; y.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        x</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        y</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>let’s find out why it is such case</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="comment">// variable to hold the result value</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">long_str</span>; </span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span> = <span class="string">&quot;abc&quot;</span>.<span class="title function_ invoke__">to_string</span>();</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">y</span> = <span class="string">&quot;bbccd&quot;</span>.<span class="title function_ invoke__">to_string</span>();</span><br><span class="line">        long_str = <span class="title function_ invoke__">longest</span>(x.<span class="title function_ invoke__">as_str</span>(), y.<span class="title function_ invoke__">as_str</span>());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// if x.len() &gt; y.len() then it is OK，the long_str variable will hole x; if not, long_str supposed tohold y, however, y has a smaller scope than x, long_str will hold to a dropped value</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Longest str: &#123;&#125;&quot;</span>, long_str);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>Hence, we need lifetime annotation <code>&#39;</code></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">longest</span>&lt;<span class="symbol">&#x27;a</span>&gt;(x:&amp;<span class="symbol">&#x27;a</span> <span class="type">str</span>, y:&amp;<span class="symbol">&#x27;a</span> <span class="type">str</span>) <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;a</span> <span class="type">str</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> x.<span class="title function_ invoke__">len</span>() &gt; y.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        x</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        y</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="deeper-understanding"><a href="#deeper-understanding" class="headerlink" title="deeper understanding"></a>deeper understanding</h3><ul>
+<li>When returning a reference value from a function, the lifetime of the return type needs to match the lifetime of one of the parameters</li>
+</ul>
+<h3 id="Struct-lifetime-annotation"><a href="#Struct-lifetime-annotation" class="headerlink" title="Struct lifetime annotation"></a>Struct lifetime annotation</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">info</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;File not found.&quot;</span>);</span><br><span class="line">    <span class="comment">// 存放结果值的变量</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">exc</span> = ImportantExcepiton &#123;</span><br><span class="line">        part: info.<span class="title function_ invoke__">as_str</span>()</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, exc);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#[derive(Debug)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ImportantExcepiton</span>&lt;<span class="symbol">&#x27;a</span>&gt; &#123;</span><br><span class="line">    part: &amp;<span class="symbol">&#x27;a</span> <span class="type">str</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>lifetime of the field <code>part</code> must be longer than struct</li>
+</ul>
+<h3 id="Lifetime-Elision"><a href="#Lifetime-Elision" class="headerlink" title="Lifetime Elision"></a>Lifetime Elision</h3><p>In order to make common patterns more ergonomic, Rust allows lifetimes to be elided in function signatures.<br>Elision rules are as follows:</p>
+<ul>
+<li>Each elided lifetime in input position becomes a distinct lifetime parameter.</li>
+<li>If there is exactly one input lifetime position (elided or not), that lifetime is assigned to all elided output lifetimes.</li>
+<li>If there are multiple input lifetime positions, but one of them is &amp;self or &amp;mut self, the lifetime of self is assigned to all elided output lifetimes.</li>
+<li>Otherwise, it is an error to elide an output lifetime.</li>
+</ul>
+<h3 id="struct-lifetime-annotation"><a href="#struct-lifetime-annotation" class="headerlink" title="struct lifetime annotation"></a>struct lifetime annotation</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">info</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;File not found.&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">exc</span> = ImportantExcepiton &#123;</span><br><span class="line">        part: info.<span class="title function_ invoke__">as_str</span>()</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, exc);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#[derive(Debug)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ImportantExcepiton</span> &lt;<span class="symbol">&#x27;a</span>&gt;&#123;</span><br><span class="line">    part: &amp;<span class="symbol">&#x27;a</span> <span class="type">str</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// the first &#x27;a is decraration, the second is usage</span></span><br><span class="line"><span class="keyword">impl</span>&lt;<span class="symbol">&#x27;a</span>&gt; ImportantExcepiton &lt;<span class="symbol">&#x27;a</span>&gt; &#123;</span><br><span class="line">    <span class="comment">// in return value, &#x27;a is omitted according to Lifetime Elision rule</span></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">callname</span>(&amp;<span class="keyword">self</span> ) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span>&#123;</span><br><span class="line">        <span class="keyword">self</span>.part</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="‘static"><a href="#‘static" class="headerlink" title="‘static"></a>‘static</h3><p>‘static is a special lifetime that takes up the duration of the entire program, for example all string literals have a ‘static lifetime</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2022/10/18/rust-04-lifetime/" data-id="clh4xbfn4000lc2sj2g76htn1" data-title="rust lifetime" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust-03-ownership" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/10/11/rust-03-ownership/" class="article-date">
   <time class="dt-published" datetime="2022-10-11T09:09:28.000Z" itemprop="datePublished">2022-10-11</time>
 </a>
     
@@ -178,7 +250,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/10/11/rust-ownership/">rust ownership</a>
+      <a class="p-name article-title" href="/2022/10/11/rust-03-ownership/">rust ownership</a>
     </h1>
   
 
@@ -245,7 +317,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/11/rust-ownership/" data-id="clh4v8gnp000hizsjhk678jib" data-title="rust ownership" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/11/rust-03-ownership/" data-id="clh4xbfn4000qc2sjgs3ea6fw" data-title="rust ownership" class="article-share-link">Share</a>
       
       
       
@@ -259,9 +331,9 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
 
 
   
-    <article id="post-rust-basics" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-rust-02-basics" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/10/04/rust-basics/" class="article-date">
+    <a href="/2022/10/04/rust-02-basics/" class="article-date">
   <time class="dt-published" datetime="2022-10-04T07:55:04.000Z" itemprop="datePublished">2022-10-04</time>
 </a>
     
@@ -273,7 +345,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/10/04/rust-basics/">rust basics</a>
+      <a class="p-name article-title" href="/2022/10/04/rust-02-basics/">rust basics</a>
     </h1>
   
 
@@ -407,7 +479,61 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/04/rust-basics/" data-id="clh4v8gnr0010izsj5lbnbyrb" data-title="rust basics" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/04/rust-02-basics/" data-id="clh4xbfn3000ic2sjb2bzbvuk" data-title="rust basics" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust-01-resource" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/09/27/rust-01-resource/" class="article-date">
+  <time class="dt-published" datetime="2022-09-27T14:04:38.000Z" itemprop="datePublished">2022-09-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/09/27/rust-01-resource/">rust_resource</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="learning-resources"><a href="#learning-resources" class="headerlink" title="learning resources"></a>learning resources</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/book/">the book</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/cargo/index.html">cargo book</a></li>
+<li><a target="_blank" rel="noopener" href="https://nnethercote.github.io/perf-book/title-page.html">the rust performance book</a></li>
+<li><a target="_blank" rel="noopener" href="https://rust-unofficial.github.io/patterns/intro.html">rust design patterns</a></li>
+<li><a target="_blank" rel="noopener" href="https://rust-lang.github.io/rfcs/">the rust RFC book</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html">the rustdoc book</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/nomicon/intro.html">rustnomicon</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/reference/introduction.html">the rust reference</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/rust-by-example/index.html">rust by example</a></li>
+<li><a target="_blank" rel="noopener" href="https://rust-lang.github.io/async-book/01_getting_started/01_chapter.html">async programming in rust</a></li>
+<li><a target="_blank" rel="noopener" href="https://rustc-dev-guide.rust-lang.org/about-this-guide.html">rust compiler development guide</a></li>
+<li><a target="_blank" rel="noopener" href="https://veykril.github.io/tlborm/">the little book of rust macros</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2022/09/27/rust-01-resource/" data-id="clh4xbfn2000dc2sj94fddvdi" data-title="rust_resource" class="article-share-link">Share</a>
       
       
       
@@ -449,7 +575,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.5px;">geth</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 15px;">rust</a>
+      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/cryptography/" style="font-size: 13.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
     </div>
   </div>
 
@@ -458,7 +584,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
