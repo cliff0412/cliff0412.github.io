@@ -1,6 +1,6 @@
 ---
 title: rust ownership
-date: 2023-10-11 17:09:28
+date: 2022-10-11 17:09:28
 tags: [rust]
 ---
 
