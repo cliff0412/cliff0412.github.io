@@ -124,7 +124,7 @@ fn main() {
 - For values with ownership, such as (String), the value will be moved and ownership will be given to HashMap
 - If a reference to a value is inserted into the HashMap, the value itself does not move
 
-#### HashMap 的遍历
+#### HashMap iteration
 ```rust
 use std::collections::HashMap;
 
@@ -142,7 +142,6 @@ fn main() {
 }
 ```
 #### update
-- entry(V<T>) 用于查找某个Key值是不是存在，这个东西返回 Entry 类型，如果查找失败返回 Entry(VacantEntry("ErLei"))，如果查找成功返回Entry(OccupiedEntry { key: "LinHai", value: 36 })
 ```rust
 use std::collections::HashMap;
 
@@ -205,11 +204,11 @@ fn main() {
 ```rust
 fn main() {
      for number in (1..=3) {
-        println!("Number A is {}", number );
+        println!("Number A is {}", number ); /// 1,2,3
     }
  
-    for number in (1..=3).rev() { /// rev means reverse
-        println!("Number B is {}", number );
+    for number in (1..=3).rev() { /// rev means reverse,
+        println!("Number B is {}", number ); /// 3,2,1
     }
 }
 
