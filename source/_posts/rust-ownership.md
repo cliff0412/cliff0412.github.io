@@ -247,7 +247,7 @@ The type of s here is &str: it's a slice pointing to that specific point of the 
 ### String Slices as Parameters
 - Pass &str as a parameter, you can receive parameters of type &String and &str at the same time
 ```rust
-fn first_word(s: &String) -> &str {
+fn first_word(s: &String) -> &str
 ```
 equivalent to
 ```rust

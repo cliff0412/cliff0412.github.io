@@ -144,7 +144,7 @@ This works without any problems. Ownership is moved out, and nothing is dealloca
 <h3 id="String-Literals-Are-Slices"><a href="#String-Literals-Are-Slices" class="headerlink" title="String Literals Are Slices"></a>String Literals Are Slices</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">s</span> = <span class="string">&quot;Hello, world!&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>The type of s here is &amp;str: it’s a slice pointing to that specific point of the binary. </p>
 <h3 id="String-Slices-as-Parameters"><a href="#String-Slices-as-Parameters" class="headerlink" title="String Slices as Parameters"></a>String Slices as Parameters</h3><ul>
-<li>Pass &amp;str as a parameter, you can receive parameters of type &amp;String and &amp;str at the same time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">String</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span> &#123;</span><br></pre></td></tr></table></figure>
+<li>Pass &amp;str as a parameter, you can receive parameters of type &amp;String and &amp;str at the same time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">String</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span></span><br></pre></td></tr></table></figure>
 equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">str</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="other-slices"><a href="#other-slices" class="headerlink" title="other slices"></a>other slices</h3><p>array slice</p>
@@ -152,7 +152,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/11/rust-ownership/" data-id="clh4v644e000g79sj6pnk83iv" data-title="rust ownership" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/10/11/rust-ownership/" data-id="clh4v75z1000xbvsj2mu43w89" data-title="rust ownership" class="article-share-link">Share</a>
       
       
       
@@ -234,7 +234,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clh4v644d000d79sj0922215e" data-title="paillier encryption" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clh4v75yy000ebvsjakkq3g4t" data-title="paillier encryption" class="article-share-link">Share</a>
       
       
       
@@ -291,7 +291,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clh4v644f000n79sj1kmehk84" data-title="two party ecdsa" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clh4v75z0000wbvsj95152fko" data-title="two party ecdsa" class="article-share-link">Share</a>
       
       
       
@@ -399,7 +399,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clh4v6446000079sj1bfmcdv9" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clh4v75yu0004bvsj48v52423" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -471,7 +471,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clh4v6448000179sjcllbgc5n" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clh4v75yt0002bvsj315a6imy" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
@@ -560,7 +560,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clh4v644b000779sj60bdb5p6" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clh4v75yw0008bvsjho7f5o10" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -601,7 +601,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clh4v644a000379sj7s8y4gwq" data-title="geth_fine_tune" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clh4v75yq0000bvsj3yrf8cfl" data-title="geth_fine_tune" class="article-share-link">Share</a>
       
       
       
@@ -683,7 +683,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/21/rust-macro/" data-id="clh4v644f000l79sj66lhfgxf" data-title="rust reflect and macro" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/21/rust-macro/" data-id="clh4v75yz000hbvsj0zuy4kk2" data-title="rust reflect and macro" class="article-share-link">Share</a>
       
       
       
@@ -723,7 +723,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clh4v644a000479sj3bh1a0xf" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clh4v75yv0006bvsj64tm9o51" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -774,7 +774,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clh4v644c000b79sj52eh7sl5" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clh4v75yw0009bvsjfrhagjkc" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
