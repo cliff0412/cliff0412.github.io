@@ -278,6 +278,187 @@ enum IpAddr {
 }
 ``` 
 
+## match
+- match must exhaust all possibilities
+- If there are too many matchings, you can also use "_" for wildcarding, but note that "_" must be placed at the end
+```rust
+enum Color {
+    Red,
+    Yellow,
+    Blue,
+}
+enum ColorWithVal {
+    Red(u8,u8,u8),
+    Yellow(u8,u8,u8),
+    Blue(u8,u8,u8),
+}
+fn main(){
+    let colour = Color::Blue;
+    match colour {
+        Color::Red => {
+            println!("Red colour.");
+        },
+        _ => {
+            println!("Other colour.");
+        }
+    }
+
+    let colour = ColorWithVal::Red(222,111,22);
+    match colour {
+        ColorWithVal::Red(r,g,b) => {
+            println!("Red colour. {},{},{}", r,g,b);
+        },
+        _ => {
+            println!("Other colour.");
+        }
+    }
+}
+```
+
+## if let
+```rust
+fn main(){
+    let colour = Color::Red(Some(222),Some(222),Some(222));
+
+    if let Color::Red(r,g,b) = colour {
+        println!("Red colour. {:?},{:?},{:?}", r,g,b);
+    } else {
+        println!("Other colour.");
+    }
+}
+```
+
+## Result<T,E>
+- Recoverable err via Result<T,E>, non-recoverable via panic!
+- upon panic!, the program will expand an error message, unwind, clean up the call stack (Stack) and finally exit the program
+- You can set panic = 'abort' in Cargo.toml to terminate the cleaning of the call stack
+```rust
+[profile.release]
+panic='abort'
+```
+- RUST_BACKTRACE = 1 prints detailed error messages in the stack
+```rust
+use std::fs::File;
+fn main() { 
+    let fp = File::open("hello.txt");
+    let file = match fp {
+        Ok(file)=> {
+            file
+        },
+        Err(error) => panic!("file not found {:?} ", error),
+    };
+}
+```
+
+```rust
+use std::{fs::File, io::ErrorKind};
+fn main() { 
+    let fp = File::open("hello.txt");
+    let file = match fp {
+        Ok(file)=> {
+            file
+        },
+        Err(error) => {
+            match error.kind() {
+                ErrorKind::NotFound => {
+                    match File::create("hello.txt") {
+                        Ok(file) => {
+                            file
+                        },
+                        Err(err) => {
+                            panic!("file create error:{:?}", &err);
+                        },
+                    }
+                },
+                oe => panic!("other error {:?}", oe),
+            }
+        } ,
+    };
+}
+```
+```rust
+use std::{fs::File, io::ErrorKind};
+fn main() { 
+    let file = File::open("hello.txt").unwrap_or_else(|err| {
+        if err.kind() == ErrorKind::NotFound {
+            File::create("hello.txt").unwrap_or_else(|err|{
+                panic!("error：{:?}", err);
+            })
+        }else{
+            panic!("other error：{:?}", err);
+        }
+    });
+}
+```
+### unwrap && expect
+- If do not want to deal with Err, can use unwarp() method. If result is Ok(val), return val. If Err, then call the panic! macro.
+- expect can specify what the error message is, which is easier to debug
+
+### The question mark operator, ?
+When writing code that calls many functions that return the Result type, the error handling can be tedious. The question mark operator, ?, hides some of the boilerplate of propagating errors up the call stack.
+```rust
+let mut file = File::create("my_best_friends.txt")?;
+```
+
+## generic
+```rust
+#[derive(Debug)]
+struct Point<T, U>  {
+   x : T,
+   y : U,
+}
+impl <T, U> Point<T, U> {
+    fn mixup<V, W>(self, other: Point<V, W>) -> Point<T, W> {
+        Point{x: self.x , y: other.y, }
+    }
+}
+```
+
+## trait
+### definition
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String {
+         "... more".to_string() /// default 
+    }
+}
+pub struct Tweet {
+    user_name :String,
+    replay_count :u32,
+    like_count :u32,
+}
+impl Tweet {
+    fn like(&mut self) {
+        self.like_count += 1;
+    }
+}
+
+impl Summary for Tweet {
+    fn summarize(&self) -> String {
+        format!("{} like count :{} , replay count :{}", &self.user_name, &self.replay_count, &self.like_count)
+    }
+}
+```
+
+### trait as arguments
+```rust
+fn notify_msg <T:Summary> (info: T) {
+    println!("summary : {}", info.summarize() );
+}
+fn notify_msg (info: impl Summary + Display) {
+    println!("summary : {}", info.summarize() );
+}
+fn notify_msg <T> (info: T) 
+where 
+    T: Summary + Display,
+{
+    println!("summary : {}", info.summarize() );
+    println!("display implement info : {}", info);
+}
+```
+### trait as return
+- impl Trait can only return the same type, if it returns a different type, even if the Trait is implemented, an error will be reported
+
 ## references
 - [the rust programming language](https://doc.rust-lang.org/book/)
 - [mooc course](https://time.geekbang.org/course/intro/100060601?tab=catalog)
