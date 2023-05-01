@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>rust ownership | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="ownership rule Each value in Rust has an owner. There can only be one owner at a time. When the owner goes out of scope, the value will be dropped.  variable scope123456fn main() &amp;#123;    &amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust ownership">
+<meta property="og:url" content="https://cliff0412.github.io/2023/10/11/rust-ownership/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="ownership rule Each value in Rust has an owner. There can only be one owner at a time. When the owner goes out of scope, the value will be dropped.  variable scope123456fn main() &amp;#123;    &amp;#123;">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cliff0412.github.io/images/rust/ownership/move-string.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/rust/ownership/move-string-2.png">
+<meta property="article:published_time" content="2023-10-11T09:09:28.000Z">
+<meta property="article:modified_time" content="2023-05-01T13:15:36.161Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="rust">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/rust/ownership/move-string.png">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-rust-ownership" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/10/11/rust-ownership/" class="article-date">
+  <time class="dt-published" datetime="2023-10-11T09:09:28.000Z" itemprop="datePublished">2023-10-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      rust ownership
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="ownership-rule"><a href="#ownership-rule" class="headerlink" title="ownership rule"></a>ownership rule</h2><ul>
+<li>Each value in Rust has an owner.</li>
+<li>There can only be one owner at a time.</li>
+<li>When the owner goes out of scope, the value will be dropped.</li>
+</ul>
+<h2 id="variable-scope"><a href="#variable-scope" class="headerlink" title="variable scope"></a>variable scope</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    &#123;                      <span class="comment">// s is not valid here, it’s not yet declared</span></span><br><span class="line">        <span class="keyword">let</span> <span class="variable">s</span> = <span class="string">&quot;hello&quot;</span>;   <span class="comment">// s is valid from this point forward</span></span><br><span class="line">        <span class="comment">// do stuff with s</span></span><br><span class="line">    &#125;                      <span class="comment">// this scope is now over, and s is no longer valid</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Move"><a href="#Move" class="headerlink" title="Move"></a>Move</h2><h3 id="stack-only-data-Copy-trait"><a href="#stack-only-data-Copy-trait" class="headerlink" title="stack-only data: Copy trait"></a>stack-only data: Copy trait</h3><p>such as primitive type</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span> = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y</span> = x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>bind the value 5 to x; then make a copy of the value in x and bind it to y.</p>
+<h3 id="for-heap-variable"><a href="#for-heap-variable" class="headerlink" title="for heap variable"></a>for heap variable</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span> = s1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/rust/ownership/move-string.png" alt="move-string"><br>ptr, len, capacity is stored in stack, while string value is stored in heap <br>When we assign s1 to s2, the String data is copied, meaning we copy the pointer, the length, and the capacity that are on the stack. We do not copy the data on the heap<br><img src="/images/rust/ownership/move-string-2.png" alt="move-string-2"><br>similar to shallow copy</p>
+<h2 id="Clone"><a href="#Clone" class="headerlink" title="Clone"></a>Clone</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span> = s1.<span class="title function_ invoke__">clone</span>();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;s1 = &#123;&#125;, s2 = &#123;&#125;&quot;</span>, s1, s2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>If we do want to deeply copy the heap data of the String, not just the stack data, we can use a common method called clone.</p>
+<h3 id="ownership-and-function"><a href="#ownership-and-function" class="headerlink" title="ownership and function"></a>ownership and function</h3><ul>
+<li>Passing a value to a function will result in a move or copy of ownership</li>
+<li>difference between “stack” and “heap” variables: stack variables will be copied, and heap variables will be moved. When a variable containing heap data leaves the scope, its value will be cleared by the drop function, unless the ownership of the data is moved to another variable<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);  <span class="comment">// s comes into scope</span></span><br><span class="line">    <span class="title function_ invoke__">takes_ownership</span>(s);             <span class="comment">// s&#x27;s value moves into the function...</span></span><br><span class="line">                                    <span class="comment">// ... and so is no longer valid here</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span> = <span class="number">5</span>;                      <span class="comment">// x comes into scope</span></span><br><span class="line"></span><br><span class="line">    <span class="title function_ invoke__">makes_copy</span>(x);                  <span class="comment">// x would move into the function,</span></span><br><span class="line">                                    <span class="comment">// but i32 is Copy, so it&#x27;s okay to still</span></span><br><span class="line">                                    <span class="comment">// use x afterward</span></span><br><span class="line"></span><br><span class="line">&#125; <span class="comment">// Here, x goes out of scope, then s. But because s&#x27;s value was moved, nothing</span></span><br><span class="line">  <span class="comment">// special happens.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">takes_ownership</span>(some_string: <span class="type">String</span>) &#123; <span class="comment">// some_string comes into scope</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, some_string);</span><br><span class="line">&#125; <span class="comment">// Here, some_string goes out of scope and `drop` is called. The backing</span></span><br><span class="line">  <span class="comment">// memory is freed.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">makes_copy</span>(some_integer: <span class="type">i32</span>) &#123; <span class="comment">// some_integer comes into scope</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, some_integer);</span><br><span class="line">&#125; <span class="comment">// Here, some_integer goes out of scope. Nothing special happens.</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="return-values-and-scope"><a href="#return-values-and-scope" class="headerlink" title="return values and scope"></a>return values and scope</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span> = <span class="title function_ invoke__">gives_ownership</span>();         <span class="comment">// gives_ownership moves its return</span></span><br><span class="line">                                        <span class="comment">// value into s1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);     <span class="comment">// s2 comes into scope</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s3</span> = <span class="title function_ invoke__">takes_and_gives_back</span>(s2);  <span class="comment">// s2 is moved into</span></span><br><span class="line">                                        <span class="comment">// takes_and_gives_back, which also</span></span><br><span class="line">                                        <span class="comment">// moves its return value into s3</span></span><br><span class="line">&#125; <span class="comment">// Here, s3 goes out of scope and is dropped. s2 was moved, so nothing</span></span><br><span class="line">  <span class="comment">// happens. s1 goes out of scope and is dropped.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">gives_ownership</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;             <span class="comment">// gives_ownership will move its</span></span><br><span class="line">                                             <span class="comment">// return value into the function</span></span><br><span class="line">                                             <span class="comment">// that calls it</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">some_string</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;yours&quot;</span>); <span class="comment">// some_string comes into scope</span></span><br><span class="line"></span><br><span class="line">    some_string                              <span class="comment">// some_string is returned and</span></span><br><span class="line">                                             <span class="comment">// moves out to the calling</span></span><br><span class="line">                                             <span class="comment">// function</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// This function takes a String and returns one</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">takes_and_gives_back</span>(a_string: <span class="type">String</span>) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123; <span class="comment">// a_string comes into</span></span><br><span class="line">                                                      <span class="comment">// scope</span></span><br><span class="line"></span><br><span class="line">    a_string  <span class="comment">// a_string is returned and moves out to the calling function</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>What if we want to let a function use a value but not take ownership?<br>that’s reference</p>
+</blockquote>
+<h2 id="reference-amp-borrow"><a href="#reference-amp-borrow" class="headerlink" title="reference &amp; borrow"></a>reference &amp; borrow</h2><ul>
+<li>&amp; means reference (borrow but not own)， default immutable</li>
+<li>&amp;mut a mutable reference， only one mutable reference allowed in same scope (avoid data racing)</li>
+<li>Multiple mutable references can be created non-simultaneously by creating a new scope</li>
+<li><strong>Cannot have mutable and immutable references at the same time</strong><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">s1</span> = &amp;<span class="keyword">mut</span> s;</span><br><span class="line">    &#125; <span class="comment">// r1 goes out of scope here, so we can make a new reference with no problems.</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span> = &amp;<span class="keyword">mut</span> s;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">r1</span> = &amp;s; <span class="comment">// no problem</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">r2</span> = &amp;s; <span class="comment">// no problem</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125; and &#123;&#125;&quot;</span>, r1, r2);</span><br><span class="line">    <span class="comment">// variables r1 and r2 will not be used after this point</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">r3</span> = &amp;<span class="keyword">mut</span> s; <span class="comment">// no problem</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, r3);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>&#123;<span class="string">&quot;&#123;&#125;&quot;</span>,r1&#125; <span class="comment">// got problem with above mutable borrow</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="reference-as-function-arguments"><a href="#reference-as-function-arguments" class="headerlink" title="reference as function arguments"></a>reference as function arguments</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">len</span> = <span class="title function_ invoke__">calculate_length</span>(&amp;s1);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;The length of &#x27;&#123;&#125;&#x27; is &#123;&#125;.&quot;</span>, s1, len);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">calculate_length</span>(s: &amp;<span class="type">String</span>) <span class="punctuation">-&gt;</span> <span class="type">usize</span> &#123; <span class="comment">// s is a reference to a String</span></span><br><span class="line">    s.<span class="title function_ invoke__">len</span>() </span><br><span class="line">&#125;  <span class="comment">// Here, s goes out of scope. But because it does not have ownership of what</span></span><br><span class="line">   <span class="comment">// it refers to, nothing happens.</span></span><br></pre></td></tr></table></figure>
+<p>we pass &amp;s1 into calculate_length and, in its definition, we take &amp;String rather than String. These ampersands represent references, and they allow you to refer to some value without taking ownership of it. Because it does not own it, the value it points to will not be dropped when the reference stops being used. <br> When functions have references as parameters instead of the actual values, we won’t need to return the values in order to give back ownership, because we never had ownership. <br> We call the action of creating a reference borrowing. </p>
+<h3 id="mutable-references"><a href="#mutable-references" class="headerlink" title="mutable references"></a>mutable references</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="title function_ invoke__">change</span>(&amp;<span class="keyword">mut</span> s);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">change</span>(some_string: &amp;<span class="keyword">mut</span> <span class="type">String</span>) &#123;</span><br><span class="line">    some_string.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;, world&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="dangling-references"><a href="#dangling-references" class="headerlink" title="dangling references"></a>dangling references</h3><ul>
+<li>A pointer refers to an address in memory, but the memory may have been freed and allocated for use by someone else</li>
+<li>rust，The compiler can guarantee that there will never be dangling references<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">r</span> = <span class="title function_ invoke__">dangle</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">dangle</span>() <span class="punctuation">-&gt;</span> &amp;string &#123;  <span class="comment">// dangle returns a reference to a String</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);  <span class="comment">// s is a new String</span></span><br><span class="line">    &amp;s <span class="comment">// we return a reference to the String, s</span></span><br><span class="line">&#125; <span class="comment">// Here, s goes out of scope, and is dropped. Its memory goes away.</span></span><br><span class="line"><span class="comment">// Danger</span></span><br></pre></td></tr></table></figure>
+The solution here is to return the String directly:<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">string</span> = <span class="title function_ invoke__">no_dangle</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">no_dangle</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+This works without any problems. Ownership is moved out, and nothing is deallocated.</li>
+</ul>
+<h2 id="slice"><a href="#slice" class="headerlink" title="slice"></a>slice</h2><ul>
+<li>Slices let you reference a contiguous sequence of elements in a collection rather than the whole collection. A slice is a kind of reference, so it does not have ownership.</li>
+</ul>
+<h3 id="string-slice"><a href="#string-slice" class="headerlink" title="string slice"></a>string slice</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello world&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">hello</span> = &amp;s[<span class="number">0</span>..<span class="number">5</span>]; </span><br><span class="line">    <span class="keyword">let</span> <span class="variable">world</span> = &amp;s[<span class="number">6</span>..<span class="number">11</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Rather than a reference to the entire String, hello is a reference to a portion of the String, <br>With Rust’s <code>..</code> range syntax, if you want to start at index zero, you can drop the value before the two periods <br>By the same token, if your slice includes the last byte of the String, you can drop the trailing number. </p>
+<blockquote>
+<p>Note: String slice range indices must occur at <strong>valid UTF-8 character boundaries</strong>. If you attempt to create a string slice in the middle of a multibyte character, your program will exit with an error.</p>
+</blockquote>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s :&amp;<span class="type">String</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">bytes</span> = s.<span class="title function_ invoke__">as_bytes</span>();</span><br><span class="line">    <span class="title function_ invoke__">for</span>(i, &amp;item) <span class="keyword">in</span> bytes.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">enumerate</span>() &#123;</span><br><span class="line">        <span class="keyword">if</span> item == <span class="string">b&#x27; &#x27;</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> &amp;s[..i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    &amp;s[..]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="String-Literals-Are-Slices"><a href="#String-Literals-Are-Slices" class="headerlink" title="String Literals Are Slices"></a>String Literals Are Slices</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">s</span> = <span class="string">&quot;Hello, world!&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The type of s here is &amp;str: it’s a slice pointing to that specific point of the binary. </p>
+<h3 id="String-Slices-as-Parameters"><a href="#String-Slices-as-Parameters" class="headerlink" title="String Slices as Parameters"></a>String Slices as Parameters</h3><ul>
+<li>Pass &amp;str as a parameter, you can receive parameters of type &amp;String and &amp;str at the same time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">String</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span> &#123;</span><br></pre></td></tr></table></figure>
+equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">str</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="other-slices"><a href="#other-slices" class="headerlink" title="other slices"></a>other slices</h3><p>array slice</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">3</span>];</span><br><span class="line">  <span class="built_in">assert_eq!</span>(slice, &amp;[<span class="number">2</span>, <span class="number">3</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/10/11/rust-ownership/" data-id="clh4v644e000g79sj6pnk83iv" data-title="rust ownership" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/02/23/paillier-encryption/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">paillier encryption</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.5px;">geth</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 15px;">rust</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/10/11/rust-ownership/">rust ownership</a>
+          </li>
+        
+          <li>
+            <a href="/2023/02/23/paillier-encryption/">paillier encryption</a>
+          </li>
+        
+          <li>
+            <a href="/2023/02/07/two-party-ecdsa/">two party ecdsa</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/22/MPT/">MPT</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
