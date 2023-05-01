@@ -16,7 +16,7 @@
 <meta property="og:image" content="https://cliff0412.github.io/images/rust/ownership/move-string.png">
 <meta property="og:image" content="https://cliff0412.github.io/images/rust/ownership/move-string-2.png">
 <meta property="article:published_time" content="2023-10-11T09:09:28.000Z">
-<meta property="article:modified_time" content="2023-05-01T13:15:36.161Z">
+<meta property="article:modified_time" content="2023-05-01T13:16:26.952Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="rust">
 <meta name="twitter:card" content="summary">
@@ -150,7 +150,7 @@ This works without any problems. Ownership is moved out, and nothing is dealloca
 <h3 id="String-Literals-Are-Slices"><a href="#String-Literals-Are-Slices" class="headerlink" title="String Literals Are Slices"></a>String Literals Are Slices</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">s</span> = <span class="string">&quot;Hello, world!&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>The type of s here is &amp;str: it’s a slice pointing to that specific point of the binary. </p>
 <h3 id="String-Slices-as-Parameters"><a href="#String-Slices-as-Parameters" class="headerlink" title="String Slices as Parameters"></a>String Slices as Parameters</h3><ul>
-<li>Pass &amp;str as a parameter, you can receive parameters of type &amp;String and &amp;str at the same time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">String</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span> &#123;</span><br></pre></td></tr></table></figure>
+<li>Pass &amp;str as a parameter, you can receive parameters of type &amp;String and &amp;str at the same time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">String</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span></span><br></pre></td></tr></table></figure>
 equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first_word</span>(s: &amp;<span class="type">str</span>) <span class="punctuation">-&gt;</span> &amp;<span class="type">str</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="other-slices"><a href="#other-slices" class="headerlink" title="other slices"></a>other slices</h3><p>array slice</p>
@@ -158,7 +158,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/11/rust-ownership/" data-id="clh4v644e000g79sj6pnk83iv" data-title="rust ownership" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/10/11/rust-ownership/" data-id="clh4v75z1000xbvsj2mu43w89" data-title="rust ownership" class="article-share-link">Share</a>
       
       
       
