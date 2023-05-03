@@ -1,7 +1,7 @@
 ---
 title: rust frequently used crates
 date: 2022-12-13 17:15:23
-tags:
+tags: [rust]
 ---
 
 

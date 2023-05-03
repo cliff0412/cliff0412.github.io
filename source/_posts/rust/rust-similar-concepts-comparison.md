@@ -1,5 +1,5 @@
 ---
-title: rust-similar-concepts-comparison
+title: rust similar concepts comparison
 date: 2022-11-23 15:52:34
 tags: [rust]
 ---

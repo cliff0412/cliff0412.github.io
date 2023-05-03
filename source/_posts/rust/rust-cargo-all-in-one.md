@@ -1,7 +1,7 @@
 ---
 title: rust cargo all in one
 date: 2022-12-06 17:05:07
-tags:
+tags: [rust]
 ---
 
 ## useful cmd

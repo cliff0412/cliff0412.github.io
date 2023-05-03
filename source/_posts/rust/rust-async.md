@@ -2,7 +2,7 @@
 title: rust async
 date: 2023-01-13 17:17:10
 tags:
----
+--- [rust]
 
 ## I/O
 I/O：在计算机中指Input/Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口
