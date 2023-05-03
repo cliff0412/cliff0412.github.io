@@ -1,5 +1,5 @@
 ---
-title: rust_sugar
+title: rust sugar
 date: 2022-11-17 15:47:13
 tags: [rust]
 ---
