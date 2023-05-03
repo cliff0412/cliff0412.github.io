@@ -139,7 +139,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clh7efp56000dixsjdfmddp2d" data-title="paillier encryption" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clh7hl8hg000d3psj0ml8244g" data-title="paillier encryption" class="article-share-link">Share</a>
       
       
       
@@ -196,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clh7efp5b0012ixsj51ep269m" data-title="two party ecdsa" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clh7hl8hn001k3psj2fo5d3lj" data-title="two party ecdsa" class="article-share-link">Share</a>
       
       
       
@@ -304,7 +304,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clh7efp4y0000ixsj8wpgfjvt" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clh7hl8h900003psje7843r09" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -376,12 +376,86 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clh7efp510001ixsjexagbceg" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clh7hl8hc00033psj7jcbejss" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li></ul>
 
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust-async" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/13/rust-async/" class="article-date">
+  <time class="dt-published" datetime="2023-01-13T09:17:10.000Z" itemprop="datePublished">2023-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/13/rust-async/">rust async</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="I-x2F-O"><a href="#I-x2F-O" class="headerlink" title="I&#x2F;O"></a>I&#x2F;O</h2><p>I&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口</p>
+<h3 id="I-x2F-O-模型"><a href="#I-x2F-O-模型" class="headerlink" title="I&#x2F;O 模型"></a>I&#x2F;O 模型</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@startmindmap</span><br><span class="line">+ **I/O模型**</span><br><span class="line">++ 同步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ 阻塞I/O (BIO)</span><br><span class="line">+++_ 非阻塞I/O (NIO)</span><br><span class="line">+++_ I/O多路复用</span><br><span class="line">+++_ 信号驱动I/O</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">++ 异步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ linux (AIO, io_uring)</span><br><span class="line">+++_ windows (IOCP)</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">@endmindmap</span><br></pre></td></tr></table></figure>
+<h4 id="同步阻塞"><a href="#同步阻塞" class="headerlink" title="同步阻塞"></a>同步阻塞</h4><ul>
+<li>当用户线程发起IO请求后，会进行系统调用（system call）来让内核（Kernel）进行IO操作（系统调用是用户空间和内核空间的一个通道）；</li>
+<li>此时用户线程阻塞，等待内核将数据准备好；</li>
+<li>内核将数据准备好后会将数据从内核空间拷贝到用户空间，并返回给用户线程结束阻塞。</li>
+</ul>
+<h4 id="同步非阻塞"><a href="#同步非阻塞" class="headerlink" title="同步非阻塞"></a>同步非阻塞</h4><ul>
+<li>由用户线程发起IO请求，进行系统调用来让内核进行IO操作；</li>
+<li>此时如果内核没有准备好数据则会直接返回error，并不会阻塞用户线程，用户线程可以重复发起IO请求；</li>
+<li>当用户线程发起请求并且内核已经将数据准备好后，会将数据从内核空间拷贝到用户空间（这个过程是需要阻塞用户线程的），返回给用户。</li>
+</ul>
+<h4 id="同步多路复用"><a href="#同步多路复用" class="headerlink" title="同步多路复用"></a>同步多路复用</h4><ul>
+<li>用户线程调用select后进行系统调用（内核会监视所有select负责的socket）</li>
+<li>当用户将数据准备好后就会返回，并通知用户线程进行读取操作，此时内核将数据拷贝到用户空间并返回。此时用户线程被阻塞；</li>
+</ul>
+<h4 id="异步I-x2F-O"><a href="#异步I-x2F-O" class="headerlink" title="异步I&#x2F;O"></a>异步I&#x2F;O</h4><ul>
+<li>用户线程进行aio_read，进行系统调用切换到内核；</li>
+<li>内核立即返回，并不会阻塞用户线程；</li>
+<li>内核准备好数据后会将数据从内核空间拷贝到用户空间并通知用户线程（发送信号）操作已完成。</li>
+</ul>
+<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><h4 id="同步blocking-I-x2F-O"><a href="#同步blocking-I-x2F-O" class="headerlink" title="同步blocking I&#x2F;O"></a>同步blocking I&#x2F;O</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@startuml Test Diagram</span><br><span class="line"></span><br><span class="line">participant &quot;application&quot; as app</span><br><span class="line">participant &quot;kernel&quot; as kernel</span><br><span class="line"></span><br><span class="line">activate app</span><br><span class="line">activate kernel</span><br><span class="line">app -&gt; kernel: syscall: Read recvfrom</span><br><span class="line">kernel -&gt; kernel: wait for data (no datagram ready)</span><br><span class="line">kernel -&gt; kernel: copy datagram to user (datagram ready)</span><br><span class="line">kernel -&gt; app: return</span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
+
+<h4 id="I-x2F-O多路复用"><a href="#I-x2F-O多路复用" class="headerlink" title="I&#x2F;O多路复用"></a>I&#x2F;O多路复用</h4><h3 id="异步编程"><a href="#异步编程" class="headerlink" title="异步编程"></a>异步编程</h3><h2 id="the-Future-Trait"><a href="#the-Future-Trait" class="headerlink" title="the Future Trait"></a>the Future Trait</h2><p>A Future is an asynchronous computation that can produce a value. A simplified version of the future trait might look something like this</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">trait</span> <span class="title class_">SimpleFuture</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, wake: <span class="title function_ invoke__">fn</span>()) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Poll</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="title function_ invoke__">Ready</span>(T),</span><br><span class="line">    Pending,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>For example, consider the case where we want to read from a socket that may or may not have data available already.</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">SocketRead</span>&lt;<span class="symbol">&#x27;a</span>&gt; &#123;</span><br><span class="line">    socket: &amp;<span class="symbol">&#x27;a</span> Socket,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">SimpleFuture</span> <span class="keyword">for</span> <span class="title class_">SocketRead</span>&lt;<span class="symbol">&#x27;_</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span> = <span class="type">Vec</span>&lt;<span class="type">u8</span>&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, wake: <span class="title function_ invoke__">fn</span>()) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.socket.<span class="title function_ invoke__">has_data_to_read</span>() &#123;</span><br><span class="line">            <span class="comment">// The socket has data -- read it into a buffer and return it.</span></span><br><span class="line">            Poll::<span class="title function_ invoke__">Ready</span>(<span class="keyword">self</span>.socket.<span class="title function_ invoke__">read_buf</span>())</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// The socket does not yet have data.</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// Arrange for `wake` to be called once data is available.</span></span><br><span class="line">            <span class="comment">// When data becomes available, `wake` will be called, and the</span></span><br><span class="line">            <span class="comment">// user of this `Future` will know to call `poll` again and</span></span><br><span class="line">            <span class="comment">// receive data.</span></span><br><span class="line">            <span class="keyword">self</span>.socket.<span class="title function_ invoke__">set_readable_callback</span>(wake);</span><br><span class="line">            Poll::Pending</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> the real Future trait and how it is different</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">trait</span> <span class="title class_">Future</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(</span><br><span class="line">        <span class="comment">// Note the change from `&amp;mut self` to `Pin&lt;&amp;mut Self&gt;`:</span></span><br><span class="line">        <span class="keyword">self</span>: Pin&lt;&amp;<span class="keyword">mut</span> <span class="keyword">Self</span>&gt;,</span><br><span class="line">        <span class="comment">// and the change from `wake: fn()` to `cx: &amp;mut Context&lt;&#x27;_&gt;`:</span></span><br><span class="line">        cx: &amp;<span class="keyword">mut</span> Context&lt;<span class="symbol">&#x27;_</span>&gt;,</span><br><span class="line">    ) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>The first change you’ll notice is that our self type is no longer &amp;mut Self, but has changed to Pin&lt;&amp;mut Self&gt;. We’ll talk more about pinning in a later section, but for now know that it allows us to create futures that are immovable. Immovable objects can store pointers between their fields, e.g. struct MyFut { a: i32, ptr_to_a: *const i32 }. Pinning is necessary to enable async&#x2F;await.</p>
+<p>Secondly, wake: fn() has changed to &amp;mut Context&lt;’_&gt;. In SimpleFuture, we used a call to a function pointer (fn()) to tell the future executor that the future in question should be polled. However, since fn() is just a function pointer, it can’t store any data about which Future called wake.</p>
+<p>In a real-world scenario, a complex application like a web server may have thousands of different connections whose wakeups should all be managed separately. The Context type solves this by providing access to a value of type Waker, which can be used to wake up a specific task.</p>
+<h2 id="task-wakeups-with-Waker"><a href="#task-wakeups-with-Waker" class="headerlink" title="task wakeups with Waker"></a>task wakeups with Waker</h2><p>Waker provides a wake() method that can be used to tell the executor that the associated task should be awoken. When wake() is called, the executor knows that the task associated with the Waker is ready to make progress, and its future should be polled again.</p>
+<h2 id="referencs"><a href="#referencs" class="headerlink" title="referencs"></a>referencs</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/XMJYever/article/details/111560976">csdn blog</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/13/rust-async/" data-id="clh7hl8hl00123psj4q6a4r2i" data-title="rust async" class="article-share-link">Share</a>
+      
+      
+      
     </footer>
   </div>
   
@@ -465,7 +539,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clh7efp540008ixsjcv6q4neo" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth.evm/" data-id="clh7hl8he00083psjeekh2zn2" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -506,7 +580,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clh7efp530004ixsjgziq9u7b" data-title="geth_fine_tune" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clh7hl8hd00043psja9nhd8ib" data-title="geth_fine_tune" class="article-share-link">Share</a>
       
       
       
@@ -588,7 +662,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/28/rust-07-macro/" data-id="clh7efp59000vixsjc0ibfzdf" data-title="rust reflect and macro" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/28/rust-07-macro/" data-id="clh7hl8hk000v3psjabok0g6e" data-title="rust reflect and macro" class="article-share-link">Share</a>
       
       
       
@@ -602,10 +676,10 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 
 
   
-    <article id="post-eth-sign" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-rust-frequently-used-crates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/11/28/eth-sign/" class="article-date">
-  <time class="dt-published" datetime="2022-11-28T03:47:56.000Z" itemprop="datePublished">2022-11-28</time>
+    <a href="/2022/12/13/rust-frequently-used-crates/" class="article-date">
+  <time class="dt-published" datetime="2022-12-13T09:15:23.000Z" itemprop="datePublished">2022-12-13</time>
 </a>
     
   </div>
@@ -616,7 +690,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/28/eth-sign/">eth_sign</a>
+      <a class="p-name article-title" href="/2022/12/13/rust-frequently-used-crates/">rust frequently used crates</a>
     </h1>
   
 
@@ -624,11 +698,15 @@ during create contract, an object <code>Contract</code> is created. A Contract o
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="ethereum-signing"><a href="#ethereum-signing" class="headerlink" title="ethereum signing"></a>ethereum signing</h1><h2 id="ECDSA-recap"><a href="#ECDSA-recap" class="headerlink" title="ECDSA recap"></a>ECDSA recap</h2>
+        <p>tokio-trace -&gt; tracing</p>
+<p>contexts, multi threads<br>causality -<br>structured diagnostics ( no grep)</p>
+<p>tracing is part of tokio, tokio not requied</p>
+<p>spans: a perido of time, entered and exited<br>events: singular moment in time<br>subscriber: collect trace</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clh7efp520003ixsj3cfp1z1v" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/13/rust-frequently-used-crates/" data-id="clh7hl8hn001l3psj9vadh4l6" data-title="rust frequently used crates" class="article-share-link">Share</a>
       
       
       
@@ -640,10 +718,10 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 
 
   
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-rust-cargo-all-in-one" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/11/27/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-11-27T03:47:56.000Z" itemprop="datePublished">2022-11-27</time>
+    <a href="/2022/12/06/rust-cargo-all-in-one/" class="article-date">
+  <time class="dt-published" datetime="2022-12-06T09:05:07.000Z" itemprop="datePublished">2022-12-06</time>
 </a>
     
   </div>
@@ -654,7 +732,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/27/hello-world/">how to use hexo</a>
+      <a class="p-name article-title" href="/2022/12/06/rust-cargo-all-in-one/">rust cargo all in one</a>
     </h1>
   
 
@@ -662,79 +740,44 @@ during create contract, an object <code>Contract</code> is created. A Contract o
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+        <h2 id="useful-cmd"><a href="#useful-cmd" class="headerlink" title="useful cmd"></a>useful cmd</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cargo build --verbose ## print out each rustc invocation</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clh7efp55000bixsj5s84fkyl" data-title="how to use hexo" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust-sugar" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/17/rust-sugar/" class="article-date">
-  <time class="dt-published" datetime="2022-11-17T07:47:13.000Z" itemprop="datePublished">2022-11-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/17/rust-sugar/">rust_sugar</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="tools"><a href="#tools" class="headerlink" title="tools"></a>tools</h2><ul>
-<li><p>cargo-edit<br>This tool extends Cargo to allow you to add, remove, and upgrade dependencies by modifying your Cargo.toml file from the command line</p>
+<h2 id="specifying-dependencies"><a href="#specifying-dependencies" class="headerlink" title="specifying dependencies"></a>specifying dependencies</h2><ul>
+<li><p>specifying dependencies from crates.io</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">time</span> = <span class="string">&quot;0.1.12&quot;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>specifying dependencies from other registries</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">some-crate</span> = &#123; version = <span class="string">&quot;1.0&quot;</span>, registry = <span class="string">&quot;my-registry&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>specifying dependencies form git repositories</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">regex</span> = &#123; git = <span class="string">&quot;https://github.com/rust-lang/regex.git&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>path dependencies</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">hello_utils</span> = &#123; path = <span class="string">&quot;hello_utils&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>platform specific dependencies</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[target.&#x27;cfg(unix)&#x27;.dependencies]</span></span><br><span class="line"><span class="attr">openssl</span> = <span class="string">&quot;1.0.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">[target.&#x27;cfg(target_arch = &quot;x86&quot;)&#x27;.dependencies]</span></span><br><span class="line"><span class="attr">native-i686</span> = &#123; path = <span class="string">&quot;native/i686&quot;</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>Like with Rust, the syntax here supports the not, any, and all operators to combine various cfg name&#x2F;value pairs.<br>If you want to know which cfg targets are available on your platform, run <code>rustc --print=cfg</code> from the command line.<br>If you want to know which cfg targets are available for another platform, such as 64-bit Windows, run <code>rustc --print=cfg --target=x86_64-pc-windows-msvc</code></p>
 </li>
-<li><p>cargo whatfeatures ${crate}<br>  eg: <code>cargo whatfeatures hyper</code></p>
+<li><p>custom target specifications</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[target.bar.dependencies]</span></span><br><span class="line"><span class="attr">winhttp</span> = <span class="string">&quot;0.4.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">[target.my-special-i686-platform.dependencies]</span></span><br><span class="line"><span class="attr">openssl</span> = <span class="string">&quot;1.0.1&quot;</span></span><br><span class="line"><span class="attr">native</span> = &#123; path = <span class="string">&quot;native/i686&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>development dependencies<br>  [dev-dependencies]<br>  Dev-dependencies are not used when compiling a package for building, but are used for compiling tests, examples, and benchmarks.<br>  These dependencies are not propagated to other packages which depend on this package.</p>
+  <figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[target.&#x27;cfg(unix)&#x27;.dev-dependencies]</span></span><br><span class="line"><span class="attr">mio</span> = <span class="string">&quot;0.0.1&quot;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>build dependencies</p>
+  <figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[build-dependencies]</span></span><br><span class="line"><span class="attr">cc</span> = <span class="string">&quot;1.0.3&quot;</span></span><br></pre></td></tr></table></figure>
+<p>  The build script does not have access to the dependencies listed in the dependencies or dev-dependencies section. Build dependencies will likewise not be available to the package itself unless listed under the dependencies section as well.</p>
+</li>
+<li><p>choosing features</p>
+  <figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies.awesome]</span></span><br><span class="line"><span class="attr">version</span> = <span class="string">&quot;1.3.5&quot;</span></span><br><span class="line"><span class="attr">default-features</span> = <span class="literal">false</span> <span class="comment"># do not include the default features, and optionally</span></span><br><span class="line">                        <span class="comment"># cherry-pick individual features</span></span><br><span class="line"><span class="attr">features</span> = [<span class="string">&quot;secure-password&quot;</span>, <span class="string">&quot;civet&quot;</span>]</span><br></pre></td></tr></table></figure></li>
+<li><p>renaming dependencies in Cargo.toml<br>  When writing a [dependencies] section in Cargo.toml the key you write for a dependency typically matches up to the name of the crate you import from in the code. For some projects, though, you may wish to reference the crate with a different name in the code regardless of how it’s published on crates.io. For example you may wish to: Avoid the need to use foo as bar in Rust source.<br>  (more to be found in original book)</p>
 </li>
 </ul>
-<h2 id="syntax"><a href="#syntax" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// print to stderr</span></span><br><span class="line">eprintln!(<span class="string">&quot;server error: &#123;&#125;&quot;</span>, e);</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">MyTupleStruct</span>&lt;M&gt;(M);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">myTupleStruct</span> =  MyTupleStruct::&lt;<span class="type">String</span>&gt;(<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>));</span><br><span class="line"></span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">position</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">find</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">any</span>()</span><br></pre></td></tr></table></figure>
-
-<h2 id="attributes"><a href="#attributes" class="headerlink" title="attributes"></a>attributes</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![allow(warnings)]</span></span><br><span class="line"><span class="meta">#[allow(dead_code)]</span></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="comment">// Suppress all warnings from casts which overflow.</span></span><br><span class="line"><span class="meta">#![allow(overflowing_literals)]</span></span><br><span class="line"><span class="meta">#![allow(unreachable_code)]</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h2><p>The compiler will not rearrange the memory layout</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[repr(C)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    a:<span class="type">u8</span>,</span><br><span class="line">    b:<span class="type">u32</span>,</span><br><span class="line">    c:<span class="type">u16</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/cargo/">cargo book</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/17/rust-sugar/" data-id="clh7efp5b0015ixsjh3ntcjk7" data-title="rust_sugar" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/06/rust-cargo-all-in-one/" data-id="clh7hl8hk00103psj0ezi1qrr" data-title="rust cargo all in one" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
     </footer>
   </div>
   
@@ -747,7 +790,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 
   <nav id="page-nav">
     
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -809,7 +852,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
           </li>
         
           <li>
-            <a href="/2023/01/08/geth.evm/">geth evm source analysis</a>
+            <a href="/2023/01/13/rust-async/">rust async</a>
           </li>
         
       </ul>
