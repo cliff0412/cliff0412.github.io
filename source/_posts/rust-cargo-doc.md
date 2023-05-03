@@ -30,10 +30,10 @@ cargo doc  ## 生成的html放在 target/doc 目录下
 cargo doc --open ## 构建当前crate的文档 (也包含crate依赖项的文档)
 ```
 ### 常用章节
-- # Examples
-- Panics: 可能panic的场景
-- Errors: 如果fn返回Result, 描述可能的错误种类, 以及导致错误的条件
-- Safety: 如果fn出入unsafe调用, 解释unsafe的原因, 以及调用者确保的使用前提
+- `# Examples`
+- `Panics`: 可能panic的场景
+- `Errors`: 如果fn返回Result, 描述可能的错误种类, 以及导致错误的条件
+- `Safety`: 如果fn出入unsafe调用, 解释unsafe的原因, 以及调用者确保的使用前提
 
 ### 文档注释作为测试
 - 运行cargo test, doc中用# Example标记的实例代码会用来测试运行
