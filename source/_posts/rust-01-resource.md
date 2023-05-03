@@ -1,5 +1,5 @@
 ---
-title: rust_resource
+title: rust resource
 date: 2022-09-27 22:04:38
 tags: [rust]
 ---
