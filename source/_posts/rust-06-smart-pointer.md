@@ -15,14 +15,14 @@ references are pointers that only borrow data; in contrast, in many cases, smart
 Both these types count as smart pointers because they own some memory and allow you to manipulate it. They also have metadata (such as their capacity) and extra capabilities or guarantees (such as with String ensuring its data will always be valid UTF-8).
 
 ### Deref & Drop
-Smart pointers are usually implemented using structs. The characteristic that distinguishes a smart pointer from an ordinary struct is that smart pointers implement the Deref and Drop traits.
+Smart pointers are usually implemented using structs. The characteristic that distinguishes a smart pointer from an ordinary struct is that smart pointers implement the `Deref` and `Drop` traits.
 - The Deref trait allows an instance of the smart pointer struct to behave like a reference so you can write code that works with either references or smart pointers. 
 - The Drop trait allows you to customize the code that is run when an instance of the smart pointer goes out of scope.
 
 ### the most common smart pointers in the standard library:
-- Box<T> for allocating values on the heap
-- Rc<T>, a reference counting type that enables multiple ownership
-- Ref<T> and RefMut<T>, accessed through RefCell<T>, a type that enforces the borrowing rules at runtime instead of compile time
+- `Box<T>` for allocating values on the heap
+- `Rc<T>`, a reference counting type that enables multiple ownership
+- `Ref<T>` and `RefMut<T>`, accessed through `RefCell<T>`, a type that enforces the borrowing rules at runtime instead of compile time
 
 ## Box<T>
 ### when to use
@@ -30,13 +30,6 @@ Smart pointers are usually implemented using structs. The characteristic that di
 - When you have a large amount of data and you want to transfer ownership but ensure the data won’t be copied when you do so
 - When you want to own a value and you care only that it’s a type that implements a particular trait rather than being of a specific type
 
-### example
-```rust
-fn main() {
-    let b = Box::new(5);
-    println!("b = {}", b);
-} // b goes out of scope, heap data is deallocated
-```
 
 ### enabling recursive types with Box
 At compile time, Rust needs to know how much space a type takes up
@@ -69,17 +62,8 @@ fn main() {
 ```
 
 ## Treating Smart Pointers Like Regular References with the Deref Trait
-Implementing the Deref trait allows you to customize the behavior of the dereference operator, *
+Implementing the Deref trait allows you to customize the behavior of the dereference operator, `*`
 By implementing Deref in such a way that a smart pointer can be treated like a regular reference, you can write code that operates on references and use that code with smart pointers too.
-```rust
-fn main() {
-    let x = 5;
-    let y = Box::new(x);
-
-    assert_eq!(5, x);
-    assert_eq!(5, *y);
-}
-```
 
 ### Defining Our Own Smart Pointer
 ```rust
@@ -109,10 +93,9 @@ fn main() {
     assert_eq!(5, *y);
 }
 ```
-- he Deref trait, provided by the standard library, requires us to implement one method named deref that borrows self and returns a reference to the inner data
 - We fill in the body of the deref method with &self.0 so deref returns a reference to the value we want to access with the * operator. 
 - behind the scenes Rust actually ran this code: <code>*(y.deref())</code>. Rust substitutes the * operator with a call to the deref method
-The reason the deref method returns a reference to a value, and that the plain dereference outside the parentheses in *(y.deref()) is still necessary, is the ownership system. If the deref method returned the value directly instead of a reference to the value, the value would be moved out of self. We don’t want to take ownership of the inner value inside MyBox<T> in this case or in most cases where we use the dereference operator.
+- The reason the deref method returns a reference to a value, and that the plain dereference outside the parentheses in *(y.deref()) is still necessary, is the ownership system. If the deref method returned the value directly instead of a reference to the value, the value would be moved out of self. We don’t want to take ownership of the inner value inside MyBox<T> in this case or in most cases where we use the dereference operator.
 
 ### Implicit Deref Coercions with Functions and Methods
 Deref coercion is a convenience that Rust performs on arguments to functions and methods. 
@@ -196,13 +179,13 @@ fn main() {
 In the majority of cases, ownership is clear: you know exactly which variable owns a given value. However, there are cases when a single value might have multiple owners. 
 type keeps track of the number of references to a value to determine whether or not the value is still in use. If there are zero references to a value, the value can be cleaned up without any references becoming invalid.
 
-We use the Rc<T> type when we want to allocate some data on the heap for multiple parts of our program to read and we can’t determine at compile time which part will finish using the data last. If we knew which part would finish last, we could just make that part the data’s owner, and the normal ownership rules enforced at compile time would take effect.
+We use the `Rc<T>` type when we want to allocate some data on the heap for multiple parts of our program to read and we can’t determine at compile time which part will finish using the data last.
 
 Rc<T> is only for use in single-threaded scenarios
 
 ### using Rc<T> to share data
 
-![rc](./imgs/15.rc.png)
+![rc](/images/rust/pointers/rc.png)
 implement use box will not work, as below
 ```rust
 enum List {
@@ -234,7 +217,7 @@ fn main() {
     let c = Cons(4, Rc::clone(&a));
 }
 ```
-Instead, we’ll change our definition of List to use Rc<T> in place of Box<T>. Each Cons variant will now hold a value and an Rc<T> pointing to a List. When we create b, instead of taking ownership of a, we’ll clone the Rc<List> that a is holding, thereby increasing the number of references from one to two and letting a and b share ownership of the data in that Rc<List>. We’ll also clone a when creating c, increasing the number of references from two to three. Every time we call Rc::clone, the reference count to the data within the Rc<List> will increase, and the data won’t be cleaned up unless there are zero references to it.
+
 
 We could have called a.clone() rather than Rc::clone(&a), but Rust’s convention is to use Rc::clone in this case. The implementation of Rc::clone doesn’t make a deep copy of all the data like most types’ implementations of clone do. The call to Rc::clone only increments the reference count, which doesn’t take much time.
 
@@ -482,7 +465,7 @@ mod tests {
 ```
 
 ### Keeping Track of Borrows at Runtime with RefCell<T>
-When creating immutable and mutable references, we use the & and &mut syntax, respectively. With RefCell<T>, we use the borrow and borrow_mut methods, which are part of the safe API that belongs to RefCell<T>. The borrow method returns the smart pointer type Ref<T>, and borrow_mut returns the smart pointer type RefMut<T>.  Both types implement Deref, so we can treat them like regular references.
+When creating immutable and mutable references, we use the & and &mut syntax, respectively. With RefCell<T>, we use the borrow and borrow_mut methods, which are part of the safe API that belongs to RefCell<T>. **The borrow method returns the smart pointer type Ref<T>, and borrow_mut returns the smart pointer type RefMut<T>**.  Both types implement Deref, so we can treat them like regular references.
 
 The RefCell<T> keeps track of how many Ref<T> and RefMut<T> smart pointers are currently active.RefCell<T> lets us have many immutable borrows or one mutable borrow at any point in time. If we try to violate these rules, rather than getting a compiler error as we would with references, the implementation of RefCell<T> will panic at runtime. 
 ```rust
@@ -528,7 +511,7 @@ fn main() {
 }
 ```
 
-The standard library has other types that provide interior mutability, such as Cell<T>, which is similar except that instead of giving references to the inner value, the value is copied in and out of the Cell<T>. There’s also Mutex<T>, which offers interior mutability that’s safe to use across threads; 
+**The standard library has other types that provide interior mutability, such as Cell<T>, which is similar except that instead of giving references to the inner value, the value is copied in and out of the Cell<T>. There’s also Mutex<T>, which offers interior mutability that’s safe to use across threads;** 
 
 ## Reference Cycles Can Leak Memory
 Rust’s memory safety guarantees make it difficult, but not impossible, to accidentally create memory that is never cleaned up (known as a memory leak).
