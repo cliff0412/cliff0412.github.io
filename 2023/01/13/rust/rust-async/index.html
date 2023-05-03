@@ -6,16 +6,17 @@
   
   <title>rust async | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="[rust] I&#x2F;OI&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口 I&#x2F;O 模型123456789101112131415@startmindmap+ **I&#x2F;O模型**++ 同步I&#x2F;O&amp;#x27;tag::details[]+++_ 阻塞I&#x2F;O (">
+  <meta name="description" content="I&#x2F;OI&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口 I&#x2F;O 模型123456789101112131415@startmindmap+ **I&#x2F;O模型**++ 同步I&#x2F;O&amp;#x27;tag::details[]+++_ 阻塞I&#x2F;O (BIO)+++_">
 <meta property="og:type" content="article">
 <meta property="og:title" content="rust async">
 <meta property="og:url" content="https://cliff0412.github.io/2023/01/13/rust/rust-async/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="[rust] I&#x2F;OI&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口 I&#x2F;O 模型123456789101112131415@startmindmap+ **I&#x2F;O模型**++ 同步I&#x2F;O&amp;#x27;tag::details[]+++_ 阻塞I&#x2F;O (">
+<meta property="og:description" content="I&#x2F;OI&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口 I&#x2F;O 模型123456789101112131415@startmindmap+ **I&#x2F;O模型**++ 同步I&#x2F;O&amp;#x27;tag::details[]+++_ 阻塞I&#x2F;O (BIO)+++_">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-01-13T09:17:10.000Z">
-<meta property="article:modified_time" content="2023-05-03T09:29:25.801Z">
+<meta property="article:modified_time" content="2023-05-03T09:33:13.753Z">
 <meta property="article:author" content="cliff">
+<meta property="article:tag" content="rust">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -95,8 +96,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p> [rust]</p>
-<h2 id="I-x2F-O"><a href="#I-x2F-O" class="headerlink" title="I&#x2F;O"></a>I&#x2F;O</h2><p>I&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口</p>
+        <h2 id="I-x2F-O"><a href="#I-x2F-O" class="headerlink" title="I&#x2F;O"></a>I&#x2F;O</h2><p>I&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口</p>
 <h3 id="I-x2F-O-模型"><a href="#I-x2F-O-模型" class="headerlink" title="I&#x2F;O 模型"></a>I&#x2F;O 模型</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@startmindmap</span><br><span class="line">+ **I/O模型**</span><br><span class="line">++ 同步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ 阻塞I/O (BIO)</span><br><span class="line">+++_ 非阻塞I/O (NIO)</span><br><span class="line">+++_ I/O多路复用</span><br><span class="line">+++_ 信号驱动I/O</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">++ 异步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ linux (AIO, io_uring)</span><br><span class="line">+++_ windows (IOCP)</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">@endmindmap</span><br></pre></td></tr></table></figure>
 <h4 id="同步阻塞"><a href="#同步阻塞" class="headerlink" title="同步阻塞"></a>同步阻塞</h4><ul>
 <li>当用户线程发起IO请求后，会进行系统调用（system call）来让内核（Kernel）进行IO操作（系统调用是用户空间和内核空间的一个通道）；</li>
@@ -136,10 +136,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clh7hyu71000x49sj9dkwgsek" data-title="rust async" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clh7i3df80010dksjemln78xj" data-title="rust async" class="article-share-link">Share</a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
     </footer>
   </div>
   
