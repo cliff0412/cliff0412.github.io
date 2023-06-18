@@ -71,6 +71,90 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rust/rust-07-macro" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/12/28/rust/rust-07-macro/" class="article-date">
+  <time class="dt-published" datetime="2022-12-28T02:24:21.000Z" itemprop="datePublished">2022-12-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/12/28/rust/rust-07-macro/">rust reflect and macro</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="reflect"><a href="#reflect" class="headerlink" title="reflect"></a>reflect</h2><h3 id="trait-object"><a href="#trait-object" class="headerlink" title="trait object"></a>trait object</h3><p>Rust provides dynamic dispatch through a feature called <code>trait objects</code>. Trait objects, like &amp;Foo or Box<Foo>, are normal values that store a value of any type that implements the given trait, where the precise type can only be known at <strong>runtime</strong>. more details can be found on [references 1]</p>
+<h3 id="any"><a href="#any" class="headerlink" title="any"></a>any</h3><p>This module (std::any) contains the <code>Any</code> trait, which enables dynamic typing of any <code>'static</code> type through runtime reflection. It also contains the <code>Provider</code> trait and accompanying API, which enable trait objects to provide data based on typed requests, an alternate form of runtime reflection.<br>Any itself can be used to get a TypeId</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::fmt::<span class="built_in">Debug</span>;</span><br><span class="line"><span class="keyword">use</span> std::any::Any;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">log</span>&lt;T: Any + <span class="built_in">Debug</span>&gt;(value: &amp;Any) &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">value_any</span> = value <span class="keyword">as</span> &amp;<span class="keyword">dyn</span> Any;  <span class="comment">// &amp;dyn Any (a borrowed trait object), Note that &amp;dyn Any is limited to testing whether a value is of a specified concrete type, and cannot be used to test whether a type implements a trait.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">match</span> value_any.downcast_ref::&lt;<span class="type">String</span>&gt;() &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(val_str) <span class="punctuation">-&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// do with string</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="literal">None</span> =&gt; &#123;</span><br><span class="line">            <span class="comment">// </span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="porpular-crates-using-Any"><a href="#porpular-crates-using-Any" class="headerlink" title="porpular crates using Any"></a>porpular crates using Any</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.osohq.com/">oso</a><br>The Oso Library is a batteries-included framework for building authorization in your application</li>
+<li><a target="_blank" rel="noopener" href="https://bevyengine.org/">bevy</a><br>A refreshingly simple data-driven game engine built in Rust</li>
+</ul>
+<h2 id="macro"><a href="#macro" class="headerlink" title="macro"></a>macro</h2><h3 id="rust-compile-process"><a href="#rust-compile-process" class="headerlink" title="rust compile process"></a>rust compile process</h3><p><img src="/images/rust/macros/16.compile_process.png" alt="rust compile process"></p>
+<h3 id="front-end-rustc"><a href="#front-end-rustc" class="headerlink" title="front end: rustc"></a>front end: rustc</h3><ol>
+<li>lexical analysis: Code Text -&gt; TokenStream</li>
+<li>syntax analysis: TokenStream -&gt; AST (abstract syntax tree)</li>
+<li>semantic analyzer:<br>     AST -&gt; HIR (High-Level Intermediate Representation) -&gt; Type HIR (static type analysis, syntactic desugar, e.g <code>for</code> changed to <code>loop</code>) -&gt; MIR: (Mid-Level Intermediate Representation, scope, reference &amp; borrow check)</li>
+</ol>
+<h3 id="back-end-LLVM"><a href="#back-end-LLVM" class="headerlink" title="back end: LLVM"></a>back end: LLVM</h3><p>LLVM IR -&gt; machine code</p>
+<h3 id="macros-in-compiling"><a href="#macros-in-compiling" class="headerlink" title="macros in compiling"></a>macros in compiling</h3><ul>
+<li>declarative macros: TokenStream - expand -&gt; TokenStream</li>
+<li>procedule macros: self defined AST with the help or third party crate such as syn, quote</li>
+</ul>
+<h2 id="declarative-macro-macro-rules"><a href="#declarative-macro-macro-rules" class="headerlink" title="declarative macro: macro_rules!"></a>declarative macro: macro_rules!</h2><p>Declarative macros allow us to write match-like code. The match expression is a control structure that receives an expression and then matches the result of the expression with multiple patterns. Once a pattern is matched, the code associated with the pattern will be executed</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">match</span> target &#123;</span><br><span class="line">        match_pattern_1 =&gt; expr_1,</span><br><span class="line">        match_pattern_2 =&gt; &#123;</span><br><span class="line">            statement1;</span><br><span class="line">            statement2;</span><br><span class="line">            expr_2</span><br><span class="line">        &#125;,</span><br><span class="line">        _ =&gt; expr_3</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="example-1-simplified-vec"><a href="#example-1-simplified-vec" class="headerlink" title="example 1, simplified vec!"></a>example 1, simplified <code>vec!</code></h3><p>below example use macro_rules to implement a simplified version of vec!</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[macro_export]</span></span><br><span class="line"><span class="built_in">macro_rules!</span> vec &#123;</span><br><span class="line">    ( $( $x:expr ),* ) =&gt; &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">temp_vec</span> = <span class="type">Vec</span>::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                temp_vec.<span class="title function_ invoke__">push</span>($x);</span><br><span class="line">            )*</span><br><span class="line">            temp_vec</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">v</span>: <span class="type">Vec</span>&lt;<span class="type">u32</span>&gt; = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="example-2-unless"><a href="#example-2-unless" class="headerlink" title="example 2, unless"></a>example 2, unless</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">macro_rules!</span> unless &#123;</span><br><span class="line">    ( ($arg:expr) =&gt; $branch:tt ) =&gt; ( <span class="keyword">if</span> !$arg &#123;$branch&#125;;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">cmp</span>(a:<span class="type">i32</span>, b:<span class="type">i32</span>) &#123;</span><br><span class="line">    unless!&#123;</span><br><span class="line">        (a&gt;b) =&gt; &#123;<span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125; &lt; &#123;&#125;&quot;</span>, a,b);&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="title function_ invoke__">cmp</span>(<span class="number">1</span>,<span class="number">2</span>);  <span class="comment">/// print &quot;1&lt;2&quot; as the condition is true !(a&gt;b)</span></span><br><span class="line">    <span class="title function_ invoke__">cmp</span>(<span class="number">3</span>,<span class="number">2</span>);  <span class="comment">/// print nothing</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="example-3-HashMap"><a href="#example-3-HashMap" class="headerlink" title="example 3, HashMap"></a>example 3, HashMap</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">macro_rules!</span> hashmap &#123;</span><br><span class="line">    <span class="comment">// match for &quot;a&quot; =&gt; 1, &quot;b&quot; =&gt; 2,</span></span><br><span class="line">    ( $($key:expr =&gt; $value:expr,)* ) =&gt;</span><br><span class="line">        &#123; hashmap!($($key =&gt; $value),*) &#125;; <span class="comment">// recuisive</span></span><br><span class="line">    <span class="comment">// match for &quot;a&quot; =&gt; 1, &quot;b&quot; =&gt; 2</span></span><br><span class="line">    ( $($key:expr =&gt; $value:expr),* ) =&gt; &#123; </span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">_map</span> = ::std::collections::HashMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                _map.<span class="title function_ invoke__">insert</span>($key, $value);</span><br><span class="line">            )*</span><br><span class="line">            _map</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">macro_rules!</span> hashmap_equivalent &#123;</span><br><span class="line">    ( $($key:expr =&gt; $value:expr),* $(,)*) =&gt; &#123; </span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">_map</span> = ::std::collections::HashMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                _map.<span class="title function_ invoke__">insert</span>($key, $value);</span><br><span class="line">            )*</span><br><span class="line">            _map</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">map</span> = hashmap!&#123;</span><br><span class="line">        <span class="string">&quot;a&quot;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">        <span class="string">&quot;b&quot;</span> =&gt; <span class="number">2</span>,  <span class="comment">// with or without ,</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">map_2</span> = hashmap_equivalent!&#123;</span><br><span class="line">        <span class="string">&quot;a&quot;</span> =&gt; <span class="number">1</span>, </span><br><span class="line">        <span class="string">&quot;b&quot;</span> =&gt; <span class="number">2</span>,  <span class="comment">// with or without ,</span></span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="metavariables"><a href="#metavariables" class="headerlink" title="metavariables"></a>metavariables</h3><ul>
+<li>item: an Item</li>
+<li>stmt: a Statement without the trailing semicolon (except for item statements that require semicolons)</li>
+<li>expr: an Expression</li>
+<li>ty: a Type</li>
+<li>ident: an IDENTIFIER_OR_KEYWORD or RAW_IDENTIFIER</li>
+<li>path: a TypePath style path</li>
+<li>tt: a TokenTree (a single token or tokens in matching delimiters (), [], or {})</li>
+<li>meta: an Attr, the contents of an attribute</li>
+<li>lifetime: a LIFETIME_TOKEN</li>
+<li>vis: a possibly empty Visibility qualifier</li>
+<li>literal: matches LiteralExpression<br>details to be found <a target="_blank" rel="noopener" href="https://doc.rust-lang.org/reference/macros-by-example.html">here</a></li>
+</ul>
+<h2 id="procedures-macro"><a href="#procedures-macro" class="headerlink" title="procedures macro"></a>procedures macro</h2><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://web.mit.edu/rust-lang_v1.25/arch/amd64_ubuntu1404/share/doc/rust/html/book/first-edition/trait-objects.html">rust trait object</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2022/12/28/rust/rust-07-macro/" data-id="clj1kdool000oswsj4sr85sh1" data-title="rust reflect and macro" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rust/rust-frequently-used-crates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/12/13/rust/rust-frequently-used-crates/" class="article-date">
@@ -101,7 +185,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/rust-frequently-used-crates/" data-id="clh7i3df80016dksjf8n7g0uj" data-title="rust frequently used crates" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/13/rust/rust-frequently-used-crates/" data-id="clj1kdoom000xswsjd4cf23tb" data-title="rust frequently used crates" class="article-share-link">Share</a>
       
       
       
@@ -171,7 +255,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="clh7i3df80011dksja7ki25sv" data-title="rust cargo all in one" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="clj1kdoom000vswsjhlbh8v07" data-title="rust cargo all in one" class="article-share-link">Share</a>
       
       
       
@@ -211,7 +295,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clh7i3df00003dksj1cazftja" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clj1kdood0001swsjgi069vrr" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -262,7 +346,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clh7i3df2000bdksj2t84fcjr" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clj1kdoof0005swsjdxl53o2n" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
@@ -300,7 +384,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/25/rust/rust-std/" data-id="clh7i3df9001bdksj22ypa4qj" data-title="rust std" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/25/rust/rust-std/" data-id="clj1kdoom0010swsj639k57m5" data-title="rust std" class="article-share-link">Share</a>
       
       
       
@@ -367,7 +451,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="clh7i3df90019dksj7o3hg0xq" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="clj1kdoom0012swsj2rtpgz24" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
       
       
       
@@ -413,7 +497,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="clh7i3df9001edksj1v691usb" data-title="rust tools" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="clj1kdooq0020swsj6z0ldjw4" data-title="rust tools" class="article-share-link">Share</a>
       
       
       
@@ -459,7 +543,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="clh7i3dfb0021dksjcrak7t4z" data-title="rust sugar" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="clj1kdoon0016swsjfhu6hd1e" data-title="rust sugar" class="article-share-link">Share</a>
       
       
       
@@ -528,74 +612,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="clh7i3df80014dksjglzz4j0v" data-title="cargo doc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="clj1kdoon0014swsj6odzh06e" data-title="cargo doc" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-geth.1.rpc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/08/geth.1.rpc/" class="article-date">
-  <time class="dt-published" datetime="2022-11-08T06:23:08.000Z" itemprop="datePublished">2022-11-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/08/geth.1.rpc/">rpc</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>package rpc implements bi-directional JSON-RPC 2.0 on multiple transports (http, ws, ipc). After creating a server or client instance, objects can be registered to make them visible as ‘services’. Exported methods that follow specific conventions can be called remotely. It also has support for the publish&#x2F;subscribe pattern.</p>
-<h2 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h2><h3 id="rpc-endpoints-callback"><a href="#rpc-endpoints-callback" class="headerlink" title="rpc endpoints (callback)"></a>rpc endpoints (callback)</h3><p>Methods that satisfy the following criteria are made available for remote access:</p>
-<ul>
-<li>method must be exported</li>
-<li>method returns 0, 1 (response or error) or 2 (response and error) values</li>
-</ul>
-<p>The server offers the ServeCodec method which accepts a ServerCodec instance. It will read requests from the codec, process the request and sends the response back to the client using the codec. The server can execute requests concurrently. Responses can be sent back to the client out of order.</p>
-<p>An example server which uses the JSON codec:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> CalculatorService <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Add(a, b <span class="type">int</span>) <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Div(a, b <span class="type">int</span>) (<span class="type">int</span>, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> b == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>, errors.New(<span class="string">&quot;divide by zero&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> a/b, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">calculator := <span class="built_in">new</span>(CalculatorService)</span><br><span class="line">server := NewServer()</span><br><span class="line">server.RegisterName(<span class="string">&quot;calculator&quot;</span>, calculator)</span><br><span class="line">l, _ := net.ListenUnix(<span class="string">&quot;unix&quot;</span>, &amp;net.UnixAddr&#123;Net: <span class="string">&quot;unix&quot;</span>, Name: <span class="string">&quot;/tmp/calculator.sock&quot;</span>&#125;)</span><br><span class="line">server.ServeListener(l)</span><br></pre></td></tr></table></figure>
-
-<h3 id="subscriptions"><a href="#subscriptions" class="headerlink" title="subscriptions"></a>subscriptions</h3><p>The package also supports the publish subscribe pattern through the use of subscriptions.<br>A method that is considered eligible for notifications must satisfy the following<br>criteria:</p>
-<ul>
-<li>method must be exported</li>
-<li>first method argument type must be context.Context</li>
-<li>method must have return types (rpc.Subscription, error)</li>
-</ul>
-<p>An example method:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *BlockChainService)</span></span> NewBlocks(ctx context.Context) (rpc.Subscription, <span class="type">error</span>) &#123;</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Reverse-Calls"><a href="#Reverse-Calls" class="headerlink" title="Reverse Calls"></a>Reverse Calls</h3><p>In any method handler, an instance of rpc.Client can be accessed through the <code>ClientFromContext</code> method. Using this client instance, server-to-client method calls can be performed on the RPC connection.</p>
-<h2 id="server"><a href="#server" class="headerlink" title="server"></a>server</h2><p>to start rpc service, the invoking chain is as below</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node/node.go[func (n *Node) Start()] -&gt; node/node.go[func (n *Node) openEndpoints()] -&gt; node/node.go[func (n *Node) startRPC()]</span><br></pre></td></tr></table></figure>
-
-<h3 id="API-registration"><a href="#API-registration" class="headerlink" title="API registration"></a>API registration</h3>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/08/geth.1.rpc/" data-id="clh7i3df10007dksj4sjb19vq" data-title="rpc" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
 
     </footer>
   </div>
@@ -633,7 +654,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 17.5px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
+      <a href="/tags/blockchain/" style="font-size: 16.67px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 13.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 13.33px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
     </div>
   </div>
 
@@ -655,6 +676,10 @@
       <ul>
         
           <li>
+            <a href="/2023/03/15/geth/tech_docs/geth.v1.10.0/">geth v1.10.0 summary</a>
+          </li>
+        
+          <li>
             <a href="/2023/03/05/golang/go-similar-concepts-comparison/">go similar concepts comparison</a>
           </li>
         
@@ -668,10 +693,6 @@
         
           <li>
             <a href="/2023/02/07/two-party-ecdsa/">two party ecdsa</a>
-          </li>
-        
-          <li>
-            <a href="/2023/01/22/MPT/">MPT</a>
           </li>
         
       </ul>
