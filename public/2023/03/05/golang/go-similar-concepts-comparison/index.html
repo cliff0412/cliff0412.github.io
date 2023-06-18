@@ -4,18 +4,19 @@
   <meta charset="utf-8">
   
   
-  <title>how to use hexo | cliff&#39;s personal blog</title>
+  <title>go similar concepts comparison | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+  <meta name="description" content="struct{} &amp; struct{}{}struct is a keyword in Go. It is used to define struct types, which is a sequence of named elements. For example: 1234type Person struct &amp;#123;    Name string    Age  int&amp;#125">
 <meta property="og:type" content="article">
-<meta property="og:title" content="how to use hexo">
-<meta property="og:url" content="https://cliff0412.github.io/2022/11/27/hello-world/index.html">
+<meta property="og:title" content="go similar concepts comparison">
+<meta property="og:url" content="https://cliff0412.github.io/2023/03/05/golang/go-similar-concepts-comparison/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="struct{} &amp; struct{}{}struct is a keyword in Go. It is used to define struct types, which is a sequence of named elements. For example: 1234type Person struct &amp;#123;    Name string    Age  int&amp;#125">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-11-27T03:47:56.000Z">
-<meta property="article:modified_time" content="2023-04-06T16:43:39.107Z">
+<meta property="article:published_time" content="2023-03-05T02:44:50.000Z">
+<meta property="article:modified_time" content="2023-06-18T07:07:22.116Z">
 <meta property="article:author" content="cliff">
+<meta property="article:tag" content="golang">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -73,10 +74,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-golang/go-similar-concepts-comparison" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/11/27/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-11-27T03:47:56.000Z" itemprop="datePublished">2022-11-27</time>
+    <a href="/2023/03/05/golang/go-similar-concepts-comparison/" class="article-date">
+  <time class="dt-published" datetime="2023-03-05T02:44:50.000Z" itemprop="datePublished">2023-03-05</time>
 </a>
     
   </div>
@@ -87,7 +88,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      how to use hexo
+      go similar concepts comparison
     </h1>
   
 
@@ -95,46 +96,33 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
+        <h2 id="struct-amp-struct"><a href="#struct-amp-struct" class="headerlink" title="struct{} &amp; struct{}{}"></a>struct{} &amp; struct{}{}</h2><p><code>struct</code> is a keyword in Go. It is used to define struct types, which is a sequence of named elements.</p>
+<p>For example:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name <span class="type">string</span></span><br><span class="line">    Age  <span class="type">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The <code>struct&#123;&#125;</code> is a struct type with zero elements. It is often used when no information is to be stored. It has the benefit of being 0-sized, so usually no memory is required to store a value of type <code>struct&#123;&#125;</code>.</p>
+<p><code>struct&#123;&#125;&#123;&#125;</code> on the other hand is a <a target="_blank" rel="noopener" href="https://go.dev/ref/spec#Composite_literals">composite literal</a>, it constructs a value of type <code>struct&#123;&#125;</code>. A composite literal constructs values for types such as <code>structs</code>, <code>arrays</code>, <code>maps</code> and <code>slices</code>. Its syntax is the type followed by the elements in braces. Since the “empty” struct (struct{}) has no fields, the elements list is also empty:</p>
+<p> struct{}  {}<br>|  ^     | ^<br>  type     empty element list<br>As an example let’s create a “set” in Go. Go does not have a builtin set data structure, but it has a builtin map. We can use a map as a set, as a map can only have at most one entry with a given key. And since we want to only store keys (elements) in the map, we may choose the map value type to be struct{}.</p>
+<p>A map with string elements:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> set <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"><span class="comment">// Initialize the set</span></span><br><span class="line">set = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Add some values to the set:</span></span><br><span class="line">set[<span class="string">&quot;red&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">set[<span class="string">&quot;blue&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Check if a value is in the map:</span></span><br><span class="line">_, ok := set[<span class="string">&quot;red&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is red in the map?&quot;</span>, ok)</span><br><span class="line">_, ok = set[<span class="string">&quot;green&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is green in the map?&quot;</span>, ok)</span><br></pre></td></tr></table></figure>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clh7i3df2000bdksj2t84fcjr" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/05/golang/go-similar-concepts-comparison/" data-id="clj134xoj00009isjbw6z8852" data-title="go similar concepts comparison" class="article-share-link">Share</a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/" rel="tag">golang</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2022/11/28/eth-sign/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          eth_sign
-        
-      </div>
-    </a>
   
-  
-    <a href="/2022/11/25/rust/rust-std/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/03/02/golang/go-reflect/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">rust std</div>
+      <div class="article-nav-title">go reflect</div>
     </a>
   
 </nav>

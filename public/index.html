@@ -71,6 +71,53 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-golang/go-similar-concepts-comparison" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/03/05/golang/go-similar-concepts-comparison/" class="article-date">
+  <time class="dt-published" datetime="2023-03-05T02:44:50.000Z" itemprop="datePublished">2023-03-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/03/05/golang/go-similar-concepts-comparison/">go similar concepts comparison</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="struct-amp-struct"><a href="#struct-amp-struct" class="headerlink" title="struct{} &amp; struct{}{}"></a>struct{} &amp; struct{}{}</h2><p><code>struct</code> is a keyword in Go. It is used to define struct types, which is a sequence of named elements.</p>
+<p>For example:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name <span class="type">string</span></span><br><span class="line">    Age  <span class="type">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The <code>struct&#123;&#125;</code> is a struct type with zero elements. It is often used when no information is to be stored. It has the benefit of being 0-sized, so usually no memory is required to store a value of type <code>struct&#123;&#125;</code>.</p>
+<p><code>struct&#123;&#125;&#123;&#125;</code> on the other hand is a <a target="_blank" rel="noopener" href="https://go.dev/ref/spec#Composite_literals">composite literal</a>, it constructs a value of type <code>struct&#123;&#125;</code>. A composite literal constructs values for types such as <code>structs</code>, <code>arrays</code>, <code>maps</code> and <code>slices</code>. Its syntax is the type followed by the elements in braces. Since the “empty” struct (struct{}) has no fields, the elements list is also empty:</p>
+<p> struct{}  {}<br>|  ^     | ^<br>  type     empty element list<br>As an example let’s create a “set” in Go. Go does not have a builtin set data structure, but it has a builtin map. We can use a map as a set, as a map can only have at most one entry with a given key. And since we want to only store keys (elements) in the map, we may choose the map value type to be struct{}.</p>
+<p>A map with string elements:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> set <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"><span class="comment">// Initialize the set</span></span><br><span class="line">set = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Add some values to the set:</span></span><br><span class="line">set[<span class="string">&quot;red&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">set[<span class="string">&quot;blue&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Check if a value is in the map:</span></span><br><span class="line">_, ok := set[<span class="string">&quot;red&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is red in the map?&quot;</span>, ok)</span><br><span class="line">_, ok = set[<span class="string">&quot;green&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is green in the map?&quot;</span>, ok)</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/03/05/golang/go-similar-concepts-comparison/" data-id="clj134xoj00009isjbw6z8852" data-title="go similar concepts comparison" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/" rel="tag">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-golang/go-reflect" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/03/02/golang/go-reflect/" class="article-date">
@@ -763,50 +810,6 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 
 
   
-    <article id="post-rust/rust-frequently-used-crates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/12/13/rust/rust-frequently-used-crates/" class="article-date">
-  <time class="dt-published" datetime="2022-12-13T09:15:23.000Z" itemprop="datePublished">2022-12-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/12/13/rust/rust-frequently-used-crates/">rust frequently used crates</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>tokio-trace -&gt; tracing</p>
-<p>contexts, multi threads<br>causality -<br>structured diagnostics ( no grep)</p>
-<p>tracing is part of tokio, tokio not requied</p>
-<p>spans: a perido of time, entered and exited<br>events: singular moment in time<br>subscriber: collect trace</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/rust-frequently-used-crates/" data-id="clh7i3df80016dksjf8n7g0uj" data-title="rust frequently used crates" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -835,7 +838,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 17.5px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15px;">geth</a> <a href="/tags/golang/" style="font-size: 10px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
+      <a href="/tags/blockchain/" style="font-size: 17.5px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
     </div>
   </div>
 
@@ -857,6 +860,10 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       <ul>
         
           <li>
+            <a href="/2023/03/05/golang/go-similar-concepts-comparison/">go similar concepts comparison</a>
+          </li>
+        
+          <li>
             <a href="/2023/03/02/golang/go-reflect/">go reflect</a>
           </li>
         
@@ -870,10 +877,6 @@ during create contract, an object <code>Contract</code> is created. A Contract o
         
           <li>
             <a href="/2023/01/22/MPT/">MPT</a>
-          </li>
-        
-          <li>
-            <a href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
           </li>
         
       </ul>
