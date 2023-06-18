@@ -71,6 +71,69 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-geth.1.rpc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/11/08/geth.1.rpc/" class="article-date">
+  <time class="dt-published" datetime="2022-11-08T06:23:08.000Z" itemprop="datePublished">2022-11-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/11/08/geth.1.rpc/">rpc</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>package rpc implements bi-directional JSON-RPC 2.0 on multiple transports (http, ws, ipc). After creating a server or client instance, objects can be registered to make them visible as ‘services’. Exported methods that follow specific conventions can be called remotely. It also has support for the publish&#x2F;subscribe pattern.</p>
+<h2 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h2><h3 id="rpc-endpoints-callback"><a href="#rpc-endpoints-callback" class="headerlink" title="rpc endpoints (callback)"></a>rpc endpoints (callback)</h3><p>Methods that satisfy the following criteria are made available for remote access:</p>
+<ul>
+<li>method must be exported</li>
+<li>method returns 0, 1 (response or error) or 2 (response and error) values</li>
+</ul>
+<p>The server offers the ServeCodec method which accepts a ServerCodec instance. It will read requests from the codec, process the request and sends the response back to the client using the codec. The server can execute requests concurrently. Responses can be sent back to the client out of order.</p>
+<p>An example server which uses the JSON codec:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> CalculatorService <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Add(a, b <span class="type">int</span>) <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Div(a, b <span class="type">int</span>) (<span class="type">int</span>, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> b == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>, errors.New(<span class="string">&quot;divide by zero&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> a/b, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">calculator := <span class="built_in">new</span>(CalculatorService)</span><br><span class="line">server := NewServer()</span><br><span class="line">server.RegisterName(<span class="string">&quot;calculator&quot;</span>, calculator)</span><br><span class="line">l, _ := net.ListenUnix(<span class="string">&quot;unix&quot;</span>, &amp;net.UnixAddr&#123;Net: <span class="string">&quot;unix&quot;</span>, Name: <span class="string">&quot;/tmp/calculator.sock&quot;</span>&#125;)</span><br><span class="line">server.ServeListener(l)</span><br></pre></td></tr></table></figure>
+
+<h3 id="subscriptions"><a href="#subscriptions" class="headerlink" title="subscriptions"></a>subscriptions</h3><p>The package also supports the publish subscribe pattern through the use of subscriptions.<br>A method that is considered eligible for notifications must satisfy the following<br>criteria:</p>
+<ul>
+<li>method must be exported</li>
+<li>first method argument type must be context.Context</li>
+<li>method must have return types (rpc.Subscription, error)</li>
+</ul>
+<p>An example method:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *BlockChainService)</span></span> NewBlocks(ctx context.Context) (rpc.Subscription, <span class="type">error</span>) &#123;</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Reverse-Calls"><a href="#Reverse-Calls" class="headerlink" title="Reverse Calls"></a>Reverse Calls</h3><p>In any method handler, an instance of rpc.Client can be accessed through the <code>ClientFromContext</code> method. Using this client instance, server-to-client method calls can be performed on the RPC connection.</p>
+<h2 id="server"><a href="#server" class="headerlink" title="server"></a>server</h2><p>to start rpc service, the invoking chain is as below</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node/node.go[func (n *Node) Start()] -&gt; node/node.go[func (n *Node) openEndpoints()] -&gt; node/node.go[func (n *Node) startRPC()]</span><br></pre></td></tr></table></figure>
+
+<h3 id="API-registration"><a href="#API-registration" class="headerlink" title="API registration"></a>API registration</h3>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2022/11/08/geth.1.rpc/" data-id="clj1kahzd0008k5sjdsc60hh4" data-title="rpc" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rust/rust-08-project-management" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/11/06/rust/rust-08-project-management/" class="article-date">
@@ -133,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="clj135t4e0012e4sjd3zaez8e" data-title="rust project management" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="clj1kahzi000yk5sj2gjmaalg" data-title="rust project management" class="article-share-link">Share</a>
       
       
       
@@ -226,7 +289,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/01/geth.0.get.start/" data-id="clj135t440003e4sj2ylg9q28" data-title="geth start" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/01/geth.0.get.start/" data-id="clj1kahzc0004k5sjbami773o" data-title="geth start" class="article-share-link">Share</a>
       
       
       
@@ -359,7 +422,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/30/rust/rust-06-smart-pointer/" data-id="clj135t4e000ze4sjglbn538i" data-title="rust smart pointer" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/30/rust/rust-06-smart-pointer/" data-id="clj1kahzj0011k5sj6x1wgt6b" data-title="rust smart pointer" class="article-share-link">Share</a>
       
       
       
@@ -409,7 +472,7 @@ in both ways, buffer is converted to a trait object implements Write</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/25/rust/rust-05-memory-layout/" data-id="clj135t4d000xe4sj8n2gcnve" data-title="rust memory layout" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/25/rust/rust-05-memory-layout/" data-id="clj1kahzi000uk5sj3cmb31vd" data-title="rust memory layout" class="article-share-link">Share</a>
       
       
       
@@ -481,7 +544,7 @@ in both ways, buffer is converted to a trait object implements Write</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/18/rust/rust-04-lifetime/" data-id="clj135t4d000ve4sjhg1w6q4l" data-title="rust lifetime" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/18/rust/rust-04-lifetime/" data-id="clj1kahzi000xk5sjdelxhwfq" data-title="rust lifetime" class="article-share-link">Share</a>
       
       
       
@@ -576,7 +639,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/11/rust/rust-03-ownership/" data-id="clj135t4d000se4sj7d6s8w9t" data-title="rust ownership" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/11/rust/rust-03-ownership/" data-id="clj1kahzi000sk5sja1jdfkp9" data-title="rust ownership" class="article-share-link">Share</a>
       
       
       
@@ -738,7 +801,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/04/rust/rust-02-basics/" data-id="clj135t4c000qe4sj5mhd1j9o" data-title="rust basics" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/04/rust/rust-02-basics/" data-id="clj1kahzh000pk5sjfqb7749k" data-title="rust basics" class="article-share-link">Share</a>
       
       
       
@@ -792,7 +855,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/09/27/rust/rust-01-resource/" data-id="clj135t4b000ne4sj2ufx4gdi" data-title="rust resource" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/09/27/rust/rust-01-resource/" data-id="clj1kahzh000nk5sj5som9caa" data-title="rust resource" class="article-share-link">Share</a>
       
       
       
@@ -834,7 +897,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 17.5px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
+      <a href="/tags/blockchain/" style="font-size: 16.67px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 13.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 13.33px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
     </div>
   </div>
 
@@ -856,6 +919,10 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       <ul>
         
           <li>
+            <a href="/2023/03/15/geth/code_analysis/geth.v1.10.0/">geth v1.10.0 summary</a>
+          </li>
+        
+          <li>
             <a href="/2023/03/05/golang/go-similar-concepts-comparison/">go similar concepts comparison</a>
           </li>
         
@@ -869,10 +936,6 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
         
           <li>
             <a href="/2023/02/07/two-party-ecdsa/">two party ecdsa</a>
-          </li>
-        
-          <li>
-            <a href="/2023/01/22/MPT/">MPT</a>
           </li>
         
       </ul>
