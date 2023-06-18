@@ -6,6 +6,7 @@ tags: [rust]
 
 ## useful cmd
 ```
+cargo new ${crate_name} --lib ## create a lib crate
 cargo build --verbose ## print out each rustc invocation
 ```
 

@@ -4,6 +4,23 @@ date: 2022-11-23 15:52:34
 tags: [rust]
 ---
 
+## ref vs &
+`ref` annotates pattern bindings to make them borrow rather than move. It is **not** a part of the pattern as far as matching is concerned: it does not affect whether a value is matched, only how it is matched.
+By default, match statements consume all they can, which can sometimes be a problem, when you don't really need the value to be moved and owned:
+```rust
+let maybe_name = Some(String::from("Alice"));
+// Using `ref`, the value is borrowed, not moved ...
+match maybe_name {
+    Some(ref n) => println!("Hello, {n}"),
+    _ => println!("Hello, world"),
+}
+// ... so it's available here!
+println!("Hello again, {}", maybe_name.unwrap_or("world".into()));
+```
+
+- `&` denotes that your pattern expects a reference to an object. Hence `&` is a part of said pattern: `&Foo` matches different objects than `Foo` does.
+- `ref` indicates that you want a reference to an unpacked value. It is not matched against: `Foo(ref foo)` matches the same objects as `Foo(foo)`.
+
 ## Clone vs Copy
 ### Copy 的含义
 Copy 的全名是 std::marker::Copy。请大家注意 std::marker 这个模块里面的所有的 trait 都是特殊的 trait。目前稳定的有四个，它们是 Copy、Send、Sized、Sync。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。在编译器眼里，它们与其它的 trait 不一样。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定，这些约定会影响编译器的静态检查以及代码生成。
