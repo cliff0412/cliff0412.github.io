@@ -71,6 +71,75 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rust/rust-cargo-doc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/11/13/rust/rust-cargo-doc/" class="article-date">
+  <time class="dt-published" datetime="2022-11-13T07:41:59.000Z" itemprop="datePublished">2022-11-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/11/13/rust/rust-cargo-doc/">cargo doc</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="文档注释"><a href="#文档注释" class="headerlink" title="文档注释"></a>文档注释</h2><h3 id="用于生成文档"><a href="#用于生成文档" class="headerlink" title="用于生成文档"></a>用于生成文档</h3><ul>
+<li>使用 &#x2F;&#x2F;&#x2F;</li>
+<li>支持 Markdown</li>
+<li>放置在被说没条目之前</li>
+</ul>
+<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// adds one to the number given</span></span><br><span class="line"><span class="comment">/// </span></span><br><span class="line"><span class="comment">/// # Examples</span></span><br><span class="line"><span class="comment">/// ```</span></span><br><span class="line"><span class="comment">/// let arg = 5;</span></span><br><span class="line"><span class="comment">/// let answer = my_crate::add_one(arg);</span></span><br><span class="line"><span class="comment">/// </span></span><br><span class="line"><span class="comment">/// assert_eq!(6, answer);</span></span><br><span class="line"><span class="comment">/// ```</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add_one</span>(x: <span class="type">i32</span>) <span class="punctuation">-&gt;</span> <span class="type">i32</span> &#123;</span><br><span class="line">    x + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="命令"><a href="#命令" class="headerlink" title="命令"></a>命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo doc  ## 生成的html放在 target/doc 目录下</span><br><span class="line">cargo doc --open ## 构建当前crate的文档 (也包含crate依赖项的文档)</span><br></pre></td></tr></table></figure>
+<h3 id="常用章节"><a href="#常用章节" class="headerlink" title="常用章节"></a>常用章节</h3><ul>
+<li><code># Examples</code></li>
+<li><code>Panics</code>: 可能panic的场景</li>
+<li><code>Errors</code>: 如果fn返回Result, 描述可能的错误种类, 以及导致错误的条件</li>
+<li><code>Safety</code>: 如果fn出入unsafe调用, 解释unsafe的原因, 以及调用者确保的使用前提</li>
+</ul>
+<h3 id="文档注释作为测试"><a href="#文档注释作为测试" class="headerlink" title="文档注释作为测试"></a>文档注释作为测试</h3><ul>
+<li>运行cargo test, doc中用# Example标记的实例代码会用来测试运行</li>
+</ul>
+<h3 id="为包含注释的项添加文档注释"><a href="#为包含注释的项添加文档注释" class="headerlink" title="为包含注释的项添加文档注释"></a>为包含注释的项添加文档注释</h3><ul>
+<li>符号: &#x2F;&#x2F;!</li>
+<li>这类注释通常用描述crate和模块:<ul>
+<li>crate root (按惯例 src&#x2F;lib.rs)</li>
+<li>一个模块内，将crate火模块作为一个整体进行记录</li>
+</ul>
+</li>
+</ul>
+<h2 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h2><p>&#x2F;&#x2F;!  - 模块级稳定注释, 置于模块头部<br>&#x2F;&#x2F;!! - 模块级稳定注释, 但是和上面注释置于同一行</p>
+<p>&#x2F;&#x2F;!  - 模块级稳定注释, 会换行</p>
+<p>&#x2F;*!  - 模块级稳定注释 <em>&#x2F;<br>&#x2F;</em>!！ - 模块级稳定注释, 和上面同一行 *&#x2F;</p>
+<p>&#x2F;&#x2F; 普通行注释<br>&#x2F;&#x2F;&#x2F; 行级文档注释<br>&#x2F;&#x2F;&#x2F;&#x2F; 普通行注释</p>
+<p>&#x2F;* 普通块级注释 <em>&#x2F;<br>&#x2F;</em>* 会级文档注释   *&#x2F;</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="clj4fd63v001dl4sja9m16ejh" data-title="cargo doc" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-geth/code_analysis/geth.1.rpc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/11/08/geth/code_analysis/geth.1.rpc/" class="article-date">
@@ -120,7 +189,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="clj1kdooq0021swsj1x1fdepa" data-title="rpc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="clj4fd63q000fl4sj7tl79ko2" data-title="rpc" class="article-share-link">Share</a>
       
       
       
@@ -196,7 +265,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="clj1kdool000sswsjbe0qfr02" data-title="rust project management" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="clj4fd63u0018l4sjcyro1f7w" data-title="rust project management" class="article-share-link">Share</a>
       
       
       
@@ -289,7 +358,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/01/geth/code_analysis/geth.0.get.start/" data-id="clj1kdoor0027swsjd4mlgvcs" data-title="geth start" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/01/geth/code_analysis/geth.0.get.start/" data-id="clj4fd63s000rl4sj3wl787fy" data-title="geth start" class="article-share-link">Share</a>
       
       
       
@@ -422,7 +491,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/30/rust/rust-06-smart-pointer/" data-id="clj1kdool000qswsj05zs1nmz" data-title="rust smart pointer" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/30/rust/rust-06-smart-pointer/" data-id="clj4fd63u0016l4sjf3xch3ty" data-title="rust smart pointer" class="article-share-link">Share</a>
       
       
       
@@ -472,7 +541,7 @@ in both ways, buffer is converted to a trait object implements Write</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/25/rust/rust-05-memory-layout/" data-id="clj1kdool000nswsjbd40a511" data-title="rust memory layout" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/25/rust/rust-05-memory-layout/" data-id="clj4fd63t000yl4sj5dgogk4j" data-title="rust memory layout" class="article-share-link">Share</a>
       
       
       
@@ -544,7 +613,7 @@ in both ways, buffer is converted to a trait object implements Write</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/18/rust/rust-04-lifetime/" data-id="clj1kdooj000fswsj09vr8ohx" data-title="rust lifetime" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/18/rust/rust-04-lifetime/" data-id="clj4fd63t0011l4sjgy771muq" data-title="rust lifetime" class="article-share-link">Share</a>
       
       
       
@@ -639,7 +708,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/11/rust/rust-03-ownership/" data-id="clj1kdook000lswsj58iu5si7" data-title="rust ownership" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/11/rust/rust-03-ownership/" data-id="clj4fd63t000wl4sje5bcfeqh" data-title="rust ownership" class="article-share-link">Share</a>
       
       
       
@@ -801,7 +870,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/04/rust/rust-02-basics/" data-id="clj1kdooj000hswsj2amwesty" data-title="rust basics" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/04/rust/rust-02-basics/" data-id="clj4fd63t000ul4sj5scq73s0" data-title="rust basics" class="article-share-link">Share</a>
       
       
       
@@ -855,7 +924,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/09/27/rust/rust-01-resource/" data-id="clj1kdook000jswsj8mtkg5mg" data-title="rust resource" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/09/27/rust/rust-01-resource/" data-id="clj4fd63s000pl4sjgie3e9ly" data-title="rust resource" class="article-share-link">Share</a>
       
       
       
@@ -897,7 +966,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 16.67px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 13.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 13.33px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.5px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a>
     </div>
   </div>
 
@@ -919,6 +988,10 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       <ul>
         
           <li>
+            <a href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync mode</a>
+          </li>
+        
+          <li>
             <a href="/2023/03/15/geth/tech_docs/geth.v1.10.0/">geth v1.10.0 summary</a>
           </li>
         
@@ -932,10 +1005,6 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
         
           <li>
             <a href="/2023/02/23/paillier-encryption/">paillier encryption</a>
-          </li>
-        
-          <li>
-            <a href="/2023/02/07/two-party-ecdsa/">two party ecdsa</a>
           </li>
         
       </ul>
