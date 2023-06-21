@@ -85,7 +85,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync mode</a>
+      <a class="p-name article-title" href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync</a>
     </h1>
   
 
@@ -93,7 +93,35 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="full-node"><a href="#full-node" class="headerlink" title="full node"></a>full node</h1><h2 id="snap-sync-default"><a href="#snap-sync-default" class="headerlink" title="snap sync (default)"></a>snap sync (default)</h2><p>Snap sync starts from a relatively recent block and syncs from there to the head of the chain, keeping only the most recent 128 block states in memory.  The block header to sync up to is provided by the consensus client. Between the initial sync block and the 128 most recent blocks, the node stores occasional snapshots that can be used to rebuild any intermediate state “on-the-fly”. The difference between the snap-synced node and a full block-by-block synced node is that a snap synced node started from an initial checkpoint that was more recent than the genesis block. Snap sync is much faster than a full block-by-block sync from genesis.<br><img src="/images/geth/sync.mode.jpg" alt="sync mode"></p>
+        <h2 id="state"><a href="#state" class="headerlink" title="state"></a>state</h2><p>Ethereum maintains two different types of state: the set of accounts; and a set of storage slots for each contract account. Naively, storing these key-value pairs as flat data would be very efficient, however, verifying their correctness becomes computationally intractable. Every time a modification would be made, we’d need to hash all that data from scratch (which is not efficient).</p>
+<p>Instead of hashing the entire dataset all the time, eth uses MPT. The original useful data would be in the leaves, and each internal node would be a hash of everything below it. This would allow us to only recalculate a logarithmic number of hashes when something is modified, inserted, deleted and verified. A tiny extra is that keys are hashed before insertion to balance the tries (secured trie).</p>
+<h2 id="state-storage"><a href="#state-storage" class="headerlink" title="state storage"></a>state storage</h2><p>MPT make every read&#x2F;write of O(lnN) complexity. the depth of the trie is continuously growing; LevelDB also organizes its data into a maximum of 7 levels, so there’s an extra multiplier from there. The net result is that a single state access is expected to amplify into <strong>25-50</strong> random disk accesses. </p>
+<p>Of course all client implementations try their best to minimize this overhead. Geth uses large memory areas for caching trie nodes; and also uses in-memory pruning to avoid writing to disk nodes that get deleted anyway after a few blocks.</p>
+<h2 id="Not-all-accesses-are-created-equal"><a href="#Not-all-accesses-are-created-equal" class="headerlink" title="Not all accesses are created equal"></a>Not all accesses are created equal</h2><p>The Merkle Patricia tree is essential for writes (matain the capability to verify data), but it’s an overhead for reads.<br>An Ethereum node accesses state in a few different places:</p>
+<ul>
+<li>When importing a new block, EVM code execution does a more-or-less balanced number of state reads and writes. </li>
+<li>When a node operator retrieves state (e.g. eth_call and family), EVM code execution only does reads (it can write too, but those get discarded at the end and are not persisted).</li>
+<li>When a node is synchronizing, it is requesting state from remote nodes that need to dig it up and serve it over the network.</li>
+</ul>
+<p>if we can short circuit reads not to hit the state trie, a slew of node operations will become significantly faster. </p>
+<h2 id="snapshot"><a href="#snapshot" class="headerlink" title="snapshot"></a>snapshot</h2><p>Geth introduced its snapshot acceleration structure (not enabled by default). A snapshot is a complete view of the Ethereum state at a given block. Abstract implementation wise, it is a dump of all accounts and storage slots, represented by a flat key-value store.<br>snapshot is maintained as an extra to MPT. The snapshot essentially reduces reads from O(log n) to O(1) at the cost of increasing writes from O(log n) to O(1 + log n). </p>
+<h2 id="devil’s-in-the-details"><a href="#devil’s-in-the-details" class="headerlink" title="devil’s in the details"></a>devil’s in the details</h2><p>to maintain a snapshot, the naitve approach is to apply changes to current snapshot upon new block. If there’s a mini reorg however (even a single block), we’re in trouble, because there’s no undo.<br>To overcome this limitation, Geth’s snapshot is composed of two entities: a persistent disk layer that is a complete snapshot of an older block (e.g. HEAD-128); and a tree of in-memory diff layers that gather the writes on top.<br>Whenever a new block is processed, we do not merge the writes directly into the disk layer, rather just create a new in-memory diff layer with the changes. If enough in-memory diff layers are piled on top, the bottom ones start getting merged together and eventually pushed to disk. Whenever a state item is to be read, we start at the topmost diff layer and keep going backwards until we find it or reach the disk.<br>Of course, there are lots and lots of gotchas and caveats.</p>
+<ul>
+<li>On shutdown, the in-memory diff layers need to be persisted into a journal and loaded back up, otherwise the snapshot will become useless on restart.</li>
+<li>Use the bottom-most diff layer as an accumulator and only flush to disk when it exceeds some memory usage.</li>
+<li>Allocate a read cache for the disk layer so that contracts accessing the same ancient slot over and over don’t cause disk hits.</li>
+<li>Use cumulative bloom filters in the in-memory diff layers to quickly detect whether there’s a chance for an item to be in the diffs, or if we can go to disk immediately.</li>
+<li>The keys are not the raw data (account address, storage key), rather the hashes of these, ensuring the snapshot has the same iteration order as the Merkle Patricia tree.</li>
+</ul>
+<p>The snapshot also enables blazing fast state iteration of the most recent blocks. This was actually the main reason for building snapshots, as it permitted the creation of the new snap <a target="_blank" rel="noopener" href="https://github.com/ethereum/devp2p/pull/145">sync algorithm</a>.</p>
+<h2 id="Consensus-layer-syncing"><a href="#Consensus-layer-syncing" class="headerlink" title="Consensus layer syncing"></a>Consensus layer syncing</h2><p>all consensus logic and block propagation is handled by consensus clients. Blocks are downloaded by the consensus client and verified by the execution client. <strong>Geth cannot sync without being connected to a consensus client.</strong><br>There are two ways for the consensus client to find a block header that Geth can use as a sync target: optimistic syncing and checkpoint syncing:</p>
+<h3 id="optimistic-sync"><a href="#optimistic-sync" class="headerlink" title="optimistic sync"></a>optimistic sync</h3><p>Optimistic sync downloads blocks before the execution client has validated them. In optimistic sync the node assumes the data it receives from its peers is correct during the downloading phase but then retroactively verifies each downloaded block.<br><a target="_blank" rel="noopener" href="https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md">more details</a></p>
+<h3 id="checkpoint-sync"><a href="#checkpoint-sync" class="headerlink" title="checkpoint sync"></a>checkpoint sync</h3><p>Alternatively, the consensus client can grab a checkpoint from a trusted source which provides a target state to sync up to, before switching to full sync and verifying each block in turn. In this mode, the node trusts that the checkpoint is correct.</p>
+<h2 id="archive-nodes"><a href="#archive-nodes" class="headerlink" title="archive nodes"></a>archive nodes</h2><p>An archive node is a node that retains all historical data right back to genesis. There is no need to regenerate any data from checkpoints because all data is directly available in the node’s own storage. </p>
+<p>It is also possible to create a partial&#x2F;recent archive node where the node was synced using snap but the state is never pruned. This creates an archive node that saves all state data from the point that the node first syncs. This is configured by starting Geth with <code>--syncmode snap --gcmode archive</code>.</p>
+<h2 id="light-nodes"><a href="#light-nodes" class="headerlink" title="light nodes"></a>light nodes</h2><p>A light node syncs very quickly and stores the bare minimum of blockchain data. Light nodes only process block headers, not entire blocks. they receive a proof from the full node and verify it against their local header chain. <strong>Light nodes are not currently working on proof-of-stake Ethereum.</strong></p>
+<h2 id="full-node"><a href="#full-node" class="headerlink" title="full node"></a>full node</h2><h3 id="full"><a href="#full" class="headerlink" title="full"></a>full</h3><p>A full block-by-block sync generates the current state by executing every block starting from the genesis block. A full sync independently verifies block provenance as well as all state transitions by re-executing the transactions in the entire historical sequence of blocks. Only the most recent 128 block states are stored in a full node - older block states are pruned periodically and represented as a series of checkpoints from which any previous state can be regenerated on request.</p>
+<h3 id="snap-sync-default"><a href="#snap-sync-default" class="headerlink" title="snap sync (default)"></a>snap sync (default)</h3><p>Snap sync starts from a relatively recent block and syncs from there to the head of the chain, keeping only the most recent 128 block states in memory.  The block header to sync up to is provided by the consensus client. Between the initial sync block and the 128 most recent blocks, the node stores occasional snapshots that can be used to rebuild any intermediate state “on-the-fly”. The difference between the snap-synced node and a full block-by-block synced node is that a snap synced node started from an initial checkpoint that was more recent than the genesis block. Snap sync is much faster than a full block-by-block sync from genesis.<br><img src="/images/geth/sync.mode.jpg" alt="sync mode"></p>
 <p>Snap sync works by first downloading the headers for a chunk of blocks. Once the headers have been verified, the block bodies and receipts for those blocks are downloaded. In parallel, Geth also begins state-sync. In state-sync, Geth first downloads the leaves of the state trie for each block without the intermediate nodes along with a range proof. The state trie is then regenerated locally.</p>
 <p>The state download is the part of the snap-sync that takes the most time to complete and the progress can be monitored using the ETA values in the log messages. <span style="color:red">However, the blockchain is also progressing at the same time and invalidating some of the regenerated state data.</span> (don’t really understand why regenrated state could be invalidated). This means it is also necessary to have a ‘healing’ phase where errors in the state are fixed. Geth regularly reports <code>Syncing, state heal in progress</code> during state healing - this informs the user that state heal has not finished.</p>
 <p>The healing has to outpace the growth of the blockchain, otherwise the node will never catch up to the current state.</p>
@@ -104,21 +132,15 @@
 <li>heal state trie to account for newly arriving data</li>
 </ul>
 <p>A node that is started using snap will switch to block-by-block sync once it has caught up to the head of the chain.</p>
-<h2 id="full"><a href="#full" class="headerlink" title="full"></a>full</h2><p>A full block-by-block sync generates the current state by executing every block starting from the genesis block. A full sync independently verifies block provenance as well as all state transitions by re-executing the transactions in the entire historical sequence of blocks. Only the most recent 128 block states are stored in a full node - older block states are pruned periodically and represented as a series of checkpoints from which any previous state can be regenerated on request.</p>
-<h1 id="archive-nodes"><a href="#archive-nodes" class="headerlink" title="archive nodes"></a>archive nodes</h1><p>An archive node is a node that retains all historical data right back to genesis. There is no need to regenerate any data from checkpoints because all data is directly available in the node’s own storage. </p>
-<p>It is also possible to create a partial&#x2F;recent archive node where the node was synced using snap but the state is never pruned. This creates an archive node that saves all state data from the point that the node first syncs. This is configured by starting Geth with <code>--syncmode snap --gcmode archive</code>.</p>
-<h1 id="light-nodes"><a href="#light-nodes" class="headerlink" title="light nodes"></a>light nodes</h1><p>A light node syncs very quickly and stores the bare minimum of blockchain data. Light nodes only process block headers, not entire blocks. they receive a proof from the full node and verify it against their local header chain. <strong>Light nodes are not currently working on proof-of-stake Ethereum.</strong></p>
-<h1 id="Consensus-layer-syncing"><a href="#Consensus-layer-syncing" class="headerlink" title="Consensus layer syncing"></a>Consensus layer syncing</h1><p> all consensus logic and block propagation is handled by consensus clients. Blocks are downloaded by the consensus client and verified by the execution client. <strong>Geth cannot sync without being connected to a consensus client.</strong><br> There are two ways for the consensus client to find a block header that Geth can use as a sync target: optimistic syncing and checkpoint syncing:</p>
-<h2 id="optimistic-sync"><a href="#optimistic-sync" class="headerlink" title="optimistic sync"></a>optimistic sync</h2><p>Optimistic sync downloads blocks before the execution client has validated them. In optimistic sync the node assumes the data it receives from its peers is correct during the downloading phase but then retroactively verifies each downloaded block.<br><a target="_blank" rel="noopener" href="https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md">more details</a></p>
-<h2 id="checkpoint-sync"><a href="#checkpoint-sync" class="headerlink" title="checkpoint sync"></a>checkpoint sync</h2><p>Alternatively, the consensus client can grab a checkpoint from a trusted source which provides a target state to sync up to, before switching to full sync and verifying each block in turn. In this mode, the node trusts that the checkpoint is correct.</p>
 <h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
 <li><a target="_blank" rel="noopener" href="https://geth.ethereum.org/docs/fundamentals/sync-modes">geth doc on sync mode</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2020/07/17/ask-about-geth-snapshot-acceleration">eth.org blog on snapshot acceleration</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/18/geth/tech_docs/geth.sync.mode/" data-id="clj4fd63r000hl4sj8yg58dbb" data-title="geth sync mode" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/18/geth/tech_docs/geth.sync.mode/" data-id="clj50iop1001l6ysjedto4193" data-title="geth sync" class="article-share-link">Share</a>
       
       
       
@@ -198,7 +220,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/15/geth/tech_docs/geth.v1.10.0/" data-id="clj4fd63r000kl4sj0qeqd2bh" data-title="geth v1.10.0 summary" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/15/geth/tech_docs/geth.v1.10.0/" data-id="clj50iop1001i6ysjalc28e9s" data-title="geth v1.10.0 summary" class="article-share-link">Share</a>
       
       
       
@@ -245,7 +267,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/05/golang/go-similar-concepts-comparison/" data-id="clj4fd63o000cl4sjdl1t9t43" data-title="go similar concepts comparison" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/05/golang/go-similar-concepts-comparison/" data-id="clj50ioor00096ysj1r0sfx74" data-title="go similar concepts comparison" class="article-share-link">Share</a>
       
       
       
@@ -330,7 +352,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/02/golang/go-reflect/" data-id="clj4fd63o000al4sjcmbkag8f" data-title="go reflect" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/02/golang/go-reflect/" data-id="clj50ioos000c6ysj67zm7wgm" data-title="go reflect" class="article-share-link">Share</a>
       
       
       
@@ -412,7 +434,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clj4fd63m0007l4sjbk6d3oof" data-title="paillier encryption" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/23/paillier-encryption/" data-id="clj50iop2001n6ysjh0dibxly" data-title="paillier encryption" class="article-share-link">Share</a>
       
       
       
@@ -469,7 +491,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clj4fd63n0008l4sj8gi554lp" data-title="two party ecdsa" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="clj50ioor00076ysjdku28eur" data-title="two party ecdsa" class="article-share-link">Share</a>
       
       
       
@@ -577,7 +599,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clj4fd63f0000l4sjdh2j6g63" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clj50iooj00006ysj1e9chb3a" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -649,7 +671,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clj4fd63k0003l4sj7sn1agik" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clj50iooq00066ysj08ix5fyv" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
@@ -725,7 +747,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clj4fd63t0013l4sj32amaifk" data-title="rust async" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clj50ioox000v6ysj792dayb5" data-title="rust async" class="article-share-link">Share</a>
       
       
       
@@ -814,7 +836,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="clj4fd63s000ml4sjhbteg0cw" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="clj50iop1001g6ysjcg3d2or4" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -878,7 +900,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       <ul>
         
           <li>
-            <a href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync mode</a>
+            <a href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync</a>
           </li>
         
           <li>
