@@ -20,3 +20,7 @@ tags: [rust]
 
 ## video resources
 - [youtube channel](https://www.youtube.com/@jonhoo)
+
+## books
+- [atomics and locks](https://marabos.nl/atomics/)
+- [data structure & algorithm](https://github.com/QMHTMY/RustBook/blob/main/books/rust-book-zh-cn-shieber.pdf)

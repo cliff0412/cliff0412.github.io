@@ -1,5 +1,5 @@
 ---
-title: rust crate: serde
+title: rust crate serde
 date: 2023-04-01 22:04:38
 tags: [rust-crate]
 ---

@@ -1,10 +1,17 @@
 ---
-title: rust core: data structure
+title: rust core data structure (1)
 date: 2023-05-01 22:04:38
 tags: [rust, rust-core]
 ---
 
+## array
+A **fixed-size** array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N.
+```rust
+todo!()
+```
+
 ## slice
+A **dynamically-sized view** into a contiguous sequence, [T].
 - `len()`: Returns the number of elements in the slice
 - `is_empty()`
 - `first()` Returns the first element of the slice, or `None` if it is empty.
