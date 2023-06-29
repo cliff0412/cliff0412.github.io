@@ -17,3 +17,6 @@ tags: [rust]
 - [async programming in rust](https://rust-lang.github.io/async-book/01_getting_started/01_chapter.html)
 - [rust compiler development guide](https://rustc-dev-guide.rust-lang.org/about-this-guide.html)
 - [the little book of rust macros](https://veykril.github.io/tlborm/)
+
+## video resources
+- [youtube channel](https://www.youtube.com/@jonhoo)
