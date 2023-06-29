@@ -4,18 +4,19 @@
   <meta charset="utf-8">
   
   
-  <title>eth_sign | cliff&#39;s personal blog</title>
+  <title>rust functional programming | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="ethereum signingECDSA recap">
+  <meta name="description" content="iterator iter() Returns an iterator over the slice into_iter() Creates a consuming iterator, that is, one that moves each value out of the vector iter_mut() Returns an iterator that allows modifying e">
 <meta property="og:type" content="article">
-<meta property="og:title" content="eth_sign">
-<meta property="og:url" content="https://cliff0412.github.io/2022/11/28/eth-sign/index.html">
+<meta property="og:title" content="rust functional programming">
+<meta property="og:url" content="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="ethereum signingECDSA recap">
+<meta property="og:description" content="iterator iter() Returns an iterator over the slice into_iter() Creates a consuming iterator, that is, one that moves each value out of the vector iter_mut() Returns an iterator that allows modifying e">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-11-28T03:47:56.000Z">
-<meta property="article:modified_time" content="2022-11-28T03:52:30.181Z">
+<meta property="article:published_time" content="2023-04-11T14:04:38.000Z">
+<meta property="article:modified_time" content="2023-06-29T01:53:41.688Z">
 <meta property="article:author" content="cliff">
+<meta property="article:tag" content="rust">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -73,10 +74,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-eth-sign" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-rust/rust-09-functional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/11/28/eth-sign/" class="article-date">
-  <time class="dt-published" datetime="2022-11-28T03:47:56.000Z" itemprop="datePublished">2022-11-28</time>
+    <a href="/2023/04/11/rust/rust-09-functional/" class="article-date">
+  <time class="dt-published" datetime="2023-04-11T14:04:38.000Z" itemprop="datePublished">2023-04-11</time>
 </a>
     
   </div>
@@ -87,7 +88,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      eth_sign
+      rust functional programming
     </h1>
   
 
@@ -95,33 +96,33 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="ethereum-signing"><a href="#ethereum-signing" class="headerlink" title="ethereum signing"></a>ethereum signing</h1><h2 id="ECDSA-recap"><a href="#ECDSA-recap" class="headerlink" title="ECDSA recap"></a>ECDSA recap</h2>
+        <h2 id="iterator"><a href="#iterator" class="headerlink" title="iterator"></a>iterator</h2><ul>
+<li><code>iter()</code> Returns an iterator over the <strong>slice</strong></li>
+<li><code>into_iter()</code> Creates a consuming iterator, that is, one that moves each value out of the vector</li>
+<li><code>iter_mut()</code> Returns an iterator that allows modifying each value.</li>
+</ul>
+<h2 id="flat-map"><a href="#flat-map" class="headerlink" title="flat_map"></a>flat_map</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Creates an iterator that works like map, but flattens nested structure.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// The [`map`] adapter is very useful, but only when the closure</span></span><br><span class="line"><span class="comment">/// argument produces values. If it produces an iterator instead, there&#x27;s</span></span><br><span class="line"><span class="comment">/// an extra layer of indirection. `flat_map()` will remove this extra layer</span></span><br><span class="line"><span class="comment">/// on its own.</span></span><br></pre></td></tr></table></figure>
+<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">words</span> = [<span class="string">&quot;alpha&quot;</span>, <span class="string">&quot;beta&quot;</span>, <span class="string">&quot;gamma&quot;</span>];</span><br><span class="line"><span class="comment">// chars() returns an iterator</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">merged</span>: <span class="type">String</span> = words.<span class="title function_ invoke__">iter</span>()</span><br><span class="line">                          .<span class="title function_ invoke__">flat_map</span>(|s| s.<span class="title function_ invoke__">chars</span>())</span><br><span class="line">                          .<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="built_in">assert_eq!</span>(merged, <span class="string">&quot;alphabetagamma&quot;</span>);</span><br></pre></td></tr></table></figure>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljglzgum0003mjsjen663h62" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="cljglzgus000smjsj1o4t9h6l" data-title="rust functional programming" class="article-share-link">Share</a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2022/12/06/rust/rust-cargo-all-in-one/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          rust cargo all in one
-        
-      </div>
-    </a>
   
-  
-    <a href="/2022/11/27/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/03/25/geth/tech_docs/geth.prune/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">how to use hexo</div>
+      <div class="article-nav-title">geth state prune</div>
     </a>
   
 </nav>
