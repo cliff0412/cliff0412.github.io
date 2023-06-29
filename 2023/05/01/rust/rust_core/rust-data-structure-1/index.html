@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>rust core data structure (1) | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="arrayA fixed-size array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N. 1todo!()  sliceA dynamically-sized view into a contiguous sequence, [T].  len(): R">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust core data structure (1)">
+<meta property="og:url" content="https://cliff0412.github.io/2023/05/01/rust/rust_core/rust-data-structure-1/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="arrayA fixed-size array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N. 1todo!()  sliceA dynamically-sized view into a contiguous sequence, [T].  len(): R">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-01T14:04:38.000Z">
+<meta property="article:modified_time" content="2023-06-29T15:48:14.107Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="rust-core">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-rust/rust_core/rust-data-structure-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/05/01/rust/rust_core/rust-data-structure-1/" class="article-date">
+  <time class="dt-published" datetime="2023-05-01T14:04:38.000Z" itemprop="datePublished">2023-05-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      rust core data structure (1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="array"><a href="#array" class="headerlink" title="array"></a>array</h2><p>A <strong>fixed-size</strong> array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N.</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">todo!()</span><br></pre></td></tr></table></figure>
+
+<h2 id="slice"><a href="#slice" class="headerlink" title="slice"></a>slice</h2><p>A <strong>dynamically-sized view</strong> into a contiguous sequence, [T].</p>
+<ul>
+<li><code>len()</code>: Returns the number of elements in the slice</li>
+<li><code>is_empty()</code></li>
+<li><code>first()</code> Returns the first element of the slice, or <code>None</code> if it is empty.</li>
+<li><code>first_mut()</code> Returns a mutable <strong>pointer</strong> to the first element of the slice, or <code>None</code> if it is empty</li>
+<li><code>split_first()</code> Returns the first and all the rest of the elements of the slice, or <code>None</code> if it is empty.</li>
+<li><code>split_first_mut()</code> </li>
+<li><code>split_last()</code></li>
+<li><code>split_last_mut()</code></li>
+<li><code>last()</code></li>
+<li><code>last_mut()</code></li>
+<li><code>get&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice depending on the type of index.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;<span class="number">40</span>), v.<span class="title function_ invoke__">get</span>(<span class="number">1</span>));</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>][..]), v.<span class="title function_ invoke__">get</span>(<span class="number">0</span>..<span class="number">2</span>));</span><br></pre></td></tr></table></figure></li>
+<li><code>get_mut&lt;I&gt;(index: I)</code></li>
+<li><code>get_unchecked&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice, without doing bounds checking</li>
+<li><code>get_unchecked_mut&lt;I&gt;(index: I)</code></li>
+<li><code>as_ptr(&amp;self) -&gt; *const T</code> Returns a raw pointer to the slice’s buffer<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        <span class="built_in">assert_eq!</span>(x.<span class="title function_ invoke__">get_unchecked</span>(i), &amp;*x_ptr.<span class="title function_ invoke__">add</span>(i));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>as_mut_ptr(&amp;mut self) -&gt; *mut T</code> <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_mut_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        *x_ptr.<span class="title function_ invoke__">add</span>(i) += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(x, &amp;[<span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><code>as_ptr_range(&amp;self) -&gt; Range&lt;*const T&gt;</code> Returns the two raw pointers spanning the slice.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">const</span> <span class="keyword">fn</span> <span class="title function_">as_ptr_range</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> Range&lt;*<span class="keyword">const</span> T&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">start</span> = <span class="keyword">self</span>.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">end</span> = <span class="keyword">unsafe</span> &#123; start.<span class="title function_ invoke__">add</span>(<span class="keyword">self</span>.<span class="title function_ invoke__">len</span>()) &#125;;</span><br><span class="line">    start..end</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>as_mut_ptr_range(&amp;mut self) -&gt; Range&lt;*mut T&gt;</code></li>
+<li><code>swap(&amp;mut self, a: usize, b: usize)</code> Swaps two elements in the slice.</li>
+<li><code>reverse(&amp;mut self)</code> Reverses the order of elements in the slice, in place.</li>
+<li><code>windows(&amp;self, size: usize)</code> Returns an iterator over all contiguous windows of length <code>size</code>. The windows overlap. If the slice is shorter than <code>size</code>, the iterator returns no values.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">windows</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
+<li><code>chunks(&amp;self, chunk_size: usize)</code> Returns an iterator over <code>chunk_size</code> elements of the slice at a time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
+<li><code>chunks_mut()</code></li>
+<li><code>chunks_exact(&amp;self, chunk_size: usize)</code><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks_exact</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">remainder</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><code>as_chunks_unchecked&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, assuming that there’s no remainder</li>
+<li><code>as_chunks&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, starting at the beginning of the slice, and a remainder slice with length strictly less than <code>N</code></li>
+<li><code>as_rchunks&lt;const N: usize&gt;(&amp;self)</code> r means reverse</li>
+<li><code>group_by&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over the slice producing non-overlapping runs of elements using the predicate to separate them. The predicate is called on two elements following themselves, it means the predicate is called on <code>slice[0]</code> and <code>slice[1]</code> then on <code>slice[1]</code> and <code>slice[2]</code> and so on<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(slice_group_by)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = &amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">group_by</span>(|a, b| a &lt;= b);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br></pre></td></tr></table></figure></li>
+<li><code>split_at(&amp;self, mid: usize)</code> Divides one slice into two at an index.</li>
+<li><code>split&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over subslices separated by elements that match <code>pred</code>. The matched element is not contained in the subslices.</li>
+<li><code>splitn&lt;F&gt;(&amp;self, n: usize, pred: F)</code> </li>
+<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the slice contains an element with the given value.</li>
+<li><code>starts_with(&amp;self, needle: &amp;[T])</code> eturns <code>true</code> if <code>needle</code> is a prefix of the slice<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(!v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">50</span>]));</span><br></pre></td></tr></table></figure></li>
+<li><code>ends_with(&amp;self, needle: &amp;[T])</code> </li>
+<li><code>strip_prefix</code> Returns a subslice with the prefix removed.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;[<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">10</span>]), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">40</span>, <span class="number">30</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">50</span>]), <span class="literal">None</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">prefix</span> : &amp;<span class="type">str</span> = <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="string">b&quot;hello&quot;</span>.<span class="title function_ invoke__">strip_prefix</span>(prefix.<span class="title function_ invoke__">as_bytes</span>()),</span><br><span class="line">           <span class="title function_ invoke__">Some</span>(<span class="string">b&quot;llo&quot;</span>.<span class="title function_ invoke__">as_ref</span>()));</span><br></pre></td></tr></table></figure></li>
+<li><code>strip_suffix</code></li>
+<li><code>binary_search(&amp;self, x: &amp;T)</code>  Binary searches this slice for a given element.</li>
+<li><code>sort_unstable(&amp;mut self)</code> Sorts the slice, but might not preserve the order of equal elements.</li>
+<li><code>rotate_left(&amp;mut self, mid: usize)</code> Rotates the slice in-place such that the first <code>mid</code> elements of the slice move to the end while the last <code>self.len() - mid</code> elements move to the front.</li>
+<li><code>fill(&amp;mut self, value: T)</code> Fills <code>self</code> with elements by cloning <code>value</code>.</li>
+<li><code>clone_from_slice(&amp;mut self, src: &amp;[T])</code> Copies the elements from <code>src</code> into <code>self</code>.</li>
+<li><code>copy_from_slice(&amp;mut self, src: &amp;[T])</code> </li>
+<li><code>is_sorted(&amp;self)</code> </li>
+<li><code>take&lt;&#39;a, R: OneSidedRange&lt;usize&gt;&gt;(self: &amp;mut &amp;&#39;a Self, range: R)</code> Removes the subslice corresponding to the given range</li>
+<li><code>get_many_mut&lt;const N: usize&gt;</code> Returns mutable references to many indices at once.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(get_many_mut)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Ok</span>([a, b]) = v.<span class="title function_ invoke__">get_many_mut</span>([<span class="number">0</span>, <span class="number">2</span>]) &#123;</span><br><span class="line">    *a = <span class="number">413</span>;</span><br><span class="line">    *b = <span class="number">612</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(v, &amp;[<span class="number">413</span>, <span class="number">2</span>, <span class="number">612</span>]);</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_core/rust-data-structure-1/" data-id="cljhblj9h001t8gsjhuad4ksl" data-title="rust core data structure (1)" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-core/" rel="tag">rust-core</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/05/02/rust/rust_core/rust-data-structure-2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          rust core data structure (2)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/04/11/rust/rust-09-functional/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rust functional programming</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-core/" rel="tag">rust-core</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.5px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-core/" style="font-size: 12.5px;">rust-core</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/05/02/rust/rust_core/rust-data-structure-2/">rust core data structure (2)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/01/rust/rust_core/rust-data-structure-1/">rust core data structure (1)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/04/11/rust/rust-09-functional/">rust functional programming</a>
+          </li>
+        
+          <li>
+            <a href="/2023/03/25/geth/tech_docs/geth.prune/">geth state prune</a>
+          </li>
+        
+          <li>
+            <a href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
