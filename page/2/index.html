@@ -71,6 +71,63 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-two-party-ecdsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/02/07/two-party-ecdsa/" class="article-date">
+  <time class="dt-published" datetime="2023-02-07T06:29:26.000Z" itemprop="datePublished">2023-02-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/02/07/two-party-ecdsa/">two party ecdsa</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>this post is my reading summary of paper Yehuda Lindell 2017: Fast secure two-party ecdsa signing. the implementation could be found in tss-lib (golang), zengo’s library (rust).</p>
+<p>Unlike other schemes like RSA, Schnorr signatures and more, it is particularly hard to construct efficient threshold signature protocols for ECDSA as there is an inverse computaion of \( k \).</p>
+<p>In this paper, we consider the specific case of two parties (and thus no honest majority) and con-struct a protocol that is approximately two orders of magnitude faster than the previous best.</p>
+<h2 id="Comparing-ECDSA-signing-to-EC-Schnorr-signing"><a href="#Comparing-ECDSA-signing-to-EC-Schnorr-signing" class="headerlink" title="Comparing ECDSA signing to EC-Schnorr signing"></a>Comparing ECDSA signing to EC-Schnorr signing</h2><p>In both cases, the public verification key is an elliptic curve point \( Q \) and the private signing key is \( x \) such that \( Q &#x3D; x \cdot G \), where \( G \) is the generator point of an EC group of order \( q \).<br><img src="/images/two_party_ecdsa/schnorr_ecdsa_comparison.png" alt="schnorr ecdsa comparison"></p>
+<p>Observe that Schnorr signing can be easily distributed since the private key \( x \) and the value k are both used in a linear equation.  In contrast, in ECDSA signing, the equation for computing \( s \) includes \( k^{-1} \). Now, given shares \(k_1\), \(k_2\) such that \(k_1 + k_2 &#x3D; k \bmod q\) .It is very difficult to compute \(k_1^{\prime}\), \(k_2^{\prime}\) such  that \(k_1^{\prime} + k_2^{\prime} &#x3D; k^{-1} \bmod q\)</p>
+<p>two-party protocols for ECDSA signing use multiplicative sharing of \( x \) and of \( k \). That is, the parties hold \(x_1\), \(x_2\)  such that \(x_1 \cdot x_2 &#x3D; x \bmod q\), and in each signing operation they generate \(k_1\), \(k_2\) such that \(k_1 \cdot k_2 &#x3D; k \bmod q\). This enables them to easily compute \(k^{-1}\) since each party can locally compute  \(k_i^{\prime} &#x3D; k_i^{-1} \bmod q\), and then \(k_1^{\prime}\), \(k_2^{\prime}\) are multiplicative shares of \(k^{-1}\). The parties can then use additively homomorphic encryption – specifically Paillier encryption  – in order to combine their equations. For example, \(P_1\) can compute \(c_1 &#x3D; Enc_{pk}(k_1^{-1} \cdot H(m))\) and \(c_2 &#x3D; Enc_{pk}(k_1^{-1} \cdot x_1 \cdot r)\) . Then, using scar multiplication (denoted ⊙) and homomorphic addition (denoted ⊕), \( P_2 \) can compute \( (k_2^{-1} ⊙ c_1 ) ⊕ [( k_2^{-1} \cdot x_2)  ⊙ c_2 ]\), which will be an encryption of </p>
+<p><img src="/images/two_party_ecdsa/paillier_enc.png" alt="paillier encryption"></p>
+<p>However, proving that each party worked correctly is extremely difficult. For example, the first party must prove that the Paillier encryption includes \(k_1^{-1}\) when the second party only has \(R_1 &#x3D; k_1 \cdot G\). it must prove that the Paillier encryptions are to values in the expected range, and more. This can be done, but it results in a protocol that is very expensive.</p>
+<h2 id="their-results"><a href="#their-results" class="headerlink" title="their results"></a>their results</h2><p>[WIP]</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2017/552.pdf">original papger</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/02/07/two-party-ecdsa/" data-id="cljhbly3i0008amsj79yc8y7x" data-title="two party ecdsa" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-MPT" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/01/22/MPT/" class="article-date">
@@ -165,7 +222,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="cljhblj8z00008gsjd49vh4ol" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="cljhbly3b0000amsje3d35uvt" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -237,7 +294,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="cljhblj9200018gsjghso0j0t" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="cljhbly3d0001amsjbvsqgjyz" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
@@ -313,7 +370,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="cljhblj9b000v8gsj2fwvb44a" data-title="rust async" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="cljhbly3m000samsj9vcl71ld" data-title="rust async" class="article-share-link">Share</a>
       
       
       
@@ -402,7 +459,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="cljhblj9f001j8gsj183oho99" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="cljhbly3p001jamsjf4oias01" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -443,7 +500,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="cljhblj9500048gsj6jo2cgpm" data-title="geth_fine_tune" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="cljhbly3g0004amsjb5xk50f0" data-title="geth_fine_tune" class="article-share-link">Share</a>
       
       
       
@@ -525,7 +582,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/28/rust/rust-07-macro/" data-id="cljhblj9b000r8gsj11m400o9" data-title="rust reflect and macro" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/28/rust/rust-07-macro/" data-id="cljhbly3m000qamsj50205yzw" data-title="rust reflect and macro" class="article-share-link">Share</a>
       
       
       
@@ -569,7 +626,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/rust-frequently-used-crates/" data-id="cljhblj9c00128gsj8ocu1yp4" data-title="rust frequently used crates" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/13/rust/rust-frequently-used-crates/" data-id="cljhbly3n0010amsj4zfsatrh" data-title="rust frequently used crates" class="article-share-link">Share</a>
       
       
       
@@ -639,7 +696,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="cljhblj9b000x8gsjczl88tcw" data-title="rust cargo all in one" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="cljhbly3n0012amsj1xrf526u" data-title="rust cargo all in one" class="article-share-link">Share</a>
       
       
       
@@ -679,58 +736,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljhblj9400038gsj9eub39y0" data-title="eth_sign" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/27/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-11-27T03:47:56.000Z" itemprop="datePublished">2022-11-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/27/hello-world/">how to use hexo</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="cljhblj9600058gsjf6kmhxwd" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljhbly3f0003amsj06609x94" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -760,7 +766,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-core/" rel="tag">rust-core</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-core/" rel="tag">rust-core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li></ul>
     </div>
   </div>
 
@@ -770,7 +776,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.5px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-core/" style="font-size: 12.5px;">rust-core</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.5px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-core/" style="font-size: 12.5px;">rust-core</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a>
     </div>
   </div>
 
@@ -804,11 +810,11 @@ during create contract, an object <code>Contract</code> is created. A Contract o
           </li>
         
           <li>
-            <a href="/2023/03/25/geth/tech_docs/geth.prune/">geth state prune</a>
+            <a href="/2023/04/01/rust/crates/rust-serde/">rust crate serde</a>
           </li>
         
           <li>
-            <a href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync</a>
+            <a href="/2023/03/25/geth/tech_docs/geth.prune/">geth state prune</a>
           </li>
         
       </ul>
