@@ -4,20 +4,19 @@
   <meta charset="utf-8">
   
   
-  <title>rust core data structure (1) | cliff&#39;s personal blog</title>
+  <title>rust std data structure (1D) | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="arrayA fixed-size array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N. 1todo!()  sliceA dynamically-sized view into a contiguous sequence, [T].  len(): R">
 <meta property="og:type" content="article">
-<meta property="og:title" content="rust core data structure (1)">
-<meta property="og:url" content="https://cliff0412.github.io/2023/05/01/rust/rust_core/rust-data-structure-1/index.html">
+<meta property="og:title" content="rust std data structure (1D)">
+<meta property="og:url" content="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
 <meta property="og:description" content="arrayA fixed-size array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N. 1todo!()  sliceA dynamically-sized view into a contiguous sequence, [T].  len(): R">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-05-01T14:04:38.000Z">
-<meta property="article:modified_time" content="2023-06-29T15:48:14.107Z">
+<meta property="article:modified_time" content="2023-07-05T13:41:11.837Z">
 <meta property="article:author" content="cliff">
-<meta property="article:tag" content="rust">
-<meta property="article:tag" content="rust-core">
+<meta property="article:tag" content="rust-std">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -75,9 +74,9 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-rust/rust_core/rust-data-structure-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-rust/rust_std/rust-std-data-structure-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/05/01/rust/rust_core/rust-data-structure-1/" class="article-date">
+    <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/" class="article-date">
   <time class="dt-published" datetime="2023-05-01T14:04:38.000Z" itemprop="datePublished">2023-05-01</time>
 </a>
     
@@ -89,7 +88,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      rust core data structure (1)
+      rust std data structure (1D)
     </h1>
   
 
@@ -148,15 +147,38 @@
 <li><code>take&lt;&#39;a, R: OneSidedRange&lt;usize&gt;&gt;(self: &amp;mut &amp;&#39;a Self, range: R)</code> Removes the subslice corresponding to the given range</li>
 <li><code>get_many_mut&lt;const N: usize&gt;</code> Returns mutable references to many indices at once.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(get_many_mut)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Ok</span>([a, b]) = v.<span class="title function_ invoke__">get_many_mut</span>([<span class="number">0</span>, <span class="number">2</span>]) &#123;</span><br><span class="line">    *a = <span class="number">413</span>;</span><br><span class="line">    *b = <span class="number">612</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(v, &amp;[<span class="number">413</span>, <span class="number">2</span>, <span class="number">612</span>]);</span><br></pre></td></tr></table></figure></li>
 </ul>
+<h2 id="std-collections-VecDeque"><a href="#std-collections-VecDeque" class="headerlink" title="std::collections::VecDeque"></a>std::collections::VecDeque</h2><p>A double-ended queue (deque) implemented with a growable ring buffer.<br>Since VecDeque is a ring buffer, its elements are not necessarily contiguous in memory. If you want to access the elements as a single slice, such as for efficient sorting, you can use make_contiguous. It rotates the VecDeque so that its elements do not wrap, and returns a mutable slice to the now-contiguous element sequence.</p>
+<ul>
+<li><code>swap(&amp;mut self, i: usize, j: usize)</code></li>
+<li><code>reserve_exact(&amp;mut self, additional: usize)</code> Reserves the minimum capacity for at least <code>additional</code> more elements to be inserted in the given deque. Does nothing if the capacity is already sufficient.</li>
+<li><code>reserve(&amp;mut self, additional: usize)</code></li>
+<li><code>shrink_to_fit(&amp;mut self)</code> Shrinks the capacity of the deque as much as possible.</li>
+<li><code>truncate(&amp;mut self, len: usize)</code> Shortens the deque, keeping the first <code>len</code> elements and dropping the rest.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">buf</span> = VecDeque::<span class="title function_ invoke__">new</span>();</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">5</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">10</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">15</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>]);</span><br><span class="line">buf.<span class="title function_ invoke__">truncate</span>(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><code>iter(&amp;self)</code></li>
+<li><code>as_slices(&amp;self)</code></li>
+<li><code>slice_ranges&lt;R&gt;(&amp;self, range: R)</code> Given a range into the logical buffer of the deque, this function return two ranges into the physical buffer that correspond to the given range</li>
+<li><code>range&lt;R&gt;(&amp;self, range: R)</code> Creates an iterator that covers the specified range in the deque.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">deque</span>: VecDeque&lt;_&gt; = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].<span class="title function_ invoke__">into</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">range</span> = deque.<span class="title function_ invoke__">range</span>(<span class="number">2</span>..).<span class="title function_ invoke__">copied</span>().collect::&lt;VecDeque&lt;_&gt;&gt;();</span><br><span class="line"><span class="built_in">assert_eq!</span>(range, [<span class="number">3</span>]);</span><br><span class="line"><span class="comment">// A full range covers all contents</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">all</span> = deque.<span class="title function_ invoke__">range</span>(..);</span><br><span class="line"><span class="built_in">assert_eq!</span>(all.<span class="title function_ invoke__">len</span>(), <span class="number">3</span>);</span><br></pre></td></tr></table></figure></li>
+<li><code>drain&lt;R&gt;(&amp;mut self, range: R)</code> Removes the specified range from the deque in bulk, returning all removed elements as an iterator.</li>
+<li><code>clear(&amp;mut self)</code></li>
+<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the deque contains an element equal to the given value</li>
+<li><code>front(&amp;self)</code> Provides a reference to the front element</li>
+<li><code>front_mut(&amp;mut self)</code></li>
+<li><code>back(&amp;self)</code></li>
+<li><code>back_mut(&amp;mut self)</code></li>
+<li><code>pop_front(&amp;mut self)</code></li>
+<li><code>pop_back(&amp;mut self)</code></li>
+<li><code>push_front(&amp;mut self, value: T)</code></li>
+<li><code>push_back(&amp;mut self, value: T)</code></li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_core/rust-data-structure-1/" data-id="cljhbly3s001vamsj9kms91ek" data-title="rust core data structure (1)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="cljta2483001y4vsj5dsu92xf" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-core/" rel="tag">rust-core</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
 
     </footer>
   </div>
@@ -164,11 +186,11 @@
     
 <nav id="article-nav">
   
-    <a href="/2023/05/02/rust/rust_core/rust-data-structure-2/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          rust core data structure (2)
+          rust std data structure (2D)
         
       </div>
     </a>
@@ -196,7 +218,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-core/" rel="tag">rust-core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
     </div>
   </div>
 
@@ -206,7 +228,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12.5px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.5px;">geth</a> <a href="/tags/golang/" style="font-size: 12.5px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-core/" style="font-size: 12.5px;">rust-core</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a>
+      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a>
     </div>
   </div>
 
@@ -215,7 +237,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -228,23 +250,23 @@
       <ul>
         
           <li>
-            <a href="/2023/05/02/rust/rust_core/rust-data-structure-2/">rust core data structure (2)</a>
+            <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
           </li>
         
           <li>
-            <a href="/2023/05/01/rust/rust_core/rust-data-structure-1/">rust core data structure (1)</a>
+            <a href="/2023/06/03/rust/rust_std/rust-std-cell/">rust std interior mutability</a>
           </li>
         
           <li>
-            <a href="/2023/04/11/rust/rust-09-functional/">rust functional programming</a>
+            <a href="/2023/06/01/rust/rust-10-concurrency/">rust concurrency</a>
           </li>
         
           <li>
-            <a href="/2023/04/01/rust/crates/rust-serde/">rust crate serde</a>
+            <a href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/">rust std data structure (2D)</a>
           </li>
         
           <li>
-            <a href="/2023/03/25/geth/tech_docs/geth.prune/">geth state prune</a>
+            <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/">rust std data structure (1D)</a>
           </li>
         
       </ul>
