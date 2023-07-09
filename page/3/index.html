@@ -101,7 +101,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="cljta2482001q4vsj9tb1am36" data-title="rust frequently used crates" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="cljvkeaoo001qytsj9817ajcg" data-title="rust frequently used crates" class="article-share-link">Share</a>
       
       
       
@@ -171,7 +171,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="cljta247y00104vsjalk6bzfl" data-title="rust cargo all in one" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="cljvkeaoj000xytsj30re4z2z" data-title="rust cargo all in one" class="article-share-link">Share</a>
       
       
       
@@ -211,7 +211,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljta247q00034vsj4bxl4w8h" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljvkeao90001ytsjahr37res" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -262,7 +262,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="cljta247s00074vsj21vub21x" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="cljvkeaod0005ytsj12ky1ysl" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
@@ -303,15 +303,12 @@
 <li><code>&amp;</code> denotes that your pattern expects a reference to an object. Hence <code>&amp;</code> is a part of said pattern: <code>&amp;Foo</code> matches different objects than <code>Foo</code> does.</li>
 <li><code>ref</code> indicates that you want a reference to an unpacked value. It is not matched against: <code>Foo(ref foo)</code> matches the same objects as <code>Foo(foo)</code>.</li>
 </ul>
-<h2 id="Clone-vs-Copy"><a href="#Clone-vs-Copy" class="headerlink" title="Clone vs Copy"></a>Clone vs Copy</h2><h3 id="Copy-的含义"><a href="#Copy-的含义" class="headerlink" title="Copy 的含义"></a>Copy 的含义</h3><p>Copy 的全名是 std::marker::Copy。请大家注意 std::marker 这个模块里面的所有的 trait 都是特殊的 trait。目前稳定的有四个，它们是 Copy、Send、Sized、Sync。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。在编译器眼里，它们与其它的 trait 不一样。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定，这些约定会影响编译器的静态检查以及代码生成。</p>
-<p>Copy 这个 trait 在编译器的眼里代表的是什么意思呢？简单点总结就是说，如果一个类型 impl 了 Copy trait，意味着任何时候，我们可以通过简单的内存拷贝(C语言的按位拷贝memcpy)实现该类型的复制，而不会产生任何问题。</p>
+<h2 id="Clone-vs-Copy"><a href="#Clone-vs-Copy" class="headerlink" title="Clone vs Copy"></a>Clone vs Copy</h2><h3 id="Copy-的含义"><a href="#Copy-的含义" class="headerlink" title="Copy 的含义"></a>Copy 的含义</h3><p><code>Copy</code> 的全名是 <code>std::marker::Copy</code>。<code>std::marker</code> 这个模块里面的所有的 trait 都是特殊的。目前稳定的有四个，它们是 <code>Copy</code>、<code>Send</code>、<code>Sized</code>、<code>Sync</code>。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定。</p>
+<p>如果一个类型 impl 了 Copy trait，意味着任何时候，我们可以通过简单的内存拷贝(C语言的按位拷贝memcpy)实现该类型的复制，而不会产生任何问题。</p>
 <p>一旦一个类型实现了 Copy trait，那么它在变量绑定、函数参数传递、函数返回值传递等场景下，它都是 copy 语义，而不再是默认的 move 语义。</p>
 <h3 id="Copy-的实现条件"><a href="#Copy-的实现条件" class="headerlink" title="Copy 的实现条件"></a>Copy 的实现条件</h3><p>并不是所有的类型都可以实现Copy trait。Rust规定，对于自定义类型，只有所有的成员都实现了 Copy trait，这个类型才有资格实现 Copy trait。</p>
 <p>常见的数字类型、bool类型、共享借用指针&amp;，都是具有 Copy 属性的类型。而 Box、Vec、可写借用指针&amp;mut 等类型都是不具备 Copy 属性的类型。</p>
-<p>对于数组类型，如果它内部的元素类型是Copy，那么这个数组也是Copy类型。</p>
-<p>对于tuple类型，如果它的每一个元素都是Copy类型，那么这个tuple会自动实现Copy trait。</p>
-<p>对于struct和enum类型，不会自动实现Copy trait。而且只有当struct和enum内部每个元素都是Copy类型的时候，编译器才允许我们针对此类型实现Copy trait。</p>
-<p>我们可以认为，Rust中只有 POD(C++语言中的Plain Old Data) 类型才有资格实现Copy trait。在Rust中，如果一个类型只包含POD数据类型的成员，没有指针类型的成员，并且没有自定义析构函数（实现Drop trait），那它就是POD类型。比如整数、浮点数、只包含POD类型的数组等，都属于POD类型。而Box、 String、 Vec等，不能按 bit 位拷贝的类型，都不属于POD类型。但是，反过来讲，并不是所有的POD类型都应该实现Copy trait。</p>
+<p>我们可以认为，Rust中只有 POD(C++语言中的Plain Old Data) 类型才有资格实现Copy trait。在Rust中，如果一个类型只包含POD数据类型的成员，没有指针类型的成员，并且没有自定义析构函数（实现Drop trait），那它就是POD类型。比如整数、浮点数、只包含POD类型的数组等。而Box、 String、 Vec等，不能按 bit 位拷贝的类型，都不属于POD类型。但是，反过来讲，并不是所有的POD类型都应该实现Copy trait。</p>
 <h3 id="Clone-的含义"><a href="#Clone-的含义" class="headerlink" title="Clone 的含义"></a>Clone 的含义</h3><p>Clone 的全名是 std::clone::Clone。它的完整声明是这样的：</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">trait</span> <span class="title class_">Clone</span> : <span class="built_in">Sized</span> &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">clone</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">clone_from</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, source: &amp;<span class="keyword">Self</span>) &#123;</span><br><span class="line">        *<span class="keyword">self</span> = source.<span class="title function_ invoke__">clone</span>()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>它有两个关联方法，其中 clone_from 是有默认实现的，它依赖于 clone 方法的实现。clone 方法没有默认实现，需要我们手动实现。</p>
@@ -322,12 +319,17 @@
 <p>这里的 derive 会让编译器帮我们自动生成 impl Copy 和 impl Clone 这样的代码。自动生成的 clone 方法，就是依次调用每个成员的 clone 方法。</p>
 <p>通过 derive 方式自动实现 Copy 和手工实现 Copy 有一丁点的微小区别。当类型具有泛型参数的时候，比如 struct MyStruct<T>{}，通过 derive 自动生成的代码会自动添加一个 T: Copy 的约束。</p>
 <p>目前，只有一部分固定的特殊 trait 可以通过 derive 来自动实现。将来 Rust 会允许自定义的 derive 行为，让我们自己的 trait 也可以通过 derive 的方式自动实现。</p>
+<h2 id="Cell-vs-RefCell"><a href="#Cell-vs-RefCell" class="headerlink" title="Cell vs RefCell"></a>Cell vs RefCell</h2><ul>
+<li>Cell 是操作T(values), RefCell操作&amp;T(references). Cell<T> get的时候要求T impl Copy。比如String类型没有实现Copy trait, 那么Cell::new(String::from(“Hello”)).get()会报错</li>
+<li>Cell 在编译器检查，运行时不会panic；RefCell在运行时检查，使用不当会发生panic</li>
+<li>一般来说，Cell内部实现会发生内存的分配，性能较之RefCell有点大</li>
+</ul>
 <h2 id="AsRef-vs-Borrow"><a href="#AsRef-vs-Borrow" class="headerlink" title="AsRef vs Borrow"></a>AsRef vs Borrow</h2><p>[WIP]</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="cljta247z00164vsj7oef473j" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="cljvkeaok0012ytsjatp2bdtk" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
       
       
       
@@ -373,7 +375,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="cljta247z00194vsjf0k6cptv" data-title="rust tools" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="cljvkeaol0019ytsjbv39hjyc" data-title="rust tools" class="article-share-link">Share</a>
       
       
       
@@ -420,10 +422,11 @@
 <h2 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h2><p>The compiler will not rearrange the memory layout</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[repr(C)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    a:<span class="type">u8</span>,</span><br><span class="line">    b:<span class="type">u32</span>,</span><br><span class="line">    c:<span class="type">u16</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h2 id="ptr"><a href="#ptr" class="headerlink" title="ptr"></a>ptr</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NonNull::<span class="title function_ invoke__">new_unchecked</span>()</span><br></pre></td></tr></table></figure>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="cljta247z00144vsj5mqf3tie" data-title="rust sugar" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="cljvkeaol0016ytsjgreu5vea" data-title="rust sugar" class="article-share-link">Share</a>
       
       
       
@@ -492,7 +495,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="cljta247z00124vsjci76ha4i" data-title="cargo doc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="cljvkeaok0010ytsjcdo6ftwb" data-title="cargo doc" class="article-share-link">Share</a>
       
       
       
@@ -555,7 +558,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="cljta2480001e4vsj56dg8e3l" data-title="rpc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="cljvkeaom001gytsj3cdj45zp" data-title="rpc" class="article-share-link">Share</a>
       
       
       
@@ -631,7 +634,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="cljta247x000r4vsj6jpt8jre" data-title="rust project management" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="cljvkeaoj000rytsjfilk5199" data-title="rust project management" class="article-share-link">Share</a>
       
       
       
@@ -699,7 +702,7 @@
           </li>
         
           <li>
-            <a href="/2023/06/03/rust/rust_std/rust-std-cell/">rust std interior mutability</a>
+            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
           </li>
         
           <li>

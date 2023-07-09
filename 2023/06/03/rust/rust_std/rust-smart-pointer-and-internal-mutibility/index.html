@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   
   
-  <title>rust std interior mutability | cliff&#39;s personal blog</title>
+  <title>rust std smart pointer &amp; interior mutability | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="CellCell&lt;T&gt; enables mutation inside an immutable value. In other words, it enables interior mutability. methods fn get(&amp;self) -&gt; T fn set(&amp;self, val: T) fn swap(&amp;self, other: &amp;amp">
+  <meta name="description" content="smart pointerRcA single-threaded reference-counting pointer. The inherent methods of Rc are all associated functions, which means that you have to call them as e.g., Rc::get_mut(&amp;mut value) instea">
 <meta property="og:type" content="article">
-<meta property="og:title" content="rust std interior mutability">
-<meta property="og:url" content="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-std-cell/index.html">
+<meta property="og:title" content="rust std smart pointer &amp; interior mutability">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="CellCell&lt;T&gt; enables mutation inside an immutable value. In other words, it enables interior mutability. methods fn get(&amp;self) -&gt; T fn set(&amp;self, val: T) fn swap(&amp;self, other: &amp;amp">
+<meta property="og:description" content="smart pointerRcA single-threaded reference-counting pointer. The inherent methods of Rc are all associated functions, which means that you have to call them as e.g., Rc::get_mut(&amp;mut value) instea">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-06-03T14:04:38.000Z">
-<meta property="article:modified_time" content="2023-07-05T13:41:07.438Z">
+<meta property="article:modified_time" content="2023-07-09T09:05:47.585Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="rust-std">
 <meta name="twitter:card" content="summary">
@@ -74,9 +74,9 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-rust/rust_std/rust-std-cell" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-rust/rust_std/rust-smart-pointer-and-internal-mutibility" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/03/rust/rust_std/rust-std-cell/" class="article-date">
+    <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" class="article-date">
   <time class="dt-published" datetime="2023-06-03T14:04:38.000Z" itemprop="datePublished">2023-06-03</time>
 </a>
     
@@ -88,7 +88,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      rust std interior mutability
+      rust std smart pointer &amp; interior mutability
     </h1>
   
 
@@ -96,7 +96,8 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="Cell"><a href="#Cell" class="headerlink" title="Cell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.Cell.html">Cell</a></h2><p><code>Cell&lt;T&gt;</code> enables mutation inside an immutable value. In other words, it enables <code>interior mutability</code>.</p>
+        <h1 id="smart-pointer"><a href="#smart-pointer" class="headerlink" title="smart pointer"></a>smart pointer</h1><h2 id="Rc"><a href="#Rc" class="headerlink" title="Rc"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/rc/struct.Rc.html">Rc</a></h2><p>A single-threaded reference-counting pointer. The inherent methods of Rc are all associated functions, which means that you have to call them as e.g., Rc::get_mut(&amp;mut value) instead of value.get_mut(). This avoids conflicts with methods of the inner type T.</p>
+<h1 id="internal-mutibility"><a href="#internal-mutibility" class="headerlink" title="internal mutibility"></a>internal mutibility</h1><h2 id="Cell"><a href="#Cell" class="headerlink" title="Cell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.Cell.html">Cell</a></h2><p><code>Cell&lt;T&gt;</code> enables mutation inside an immutable value. In other words, it enables <code>interior mutability</code>. It never gives out mutable pointer to the inner value; A Cell can be shared by multiple references.</p>
 <h3 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h3><ul>
 <li><code>fn get(&amp;self) -&gt; T</code></li>
 <li><code>fn set(&amp;self, val: T)</code></li>
@@ -107,6 +108,8 @@
 <li><code>fn get_mut(&amp;mut self) -&gt; &amp;mut T</code></li>
 <li><code>fn from_mut(t: &amp;mut T) -&gt; &amp;Cell&lt;T&gt;</code></li>
 </ul>
+<h3 id="traits"><a href="#traits" class="headerlink" title="traits"></a>traits</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">impl</span>&lt;T&gt; !<span class="built_in">Sync</span> <span class="keyword">for</span> <span class="title class_">Cell</span>&lt;T&gt;  <span class="comment">// cannot be used in other threads</span></span><br></pre></td></tr></table></figure>
+
 <h2 id="OnceCell"><a href="#OnceCell" class="headerlink" title="OnceCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.OnceCell.html">OnceCell</a></h2><p>A cell which can be written to only once.</p>
 <h3 id="special-methods"><a href="#special-methods" class="headerlink" title="special methods"></a>special methods</h3><ul>
 <li><code>fn get_or_init&lt;F&gt;(&amp;self, f: F) -&gt; &amp;T</code></li>
@@ -121,11 +124,16 @@
 </ul>
 <h2 id="SyncUnsafeCell"><a href="#SyncUnsafeCell" class="headerlink" title="SyncUnsafeCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.SyncUnsafeCell.html">SyncUnsafeCell</a></h2><p>This is just an <code>UnsafeCell</code>, except it implements <code>Sync</code> if T implements Sync.</p>
 <h2 id="std-cell-RefCell"><a href="#std-cell-RefCell" class="headerlink" title="std::cell::RefCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.RefCell.html">std::cell::RefCell</a></h2><p>A mutable memory location with <strong>dynamically</strong> checked borrow rules</p>
+<ul>
+<li><code>fn borrow(&amp;self) -&gt; Ref&lt;&#39;_, T&gt;</code></li>
+<li><code>fn borrow_mut(&amp;self) -&gt; RefMut&lt;&#39;_, T&gt;</code></li>
+<li><code>fn as_ptr(&amp;self) -&gt; *mut T</code></li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-std-cell/" data-id="cljta2483001v4vsj702j0lg7" data-title="rust std interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="cljvkeaoo001vytsjaycxdfaa" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -205,7 +213,7 @@
           </li>
         
           <li>
-            <a href="/2023/06/03/rust/rust_std/rust-std-cell/">rust std interior mutability</a>
+            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
           </li>
         
           <li>

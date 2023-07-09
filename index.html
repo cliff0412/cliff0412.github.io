@@ -163,7 +163,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="cljta2486002v4vsj5xo0c4ry" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="cljvkeaos002tytsjes9ubq5l" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -177,9 +177,9 @@
 
 
   
-    <article id="post-rust/rust_std/rust-std-cell" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-rust/rust_std/rust-smart-pointer-and-internal-mutibility" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/03/rust/rust_std/rust-std-cell/" class="article-date">
+    <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" class="article-date">
   <time class="dt-published" datetime="2023-06-03T14:04:38.000Z" itemprop="datePublished">2023-06-03</time>
 </a>
     
@@ -191,7 +191,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/03/rust/rust_std/rust-std-cell/">rust std interior mutability</a>
+      <a class="p-name article-title" href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
     </h1>
   
 
@@ -199,7 +199,8 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="Cell"><a href="#Cell" class="headerlink" title="Cell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.Cell.html">Cell</a></h2><p><code>Cell&lt;T&gt;</code> enables mutation inside an immutable value. In other words, it enables <code>interior mutability</code>.</p>
+        <h1 id="smart-pointer"><a href="#smart-pointer" class="headerlink" title="smart pointer"></a>smart pointer</h1><h2 id="Rc"><a href="#Rc" class="headerlink" title="Rc"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/rc/struct.Rc.html">Rc</a></h2><p>A single-threaded reference-counting pointer. The inherent methods of Rc are all associated functions, which means that you have to call them as e.g., Rc::get_mut(&amp;mut value) instead of value.get_mut(). This avoids conflicts with methods of the inner type T.</p>
+<h1 id="internal-mutibility"><a href="#internal-mutibility" class="headerlink" title="internal mutibility"></a>internal mutibility</h1><h2 id="Cell"><a href="#Cell" class="headerlink" title="Cell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.Cell.html">Cell</a></h2><p><code>Cell&lt;T&gt;</code> enables mutation inside an immutable value. In other words, it enables <code>interior mutability</code>. It never gives out mutable pointer to the inner value; A Cell can be shared by multiple references.</p>
 <h3 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h3><ul>
 <li><code>fn get(&amp;self) -&gt; T</code></li>
 <li><code>fn set(&amp;self, val: T)</code></li>
@@ -210,6 +211,8 @@
 <li><code>fn get_mut(&amp;mut self) -&gt; &amp;mut T</code></li>
 <li><code>fn from_mut(t: &amp;mut T) -&gt; &amp;Cell&lt;T&gt;</code></li>
 </ul>
+<h3 id="traits"><a href="#traits" class="headerlink" title="traits"></a>traits</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">impl</span>&lt;T&gt; !<span class="built_in">Sync</span> <span class="keyword">for</span> <span class="title class_">Cell</span>&lt;T&gt;  <span class="comment">// cannot be used in other threads</span></span><br></pre></td></tr></table></figure>
+
 <h2 id="OnceCell"><a href="#OnceCell" class="headerlink" title="OnceCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.OnceCell.html">OnceCell</a></h2><p>A cell which can be written to only once.</p>
 <h3 id="special-methods"><a href="#special-methods" class="headerlink" title="special methods"></a>special methods</h3><ul>
 <li><code>fn get_or_init&lt;F&gt;(&amp;self, f: F) -&gt; &amp;T</code></li>
@@ -224,11 +227,16 @@
 </ul>
 <h2 id="SyncUnsafeCell"><a href="#SyncUnsafeCell" class="headerlink" title="SyncUnsafeCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.SyncUnsafeCell.html">SyncUnsafeCell</a></h2><p>This is just an <code>UnsafeCell</code>, except it implements <code>Sync</code> if T implements Sync.</p>
 <h2 id="std-cell-RefCell"><a href="#std-cell-RefCell" class="headerlink" title="std::cell::RefCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.RefCell.html">std::cell::RefCell</a></h2><p>A mutable memory location with <strong>dynamically</strong> checked borrow rules</p>
+<ul>
+<li><code>fn borrow(&amp;self) -&gt; Ref&lt;&#39;_, T&gt;</code></li>
+<li><code>fn borrow_mut(&amp;self) -&gt; RefMut&lt;&#39;_, T&gt;</code></li>
+<li><code>fn as_ptr(&amp;self) -&gt; *mut T</code></li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-std-cell/" data-id="cljta2483001v4vsj702j0lg7" data-title="rust std interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="cljvkeaoo001vytsjaycxdfaa" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -283,7 +291,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="cljta247y000v4vsj8x0v6qhx" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="cljvkeaok0014ytsjdks5eipi" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -349,7 +357,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="cljta248400204vsjd7ji7dno" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="cljvkeaos002sytsj6q737x5z" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
       
       
       
@@ -436,6 +444,9 @@
 <li><code>take&lt;&#39;a, R: OneSidedRange&lt;usize&gt;&gt;(self: &amp;mut &amp;&#39;a Self, range: R)</code> Removes the subslice corresponding to the given range</li>
 <li><code>get_many_mut&lt;const N: usize&gt;</code> Returns mutable references to many indices at once.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(get_many_mut)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Ok</span>([a, b]) = v.<span class="title function_ invoke__">get_many_mut</span>([<span class="number">0</span>, <span class="number">2</span>]) &#123;</span><br><span class="line">    *a = <span class="number">413</span>;</span><br><span class="line">    *b = <span class="number">612</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(v, &amp;[<span class="number">413</span>, <span class="number">2</span>, <span class="number">612</span>]);</span><br></pre></td></tr></table></figure></li>
 </ul>
+<h2 id="alloc-vec-Vec"><a href="#alloc-vec-Vec" class="headerlink" title="alloc::vec::Vec"></a>alloc::vec::Vec</h2><ul>
+<li><code>fn truncate(&amp;mut self, len: usize)</code> Shortens the vector, keeping the first <code>len</code> elements and dropping the rest</li>
+</ul>
 <h2 id="std-collections-VecDeque"><a href="#std-collections-VecDeque" class="headerlink" title="std::collections::VecDeque"></a>std::collections::VecDeque</h2><p>A double-ended queue (deque) implemented with a growable ring buffer.<br>Since VecDeque is a ring buffer, its elements are not necessarily contiguous in memory. If you want to access the elements as a single slice, such as for efficient sorting, you can use make_contiguous. It rotates the VecDeque so that its elements do not wrap, and returns a mutable slice to the now-contiguous element sequence.</p>
 <ul>
 <li><code>swap(&amp;mut self, i: usize, j: usize)</code></li>
@@ -463,7 +474,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="cljta2483001y4vsj5dsu92xf" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="cljvkeaop001yytsj7frf9v4r" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
@@ -510,7 +521,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="cljta247y000s4vsj19uv0h4t" data-title="rust functional programming" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="cljvkeaoj000vytsjg7407vtq" data-title="rust functional programming" class="article-share-link">Share</a>
       
       
       
@@ -550,7 +561,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/01/rust/crates/rust-serde/" data-id="cljta2483001t4vsj130s0pmo" data-title="rust crate serde" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/01/rust/crates/rust-serde/" data-id="cljvkeaoo001tytsjgf2l9h7f" data-title="rust crate serde" class="article-share-link">Share</a>
       
       
       
@@ -606,7 +617,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/25/geth/tech_docs/geth.prune/" data-id="cljta2480001j4vsj1j9c2aax" data-title="geth state prune" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/25/geth/tech_docs/geth.prune/" data-id="cljvkeaom001jytsj2bez6ns2" data-title="geth state prune" class="article-share-link">Share</a>
       
       
       
@@ -689,7 +700,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/18/geth/tech_docs/geth.sync.mode/" data-id="cljta2482001l4vsj2yue1z1b" data-title="geth sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/18/geth/tech_docs/geth.sync.mode/" data-id="cljvkeaoo001oytsje5yedqmi" data-title="geth sync" class="article-share-link">Share</a>
       
       
       
@@ -769,7 +780,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/15/geth/tech_docs/geth.v1.10.0/" data-id="cljta2482001o4vsjbn612g4b" data-title="geth v1.10.0 summary" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/03/15/geth/tech_docs/geth.v1.10.0/" data-id="cljvkeaon001lytsjcyn2golj" data-title="geth v1.10.0 summary" class="article-share-link">Share</a>
       
       
       
@@ -837,7 +848,7 @@
           </li>
         
           <li>
-            <a href="/2023/06/03/rust/rust_std/rust-std-cell/">rust std interior mutability</a>
+            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
           </li>
         
           <li>
