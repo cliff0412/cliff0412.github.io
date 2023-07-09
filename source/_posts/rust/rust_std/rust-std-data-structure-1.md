@@ -1,7 +1,7 @@
 ---
-title: rust core data structure (1)
+title: rust std data structure (1D)
 date: 2023-05-01 22:04:38
-tags: [rust, rust-core]
+tags: [rust-std]
 ---
 
 ## array
@@ -144,3 +144,51 @@ if let Ok([a, b]) = v.get_many_mut([0, 2]) {
 }
 assert_eq!(v, &[413, 2, 612]);
 ```
+
+## alloc::vec::Vec
+- `fn truncate(&mut self, len: usize)` Shortens the vector, keeping the first `len` elements and dropping the rest
+
+## std::collections::VecDeque
+A double-ended queue (deque) implemented with a growable ring buffer.
+Since VecDeque is a ring buffer, its elements are not necessarily contiguous in memory. If you want to access the elements as a single slice, such as for efficient sorting, you can use make_contiguous. It rotates the VecDeque so that its elements do not wrap, and returns a mutable slice to the now-contiguous element sequence.
+
+- `swap(&mut self, i: usize, j: usize)`
+- `reserve_exact(&mut self, additional: usize)` Reserves the minimum capacity for at least `additional` more elements to be inserted in the given deque. Does nothing if the capacity is already sufficient.
+- `reserve(&mut self, additional: usize)`
+- `shrink_to_fit(&mut self)` Shrinks the capacity of the deque as much as possible.
+- `truncate(&mut self, len: usize)` Shortens the deque, keeping the first `len` elements and dropping the rest.
+```rust
+use std::collections::VecDeque;
+let mut buf = VecDeque::new();
+buf.push_back(5);
+buf.push_back(10);
+buf.push_back(15);
+assert_eq!(buf, [5, 10, 15]);
+buf.truncate(1);
+assert_eq!(buf, [5]);
+```
+- `iter(&self)`
+- `as_slices(&self)`
+- `slice_ranges<R>(&self, range: R)` Given a range into the logical buffer of the deque, this function return two ranges into the physical buffer that correspond to the given range
+- `range<R>(&self, range: R)` Creates an iterator that covers the specified range in the deque.
+```rust
+use std::collections::VecDeque;
+let deque: VecDeque<_> = [1, 2, 3].into();
+let range = deque.range(2..).copied().collect::<VecDeque<_>>();
+assert_eq!(range, [3]);
+// A full range covers all contents
+let all = deque.range(..);
+assert_eq!(all.len(), 3);
+```
+-  `drain<R>(&mut self, range: R)` Removes the specified range from the deque in bulk, returning all removed elements as an iterator.
+- `clear(&mut self)`
+- `contains(&self, x: &T)` Returns `true` if the deque contains an element equal to the given value
+- `front(&self)` Provides a reference to the front element
+- `front_mut(&mut self)`
+- `back(&self)`
+- `back_mut(&mut self)`
+- `pop_front(&mut self)`
+- `pop_back(&mut self)`
+- `push_front(&mut self, value: T)`
+- `push_back(&mut self, value: T)`
+

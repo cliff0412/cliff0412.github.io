@@ -1,7 +1,7 @@
 ---
-title: rust core data structure (2)
+title: rust std data structure (2D)
 date: 2023-05-02 22:04:38
-tags: [rust, rust-core]
+tags: [rust-std]
 ---
 
 ## collections

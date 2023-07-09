@@ -23,9 +23,9 @@ println!("Hello again, {}", maybe_name.unwrap_or("world".into()));
 
 ## Clone vs Copy
 ### Copy 的含义
-Copy 的全名是 std::marker::Copy。请大家注意 std::marker 这个模块里面的所有的 trait 都是特殊的 trait。目前稳定的有四个，它们是 Copy、Send、Sized、Sync。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。在编译器眼里，它们与其它的 trait 不一样。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定，这些约定会影响编译器的静态检查以及代码生成。
+`Copy` 的全名是 `std::marker::Copy`。`std::marker` 这个模块里面的所有的 trait 都是特殊的。目前稳定的有四个，它们是 `Copy`、`Send`、`Sized`、`Sync`。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定。
 
-Copy 这个 trait 在编译器的眼里代表的是什么意思呢？简单点总结就是说，如果一个类型 impl 了 Copy trait，意味着任何时候，我们可以通过简单的内存拷贝(C语言的按位拷贝memcpy)实现该类型的复制，而不会产生任何问题。
+如果一个类型 impl 了 Copy trait，意味着任何时候，我们可以通过简单的内存拷贝(C语言的按位拷贝memcpy)实现该类型的复制，而不会产生任何问题。
 
 一旦一个类型实现了 Copy trait，那么它在变量绑定、函数参数传递、函数返回值传递等场景下，它都是 copy 语义，而不再是默认的 move 语义。
 
@@ -34,13 +34,7 @@ Copy 这个 trait 在编译器的眼里代表的是什么意思呢？简单点�
 
 常见的数字类型、bool类型、共享借用指针&，都是具有 Copy 属性的类型。而 Box、Vec、可写借用指针&mut 等类型都是不具备 Copy 属性的类型。
 
-对于数组类型，如果它内部的元素类型是Copy，那么这个数组也是Copy类型。
-
-对于tuple类型，如果它的每一个元素都是Copy类型，那么这个tuple会自动实现Copy trait。
-
-对于struct和enum类型，不会自动实现Copy trait。而且只有当struct和enum内部每个元素都是Copy类型的时候，编译器才允许我们针对此类型实现Copy trait。
-
-我们可以认为，Rust中只有 POD(C++语言中的Plain Old Data) 类型才有资格实现Copy trait。在Rust中，如果一个类型只包含POD数据类型的成员，没有指针类型的成员，并且没有自定义析构函数（实现Drop trait），那它就是POD类型。比如整数、浮点数、只包含POD类型的数组等，都属于POD类型。而Box、 String、 Vec等，不能按 bit 位拷贝的类型，都不属于POD类型。但是，反过来讲，并不是所有的POD类型都应该实现Copy trait。
+我们可以认为，Rust中只有 POD(C++语言中的Plain Old Data) 类型才有资格实现Copy trait。在Rust中，如果一个类型只包含POD数据类型的成员，没有指针类型的成员，并且没有自定义析构函数（实现Drop trait），那它就是POD类型。比如整数、浮点数、只包含POD类型的数组等。而Box、 String、 Vec等，不能按 bit 位拷贝的类型，都不属于POD类型。但是，反过来讲，并不是所有的POD类型都应该实现Copy trait。
 
 ### Clone 的含义
 Clone 的全名是 std::clone::Clone。它的完整声明是这样的：
@@ -70,6 +64,11 @@ struct MyStruct(i32);
 通过 derive 方式自动实现 Copy 和手工实现 Copy 有一丁点的微小区别。当类型具有泛型参数的时候，比如 struct MyStruct<T>{}，通过 derive 自动生成的代码会自动添加一个 T: Copy 的约束。
 
 目前，只有一部分固定的特殊 trait 可以通过 derive 来自动实现。将来 Rust 会允许自定义的 derive 行为，让我们自己的 trait 也可以通过 derive 的方式自动实现。
+
+## Cell vs RefCell
+- Cell 是操作T(values), RefCell操作&T(references). Cell<T> get的时候要求T impl Copy。比如String类型没有实现Copy trait, 那么Cell::new(String::from("Hello")).get()会报错
+- Cell 在编译器检查，运行时不会panic；RefCell在运行时检查，使用不当会发生panic
+- 一般来说，Cell内部实现会发生内存的分配，性能较之RefCell有点大
 
 ## AsRef vs Borrow
 [WIP]
