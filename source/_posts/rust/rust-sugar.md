@@ -72,4 +72,24 @@ struct A {
 ## ptr
 ```rust
 NonNull::new_unchecked()
+
+#![feature(new_uninit)]
+let mut five = Box::<u32>::new_uninit();
+let five = unsafe {
+    // Deferred initialization:
+    five.as_mut_ptr().write(5);
+    five.assume_init()
+};
+assert_eq!(*five, 5)
+
+let zero = Box::<u32>::new_zeroed();
+let zero = unsafe { zero.assume_init() };
+assert_eq!(*zero, 0)
+
+use std::alloc::{alloc, Layout};
+unsafe {
+    let ptr = alloc(Layout::new::<i32>()) as *mut i32;
+    ptr.write(5);
+    let x = Box::from_raw(ptr);
+}
 ```

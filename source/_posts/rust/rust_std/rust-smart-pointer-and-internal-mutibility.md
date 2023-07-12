@@ -69,3 +69,6 @@ A mutable memory location with **dynamically** checked borrow rules
 - `fn borrow(&self) -> Ref<'_, T>`
 - `fn borrow_mut(&self) -> RefMut<'_, T>`
 - `fn as_ptr(&self) -> *mut T`
+
+# borrow
+## [std::borrow::Cow](https://doc.rust-lang.org/std/borrow/enum.Cow.html)

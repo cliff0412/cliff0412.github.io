@@ -192,3 +192,4 @@ assert_eq!(all.len(), 3);
 - `push_front(&mut self, value: T)`
 - `push_back(&mut self, value: T)`
 
+## [std::collections::LinkedList](https://doc.rust-lang.org/std/collections/struct.LinkedList.html)
