@@ -101,7 +101,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="cljvkeaoo001qytsj9817ajcg" data-title="rust frequently used crates" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="cljzki9l4002dm8sj2rtqegfp" data-title="rust frequently used crates" class="article-share-link">Share</a>
       
       
       
@@ -171,7 +171,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="cljvkeaoj000xytsj30re4z2z" data-title="rust cargo all in one" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="cljzki9kw000tm8sj9a59b2o4" data-title="rust cargo all in one" class="article-share-link">Share</a>
       
       
       
@@ -211,7 +211,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljvkeao90001ytsjahr37res" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljzki9kp0003m8sj1gl1c3cn" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -262,7 +262,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="cljvkeaod0005ytsj12ky1ysl" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="cljzki9kq0005m8sj8s05g88b" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
@@ -329,7 +329,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="cljvkeaok0012ytsjatp2bdtk" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="cljzki9kx0013m8sj94323ogc" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
       
       
       
@@ -375,7 +375,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="cljvkeaol0019ytsjbv39hjyc" data-title="rust tools" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="cljzki9ky0014m8sjbpe3f3sm" data-title="rust tools" class="article-share-link">Share</a>
       
       
       
@@ -422,11 +422,11 @@
 <h2 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h2><p>The compiler will not rearrange the memory layout</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[repr(C)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    a:<span class="type">u8</span>,</span><br><span class="line">    b:<span class="type">u32</span>,</span><br><span class="line">    c:<span class="type">u16</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="ptr"><a href="#ptr" class="headerlink" title="ptr"></a>ptr</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NonNull::<span class="title function_ invoke__">new_unchecked</span>()</span><br></pre></td></tr></table></figure>
+<h2 id="ptr"><a href="#ptr" class="headerlink" title="ptr"></a>ptr</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">NonNull::<span class="title function_ invoke__">new_unchecked</span>()</span><br><span class="line"></span><br><span class="line"><span class="meta">#![feature(new_uninit)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">five</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_uninit</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">five</span> = <span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="comment">// Deferred initialization:</span></span><br><span class="line">    five.<span class="title function_ invoke__">as_mut_ptr</span>().<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    five.<span class="title function_ invoke__">assume_init</span>()</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*five, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_zeroed</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="keyword">unsafe</span> &#123; zero.<span class="title function_ invoke__">assume_init</span>() &#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*zero, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::alloc::&#123;alloc, Layout&#125;;</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">ptr</span> = <span class="title function_ invoke__">alloc</span>(Layout::new::&lt;<span class="type">i32</span>&gt;()) <span class="keyword">as</span> *<span class="keyword">mut</span> <span class="type">i32</span>;</span><br><span class="line">    ptr.<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span> = <span class="type">Box</span>::<span class="title function_ invoke__">from_raw</span>(ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="cljvkeaol0016ytsjgreu5vea" data-title="rust sugar" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="cljzki9ky0019m8sj2yt95nok" data-title="rust sugar" class="article-share-link">Share</a>
       
       
       
@@ -495,7 +495,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="cljvkeaok0010ytsjcdo6ftwb" data-title="cargo doc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="cljzki9kx0011m8sj6jflhaqn" data-title="cargo doc" class="article-share-link">Share</a>
       
       
       
@@ -558,7 +558,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="cljvkeaom001gytsj3cdj45zp" data-title="rpc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="cljzki9kz001em8sjd2gx4zhz" data-title="rpc" class="article-share-link">Share</a>
       
       
       
@@ -634,7 +634,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="cljvkeaoj000rytsjfilk5199" data-title="rust project management" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="cljzki9kx000wm8sj3e1b5htl" data-title="rust project management" class="article-share-link">Share</a>
       
       
       
