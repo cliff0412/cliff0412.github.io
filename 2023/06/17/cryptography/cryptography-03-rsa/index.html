@@ -4,14 +4,19 @@
   <meta charset="utf-8">
   
   
-  <title>Archives | cliff&#39;s personal blog</title>
+  <title>cryptography (3) RSA cryptosystem | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="cliff&#39;s personal blog">
-<meta property="og:url" content="https://cliff0412.github.io/archives/page/2/index.html">
+  <meta name="description" content="introductionthe security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1]. Euler’s Phi Function">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cryptography (3) RSA cryptosystem">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="introductionthe security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1]. Euler’s Phi Function">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-06-17T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-07-13T16:40:50.090Z">
 <meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -69,216 +74,96 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2023" class="archive-year">2023</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/04/01/rust/crates/rust-serde/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-04-01T14:04:38.000Z" itemprop="datePublished">Apr 1</time>
+        <section id="main"><article id="post-cryptography/cryptography-03-rsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/17/cryptography/cryptography-03-rsa/" class="article-date">
+  <time class="dt-published" datetime="2023-06-17T06:29:26.000Z" itemprop="datePublished">2023-06-17</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/04/01/rust/crates/rust-serde/">rust crate serde</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      cryptography (3) RSA cryptosystem
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/03/25/geth/tech_docs/geth.prune/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-03-25T11:29:43.000Z" itemprop="datePublished">Mar 25</time>
-</a>
+    <div class="e-content article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/03/25/geth/tech_docs/geth.prune/">geth state prune</a>
-    </h1>
-  
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/03/18/geth/tech_docs/geth.sync.mode/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-03-18T08:29:43.000Z" itemprop="datePublished">Mar 18</time>
-</a>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>the security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1].</p>
+<h2 id="Euler’s-Phi-Function"><a href="#Euler’s-Phi-Function" class="headerlink" title="Euler’s Phi Function"></a>Euler’s Phi Function</h2><p>we consider the ring \( Z_m\) i.e., the set of integers \({0,1,…,m-1}\). we are interested in teh problem of knowing how many numbers in this set are relatively prime to m. this quantity is given by Euler’s phi function, which is \(\Phi(m)\)</p>
+<hr>
+<p>let m have the following canonical factorization<br>\[ m &#x3D; p_{1}^{e_1} \cdot p_{2}^{e_2} \cdot … \cdot p_{n}^{e_n}\]<br>where the \(p_i\) are distinct prime numbers and \( e_i\) are positive integers, then</p>
+<p>\[ \Phi(m) &#x3D; \prod_{i&#x3D;1}^{n}(p_{i}^{e_i} - p_{i}^{e_i -1} ) \]</p>
+<hr>
+<h2 id="Fermat’s-little-theorem"><a href="#Fermat’s-little-theorem" class="headerlink" title="Fermat’s little theorem"></a>Fermat’s little theorem</h2><p>Fermat’s little theorem states that if p is a prime number, then for any integer a, the number<br>\(a^{p}-a \) is an integer multiple of p. In the notation of modular arithmetic, this is expressed as<br>\[ a^{p} \equiv a \bmod p\]<br>the theorem can be stated in the form also,<br>\[ a^{p-1} \equiv 1 \bmod p\]<br>then the inverse of an integer is,<br>\[ a^{-1} \equiv a^{p-2} \bmod p\]<br>performing the above formulate (involving exponentiation) to find inverse is usually slower than using extended Euclidean algorithm. However, there are situations where it is advantageous to use Fermat’s Little Theorem,  e.g., on smart cards or other devices which have a hardware accelerator for fast exponentiation anyway.</p>
+<p>a generatlization of Fermat’s little Theorem to any integer moduli, i.e., moduli that are not necessarily primes, is Euler’s theorem.</p>
+<hr>
+<p><strong>Euler’s Theorem</strong><br>let \(a\) and \(m\) be integers with \(gcd(a,m) &#x3D; 1\), then<br>\[ a^{\Phi(m)} \equiv 1 \bmod m\]</p>
+<hr>
+<p>since it works modulo m, it is applicable to integer rings \(Z_{m}\)</p>
+<h2 id="key-generation"><a href="#key-generation" class="headerlink" title="key generation"></a>key generation</h2><hr>
+<p>Output: public key: \( k_{pub} &#x3D; (n,e) and private key: k_{pr} &#x3D; (d) \)</p>
+<ol>
+<li>choose two large primes p and q.</li>
+<li>compute \(n &#x3D; p\cdot q\)</li>
+<li>compute \( \Phi(n) &#x3D; (p-1)(q-1)\)</li>
+<li>select the public exponent \( e \in {1,2,…,\Phi(n)-1} \) such that<br>\[ gcd(e,\Phi(n)) &#x3D; 1\]</li>
+<li>compute the private key d such that<br>\[ d \cdot e \equiv 1 \bmod \Phi(n)\]</li>
+</ol>
+<hr>
+<p>it is important to stress that we need to know the factoorization of m in order to calculate Euler’s phi function.</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] <a target="_blank" rel="noopener" href="https://web.williams.edu/Mathematics/lg5/302/RSA.pdf">A Method for Obtaining Digital<br>Signatures and Public-Key Cryptosystems</a></li>
+</ul>
+
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/03/15/geth/tech_docs/geth.v1.10.0/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-03-15T08:29:43.000Z" itemprop="datePublished">Mar 15</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/" data-id="clk1dmvci0008d4sjeb3fa17z" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/03/15/geth/tech_docs/geth.v1.10.0/">geth v1.10.0 summary</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/03/05/golang/go-similar-concepts-comparison/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-03-05T02:44:50.000Z" itemprop="datePublished">Mar 5</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/03/05/golang/go-similar-concepts-comparison/">go similar concepts comparison</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/03/02/golang/go-reflect/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-03-02T02:44:50.000Z" itemprop="datePublished">Mar 2</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/03/02/golang/go-reflect/">go reflect</a>
-    </h1>
-  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/06/20/zkp/zkp-a-brief-understanding/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          zkp a brief understanding
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cryptography (2) elliptic curve</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/02/23/cryptography/paillier-encryption/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-02-23T13:25:41.000Z" itemprop="datePublished">Feb 23</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/02/23/cryptography/paillier-encryption/">paillier encryption</a>
-    </h1>
-  
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/02/07/cryptography/two-party-ecdsa/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-02-07T06:29:26.000Z" itemprop="datePublished">Feb 7</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/02/07/cryptography/two-party-ecdsa/">two party ecdsa</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/01/22/MPT/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-01-22T09:25:36.000Z" itemprop="datePublished">Jan 22</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/01/22/MPT/">MPT</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2023/01/15/blockchain.kademlia/" class="archive-article-date">
-  <time class="dt-published" datetime="2023-01-15T03:00:30.000Z" itemprop="datePublished">Jan 15</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-
-  <nav id="page-nav">
-    
-    <a class="extend prev" rel="prev" href="/archives/">&laquo; Prev</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span><a class="page-number" href="/archives/page/3/">3</a><a class="page-number" href="/archives/page/4/">4</a><a class="page-number" href="/archives/page/5/">5</a><a class="extend next" rel="next" href="/archives/page/3/">Next &raquo;</a>
-  </nav>
 
 </section>
         

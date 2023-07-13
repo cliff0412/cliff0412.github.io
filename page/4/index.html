@@ -71,6 +71,57 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rust/rust-sugar" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/11/17/rust/rust-sugar/" class="article-date">
+  <time class="dt-published" datetime="2022-11-17T07:47:13.000Z" itemprop="datePublished">2022-11-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/11/17/rust/rust-sugar/">rust sugar</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="formatted-print"><a href="#formatted-print" class="headerlink" title="formatted print"></a>formatted print</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Positional arguments can be used</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;0&#125;, this is &#123;1&#125;. &#123;1&#125;, this is &#123;0&#125;&quot;</span>, <span class="string">&quot;Alice&quot;</span>, <span class="string">&quot;Bob&quot;</span>);</span><br><span class="line"><span class="comment">// As can named arguments.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;subject&#125; &#123;verb&#125; &#123;object&#125;&quot;</span>,</span><br><span class="line">            object=<span class="string">&quot;the lazy dog&quot;</span>,</span><br><span class="line">            subject=<span class="string">&quot;the quick brown fox&quot;</span>,</span><br><span class="line">            verb=<span class="string">&quot;jumps over&quot;</span>);</span><br><span class="line"><span class="comment">// Different formatting can be invoked by specifying the format character</span></span><br><span class="line"><span class="comment">// after a `:`.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 10:               &#123;&#125;&quot;</span>,   <span class="number">69420</span>); <span class="comment">// 69420</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 2 (binary):       &#123;:b&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10000111100101100</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 8 (octal):        &#123;:o&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 207454</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 16 (hexadecimal): &#123;:x&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10f2c</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 16 (hexadecimal): &#123;:X&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10F2C</span></span><br><span class="line"><span class="comment">// You can right-justify text with a specified width. This will</span></span><br><span class="line"><span class="comment">// output &quot;    1&quot;. (Four white spaces and a &quot;1&quot;, for a total width of 5.)</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:&gt;5&#125;&quot;</span>, number=<span class="number">1</span>);</span><br><span class="line"><span class="comment">// You can pad numbers with extra zeroes,</span></span><br><span class="line"><span class="comment">// and left-adjust by flipping the sign. This will output &quot;10000&quot;.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:0&lt;5&#125;&quot;</span>, number=<span class="number">1</span>);</span><br><span class="line"><span class="comment">// You can use named arguments in the format specifier by appending a `$`.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:0&gt;width$&#125;&quot;</span>, number=<span class="number">1</span>, width=<span class="number">5</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/rust-by-example/hello/print.html">reference</a></li>
+</ul>
+<h2 id="syntax"><a href="#syntax" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// print to stderr</span></span><br><span class="line">eprintln!(<span class="string">&quot;server error: &#123;&#125;&quot;</span>, e);</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">MyTupleStruct</span>&lt;M&gt;(M);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">myTupleStruct</span> =  MyTupleStruct::&lt;<span class="type">String</span>&gt;(<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>));</span><br><span class="line"></span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">position</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">find</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">any</span>()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">mut</span> A: <span class="type">u32</span> = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="attributes"><a href="#attributes" class="headerlink" title="attributes"></a>attributes</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![allow(warnings)]</span></span><br><span class="line"><span class="meta">#[allow(dead_code)]</span></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="comment">// Suppress all warnings from casts which overflow.</span></span><br><span class="line"><span class="meta">#![allow(overflowing_literals)]</span></span><br><span class="line"><span class="meta">#![allow(unreachable_code)]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h2><p>The compiler will not rearrange the memory layout</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[repr(C)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    a:<span class="type">u8</span>,</span><br><span class="line">    b:<span class="type">u32</span>,</span><br><span class="line">    c:<span class="type">u16</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ptr"><a href="#ptr" class="headerlink" title="ptr"></a>ptr</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">NonNull::<span class="title function_ invoke__">new_unchecked</span>()</span><br><span class="line"></span><br><span class="line"><span class="meta">#![feature(new_uninit)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">five</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_uninit</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">five</span> = <span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="comment">// Deferred initialization:</span></span><br><span class="line">    five.<span class="title function_ invoke__">as_mut_ptr</span>().<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    five.<span class="title function_ invoke__">assume_init</span>()</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*five, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_zeroed</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="keyword">unsafe</span> &#123; zero.<span class="title function_ invoke__">assume_init</span>() &#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*zero, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::alloc::&#123;alloc, Layout&#125;;</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">ptr</span> = <span class="title function_ invoke__">alloc</span>(Layout::new::&lt;<span class="type">i32</span>&gt;()) <span class="keyword">as</span> *<span class="keyword">mut</span> <span class="type">i32</span>;</span><br><span class="line">    ptr.<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span> = <span class="type">Box</span>::<span class="title function_ invoke__">from_raw</span>(ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="clk1dmvcp001dd4sj7u4n42y2" data-title="rust sugar" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rust/rust-cargo-doc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/11/13/rust/rust-cargo-doc/" class="article-date">
@@ -126,7 +177,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="clk19ojcx001b2tsjbc4ogmev" data-title="cargo doc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="clk1dmvco001bd4sjhhsfgejf" data-title="cargo doc" class="article-share-link">Share</a>
       
       
       
@@ -189,7 +240,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="clk19ojcz001l2tsjdb9q5xps" data-title="rpc" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="clk1dmvcq001md4sjhdetgy3g" data-title="rpc" class="article-share-link">Share</a>
       
       
       
@@ -265,7 +316,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="clk19ojcw000y2tsjhze4cugl" data-title="rust project management" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="clk1dmvcn000zd4sj8ypy70s1" data-title="rust project management" class="article-share-link">Share</a>
       
       
       
@@ -358,7 +409,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/01/geth/code_analysis/geth.0.get.start/" data-id="clk19ojcz001j2tsj9bi76ikz" data-title="geth start" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/01/geth/code_analysis/geth.0.get.start/" data-id="clk1dmvcq001jd4sj3ovd9a9z" data-title="geth start" class="article-share-link">Share</a>
       
       
       
@@ -491,7 +542,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/30/rust/rust-06-smart-pointer/" data-id="clk19ojcv000t2tsjczyq9idg" data-title="rust smart pointer" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/30/rust/rust-06-smart-pointer/" data-id="clk1dmvcn000vd4sjdn5ublwd" data-title="rust smart pointer" class="article-share-link">Share</a>
       
       
       
@@ -541,7 +592,7 @@ in both ways, buffer is converted to a trait object implements Write</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/25/rust/rust-05-memory-layout/" data-id="clk19ojcu000o2tsj1gfyd6tb" data-title="rust memory layout" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/25/rust/rust-05-memory-layout/" data-id="clk1dmvcn000xd4sjfw8t3339" data-title="rust memory layout" class="article-share-link">Share</a>
       
       
       
@@ -613,7 +664,7 @@ in both ways, buffer is converted to a trait object implements Write</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/18/rust/rust-04-lifetime/" data-id="clk19ojcu000l2tsjcwy370ks" data-title="rust lifetime" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/18/rust/rust-04-lifetime/" data-id="clk1dmvcm000td4sj43q50f2z" data-title="rust lifetime" class="article-share-link">Share</a>
       
       
       
@@ -708,7 +759,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/11/rust/rust-03-ownership/" data-id="clk19ojcv000r2tsjevpmeofu" data-title="rust ownership" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/11/rust/rust-03-ownership/" data-id="clk1dmvcm000rd4sjckoxej3d" data-title="rust ownership" class="article-share-link">Share</a>
       
       
       
@@ -870,68 +921,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/10/04/rust/rust-02-basics/" data-id="clk19ojcu000j2tsj33u08v1k" data-title="rust basics" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-01-resource" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/09/27/rust/rust-01-resource/" class="article-date">
-  <time class="dt-published" datetime="2022-09-27T14:04:38.000Z" itemprop="datePublished">2022-09-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/09/27/rust/rust-01-resource/">rust resource</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="learning-resources"><a href="#learning-resources" class="headerlink" title="learning resources"></a>learning resources</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/book/">the book</a></li>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/cargo/index.html">cargo book</a></li>
-<li><a target="_blank" rel="noopener" href="https://nnethercote.github.io/perf-book/title-page.html">the rust performance book</a></li>
-<li><a target="_blank" rel="noopener" href="https://rust-unofficial.github.io/patterns/intro.html">rust design patterns</a></li>
-<li><a target="_blank" rel="noopener" href="https://rust-lang.github.io/rfcs/">the rust RFC book</a></li>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html">the rustdoc book</a></li>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/nomicon/intro.html">rustnomicon</a></li>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/reference/introduction.html">the rust reference</a></li>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/rust-by-example/index.html">rust by example</a></li>
-<li><a target="_blank" rel="noopener" href="https://rust-lang.github.io/async-book/01_getting_started/01_chapter.html">async programming in rust</a></li>
-<li><a target="_blank" rel="noopener" href="https://rustc-dev-guide.rust-lang.org/about-this-guide.html">rust compiler development guide</a></li>
-<li><a target="_blank" rel="noopener" href="https://veykril.github.io/tlborm/">the little book of rust macros</a></li>
-</ul>
-<h2 id="video-resources"><a href="#video-resources" class="headerlink" title="video resources"></a>video resources</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.youtube.com/@jonhoo">youtube channel</a></li>
-</ul>
-<h2 id="books"><a href="#books" class="headerlink" title="books"></a>books</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://marabos.nl/atomics/">atomics and locks</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/QMHTMY/RustBook/blob/main/books/rust-book-zh-cn-shieber.pdf">data structure &amp; algorithm</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/09/27/rust/rust-01-resource/" data-id="clk19ojct000h2tsj3dnm4ggl" data-title="rust resource" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/10/04/rust/rust-02-basics/" data-id="clk1dmvcm000pd4sj10pp2wxt" data-title="rust basics" class="article-share-link">Share</a>
       
       
       
@@ -949,7 +939,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/3/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+    <a class="extend prev" rel="prev" href="/page/3/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/5/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -973,7 +963,7 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
     </div>
   </div>
 
@@ -995,15 +985,15 @@ equivalent to<figure class="highlight rust"><table><tr><td class="gutter"><pre><
       <ul>
         
           <li>
-            <a href="/2023/06/28/cryptography/elliptic-curve/">elliptic curve</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/27/cryptography/crypto-primitive-group-and-field/">group &amp; field</a>
-          </li>
-        
-          <li>
             <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
           </li>
         
           <li>

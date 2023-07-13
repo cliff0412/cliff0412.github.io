@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   
   
-  <title>elliptic curve | cliff&#39;s personal blog</title>
+  <title>cryptography (2) elliptic curve | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="elliptic curve definitionfor cryptographic use, we need to conside the curve not over the real numbers but over a finite field. the most popular fields GF(p), where all arithmetic is performed mod">
 <meta property="og:type" content="article">
-<meta property="og:title" content="elliptic curve">
-<meta property="og:url" content="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/index.html">
+<meta property="og:title" content="cryptography (2) elliptic curve">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
 <meta property="og:description" content="elliptic curve definitionfor cryptographic use, we need to conside the curve not over the real numbers but over a finite field. the most popular fields GF(p), where all arithmetic is performed mod">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cliff0412.github.io/images/elliptic_curve/point_addition.webp">
-<meta property="article:published_time" content="2023-06-28T06:29:26.000Z">
-<meta property="article:modified_time" content="2023-07-13T14:50:07.479Z">
+<meta property="article:published_time" content="2023-06-10T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-07-13T16:01:15.193Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta name="twitter:card" content="summary">
@@ -76,10 +76,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-cryptography/elliptic-curve" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-cryptography/cryptography-02-elliptic-curve" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/28/cryptography/elliptic-curve/" class="article-date">
-  <time class="dt-published" datetime="2023-06-28T06:29:26.000Z" itemprop="datePublished">2023-06-28</time>
+    <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/" class="article-date">
+  <time class="dt-published" datetime="2023-06-10T06:29:26.000Z" itemprop="datePublished">2023-06-10</time>
 </a>
     
   </div>
@@ -90,7 +90,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      elliptic curve
+      cryptography (2) elliptic curve
     </h1>
   
 
@@ -123,11 +123,11 @@
 <p>Given an elliptic curve E. We consider a primitive elemnt P and another element T. The DL problem is finding the integer d, where \( 1 \leq d \leq \#E \), such that:<br>\[ P + P + ….+ P &#x3D; dP &#x3D; T \]</p>
 <hr>
 <p>In cryptosystems, d is the private key which is an integer, while the public key T is a point on the curve with coordinates \( T &#x3D; (x_T, y_T)\)<br>Usually a <strong>square-and-multiply</strong> algorithm is used to calculate point multiplication (the algorithm detail is not coverred in this post). </p>
-<h2 id="Diffie-Hellman-Key-Exchange-with-Elliptic-Curve"><a href="#Diffie-Hellman-Key-Exchange-with-Elliptic-Curve" class="headerlink" title="Diffie-Hellman Key Exchange with Elliptic Curve"></a>Diffie-Hellman Key Exchange with Elliptic Curve</h2>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/" data-id="clk19ojcq00072tsj9kgcang5" data-title="elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/" data-id="clk1dmvcj000ad4sj2q75hsce" data-title="cryptography (2) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -139,10 +139,19 @@
     
 <nav id="article-nav">
   
+    <a href="/2023/06/17/cryptography/cryptography-03-rsa/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          cryptography (3) RSA cryptosystem
+        
+      </div>
+    </a>
   
-    <a href="/2023/06/27/cryptography/crypto-primitive-group-and-field/" id="article-nav-older" class="article-nav-link-wrap">
+  
+    <a href="/2023/06/08/rust/rust_std/rust-std-sync/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">group &amp; field</div>
+      <div class="article-nav-title">rust std sync</div>
     </a>
   
 </nav>
@@ -172,7 +181,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
     </div>
   </div>
 
@@ -194,15 +203,15 @@
       <ul>
         
           <li>
-            <a href="/2023/06/28/cryptography/elliptic-curve/">elliptic curve</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/27/cryptography/crypto-primitive-group-and-field/">group &amp; field</a>
-          </li>
-        
-          <li>
             <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
           </li>
         
           <li>
