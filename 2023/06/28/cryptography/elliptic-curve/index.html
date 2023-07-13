@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cliff0412.github.io/images/elliptic_curve/point_addition.webp">
 <meta property="article:published_time" content="2023-06-28T06:29:26.000Z">
-<meta property="article:modified_time" content="2023-07-13T14:23:24.184Z">
+<meta property="article:modified_time" content="2023-07-13T14:31:47.398Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta name="twitter:card" content="summary">
@@ -113,11 +113,12 @@
 <hr>
 <p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
 <hr>
+<p>note that the parameter s is the slope of the line through P and Q in the case of point addition, or the slope of the tangent through P in the case of point doubling.<br>Furthmore, we define an abstract point at infinity as the neutral element \( \mathcal{O} \).<br>\[ P + \mathcal{O} &#x3D; P\]<br>according the group definition, we can now also define the inverse <code>-P</code> of any group element P as<br>\[ P + (-P) &#x3D; \mathcal{O}\]<br>Therefore, the inverse of \( P &#x3D; (x_p, y_p) \) is just \( P &#x3D; (x_p, -y_p)\). since  \( -y_p \equiv p - y_p\), hence<br>\[ -P &#x3D; (x_p, p-y_p) \]</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/" data-id="clk18pztp000cnzsj3bjm95yk" data-title="elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/" data-id="clk190vsy00082osj7094hc07" data-title="elliptic curve" class="article-share-link">Share</a>
       
       
       
