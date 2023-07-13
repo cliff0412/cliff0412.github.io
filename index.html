@@ -107,7 +107,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk1dmvcl000ld4sj211p9bw9" data-title="zkp a brief understanding" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk1e4wpw001l6hsjedcxczok" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
@@ -150,11 +150,14 @@
 
 
 <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>the security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1].</p>
+<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>todo!()</p>
+<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>todo!()</p>
 <h2 id="Euler’s-Phi-Function"><a href="#Euler’s-Phi-Function" class="headerlink" title="Euler’s Phi Function"></a>Euler’s Phi Function</h2><p>we consider the ring \( Z_m\) i.e., the set of integers \({0,1,…,m-1}\). we are interested in teh problem of knowing how many numbers in this set are relatively prime to m. this quantity is given by Euler’s phi function, which is \(\Phi(m)\)</p>
 <hr>
 <p>let m have the following canonical factorization<br>\[ m &#x3D; p_{1}^{e_1} \cdot p_{2}^{e_2} \cdot … \cdot p_{n}^{e_n}\]<br>where the \(p_i\) are distinct prime numbers and \( e_i\) are positive integers, then</p>
 <p>\[ \Phi(m) &#x3D; \prod_{i&#x3D;1}^{n}(p_{i}^{e_i} - p_{i}^{e_i -1} ) \]</p>
 <hr>
+<p>it is important to stress that we need to know the factoorization of m in order to calculate Euler’s phi function.</p>
 <h2 id="Fermat’s-little-theorem"><a href="#Fermat’s-little-theorem" class="headerlink" title="Fermat’s little theorem"></a>Fermat’s little theorem</h2><p>Fermat’s little theorem states that if p is a prime number, then for any integer a, the number<br>\(a^{p}-a \) is an integer multiple of p. In the notation of modular arithmetic, this is expressed as<br>\[ a^{p} \equiv a \bmod p\]<br>the theorem can be stated in the form also,<br>\[ a^{p-1} \equiv 1 \bmod p\]<br>then the inverse of an integer is,<br>\[ a^{-1} \equiv a^{p-2} \bmod p\]<br>performing the above formulate (involving exponentiation) to find inverse is usually slower than using extended Euclidean algorithm. However, there are situations where it is advantageous to use Fermat’s Little Theorem,  e.g., on smart cards or other devices which have a hardware accelerator for fast exponentiation anyway.</p>
 <p>a generatlization of Fermat’s little Theorem to any integer moduli, i.e., moduli that are not necessarily primes, is Euler’s theorem.</p>
 <hr>
@@ -162,7 +165,7 @@
 <hr>
 <p>since it works modulo m, it is applicable to integer rings \(Z_{m}\)</p>
 <h2 id="key-generation"><a href="#key-generation" class="headerlink" title="key generation"></a>key generation</h2><hr>
-<p>Output: public key: \( k_{pub} &#x3D; (n,e) and private key: k_{pr} &#x3D; (d) \)</p>
+<p><strong>Output</strong>: public key: \( k_{pub} &#x3D; (n,e) and private key: k_{pr} &#x3D; (d) \)</p>
 <ol>
 <li>choose two large primes p and q.</li>
 <li>compute \(n &#x3D; p\cdot q\)</li>
@@ -171,7 +174,8 @@
 <li>compute the private key d such that<br>\[ d \cdot e \equiv 1 \bmod \Phi(n)\]</li>
 </ol>
 <hr>
-<p>it is important to stress that we need to know the factoorization of m in order to calculate Euler’s phi function.</p>
+<p>the condition that \( gcd(e,\Phi(n)) &#x3D; 1\) ensures that the inverse of \(e\) exists modulo \(\Phi(n)\), so that there is always a private key \(d\).<br>the computation of key keys \(d\) and \(e\) canb e doen at once using the extended Euclidean algorith. </p>
+<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><p>todo!()</p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] <a target="_blank" rel="noopener" href="https://web.williams.edu/Mathematics/lg5/302/RSA.pdf">A Method for Obtaining Digital<br>Signatures and Public-Key Cryptosystems</a></li>
 </ul>
@@ -179,7 +183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/" data-id="clk1dmvci0008d4sjeb3fa17z" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/" data-id="clk1e4wpw001j6hsj9vpw0y0r" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -244,7 +248,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/" data-id="clk1dmvcj000ad4sj2q75hsce" data-title="cryptography (2) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/" data-id="clk1e4wpw001e6hsj1lfmhvaa" data-title="cryptography (2) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -350,7 +354,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk1dmvcw0036d4sj9qusgj25" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk1e4wq2002h6hsjd2u10w1i" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -423,7 +427,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk1dmvct0023d4sjg1f50llt" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk1e4wq1002b6hsj2xfef22t" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -497,7 +501,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk1dmvci0007d4sjfy9c73ci" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk1e4wpv001c6hsjfftj9tr6" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -552,7 +556,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk1dmvcn0011d4sjh595b46p" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk1e4wpt000u6hsj6fqz3nu7" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -618,7 +622,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk1dmvct0026d4sjacn5hcux" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk1e4wq3002p6hsj2lwf9hko" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
       
       
       
@@ -735,7 +739,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk1dmvcw0037d4sjfw8q7hk1" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk1e4wq1002c6hsj7olz9y4o" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
@@ -782,7 +786,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk1dmvco0014d4sjdyqy8xft" data-title="rust functional programming" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk1e4wps000n6hsj472tg11o" data-title="rust functional programming" class="article-share-link">Share</a>
       
       
       
