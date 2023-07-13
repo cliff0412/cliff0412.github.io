@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cliff0412.github.io/images/elliptic_curve/point_addition.webp">
 <meta property="article:published_time" content="2023-06-28T06:29:26.000Z">
-<meta property="article:modified_time" content="2023-07-13T14:16:37.442Z">
+<meta property="article:modified_time" content="2023-07-13T14:18:22.607Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta name="twitter:card" content="summary">
@@ -111,13 +111,13 @@
 <p>the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \( -16(4a^3) + 27b^2 \) is nonzero.</p>
 <h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
 <hr>
-<p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (point, addition) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (point, doubling)<br>\end{cases}<br>\end{equation}</p>
+<p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point&amp;addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point&amp;doubling})<br>\end{cases}<br>\end{equation}</p>
 <hr>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/" data-id="clk18hjl9000899sj036wht4c" data-title="elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/" data-id="clk18jk20000ce2sj1hxf17fd" data-title="elliptic curve" class="article-share-link">Share</a>
       
       
       
