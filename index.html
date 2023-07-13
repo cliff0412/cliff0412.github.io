@@ -109,11 +109,20 @@
 <p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
 <hr>
 <p>note that the parameter s is the slope of the line through P and Q in the case of point addition, or the slope of the tangent through P in the case of point doubling.<br>Furthmore, we define an abstract point at infinity as the neutral element \( \mathcal{O} \).<br>\[ P + \mathcal{O} &#x3D; P\]<br>according the group definition, we can now also define the inverse <code>-P</code> of any group element P as<br>\[ P + (-P) &#x3D; \mathcal{O}\]<br>Therefore, the inverse of \( P &#x3D; (x_p, y_p) \) is just \( P &#x3D; (x_p, -y_p)\). since  \( -y_p \equiv p - y_p\), hence<br>\[ -P &#x3D; (x_p, p-y_p) \]</p>
-
+<h2 id="DLP-discrete-log-problem-with-Elliptic-curve"><a href="#DLP-discrete-log-problem-with-Elliptic-curve" class="headerlink" title="DLP(discrete log problem) with Elliptic curve"></a>DLP(discrete log problem) with Elliptic curve</h2><p>to set up DL cryptosystems it is important to know the order of the group.<br>Hasse’s theorem</p>
+<hr>
+<p>given an elliptic curve E modulo p, the number of points on the curve is denoted by #E and is bounded by:<br>\[ p+1-2\sqrt{p} \leq \#E \leq p+1+2\sqrt{p} \]</p>
+<hr>
+<p>Elliptic Curved Discrete Logarithm Problem (ECDLP)</p>
+<hr>
+<p>Given an elliptic curve E. We consider a primitive elemnt P and another element T. The DL problem is finding the integer d, where \( 1 \leq d \leq \#E \), such that:<br>\[ P + P + ….+ P &#x3D; dP &#x3D; T \]</p>
+<hr>
+<p>In cryptosystems, d is the private key which is an integer, while the public key T is a point on the curve with coordinates \( T &#x3D; (x_T, y_T)\)<br>Usually a <strong>square-and-multiply</strong> algorithm is used to calculate point multiplication (the algorithm detail is not coverred in this post). </p>
+<h2 id="Diffie-Hellman-Key-Exchange-with-Elliptic-Curve"><a href="#Diffie-Hellman-Key-Exchange-with-Elliptic-Curve" class="headerlink" title="Diffie-Hellman Key Exchange with Elliptic Curve"></a>Diffie-Hellman Key Exchange with Elliptic Curve</h2>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/" data-id="clk190vsy00082osj7094hc07" data-title="elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/28/cryptography/elliptic-curve/" data-id="clk19ojcq00072tsj9kgcang5" data-title="elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -187,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/crypto-primitive-group-and-field/" data-id="clk190vsx00072osj1s66a6s0" data-title="group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/crypto-primitive-group-and-field/" data-id="clk19ojcx00172tsj3lkr53pp" data-title="group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -237,7 +246,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk190vt4001f2osjb59rbmts" data-title="zkp a brief understanding" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk19ojct000f2tsjaqcfes6o" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
@@ -343,7 +352,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk190vt900292osja5w55ktj" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk19ojd400302tsj19dkgb3y" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -416,7 +425,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk190vt800222osjaccw9mge" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk19ojd100232tsj0wlf63fa" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -471,7 +480,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk190vt300102osj5cno5tjl" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk19ojcw000w2tsj5jei0sck" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -537,7 +546,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk190vt900272osjcs8h9oxn" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk19ojd4002z2tsj2ow1dllb" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
       
       
       
@@ -654,7 +663,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk190vt800242osjc54h99k3" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk19ojd200252tsj44jqfylp" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
@@ -701,7 +710,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk190vt3000y2osj4q8qd0ps" data-title="rust functional programming" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk19ojcw00132tsjfh858laf" data-title="rust functional programming" class="article-share-link">Share</a>
       
       
       
@@ -741,7 +750,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/01/rust/crates/rust-serde/" data-id="clk190vt8001z2osj3tqwb37e" data-title="rust crate serde" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/01/rust/crates/rust-serde/" data-id="clk19ojd100202tsj0b9a04s6" data-title="rust crate serde" class="article-share-link">Share</a>
       
       
       
