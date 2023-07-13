@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>paillier encryption | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="fundamentals fundamental theorem of arighmeticthe fundamental theorem of arithmetic, also called the unique factorization theorem and prime factorization theorem, states that every integer greater">
+<meta property="og:type" content="article">
+<meta property="og:title" content="paillier encryption">
+<meta property="og:url" content="https://cliff0412.github.io/2023/02/23/cryptography/paillier-encryption/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="fundamentals fundamental theorem of arighmeticthe fundamental theorem of arithmetic, also called the unique factorization theorem and prime factorization theorem, states that every integer greater">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cliff0412.github.io/images/paillier/carmichael_thorem.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/paillier/carmichael_thorem_2.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/paillier/homomorphic_addition.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/paillier/homomorphic_mul.png">
+<meta property="article:published_time" content="2023-02-23T13:25:41.000Z">
+<meta property="article:modified_time" content="2023-04-24T06:31:44.177Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/paillier/carmichael_thorem.png">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cryptography/paillier-encryption" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/02/23/cryptography/paillier-encryption/" class="article-date">
+  <time class="dt-published" datetime="2023-02-23T13:25:41.000Z" itemprop="datePublished">2023-02-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      paillier encryption
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="fundamentals"><a href="#fundamentals" class="headerlink" title="fundamentals"></a>fundamentals</h2><ol>
+<li>fundamental theorem of arighmetic<br>the fundamental theorem of arithmetic, also called the unique factorization theorem and prime factorization theorem, states that every integer greater than 1 can be represented uniquely as a product of prime numbers, up to the order of the factors <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_arithmetic">wiki</a></li>
+<li>Euler’s totient function<br>In number theory, Euler’s totient function counts the positive integers up to a given integer n that are relatively prime to n. It is written using the Greek letter phi as \( \phi (n) \), and may also be called Euler’s phi function. In other words, it is the number of integers k in the range 1 ≤ k ≤ n for which the greatest common divisor gcd(n, k) is equal to 1. The integers k of this form are sometimes referred to as totatives of n. the collection of k is denoted by \( Z_{n}^{\ast } \), and \[ \phi(n) &#x3D; |Z_n^{\ast }| \]</li>
+<li>if p is prime, then \( Z_p^{\ast } &#x3D; Z_p \), \( \phi(p) &#x3D; p-1 \)</li>
+<li>if p is prime, for any integer r, then \( \begin{align} \tag{0.1} \phi(p^{r}) &#x3D;p^{r-1}\phi(p)&#x3D;p^{r-1}(p-1)\end{align} \)</li>
+<li>Euler’s totient function is a multiplicative function, meaning that if two numbers m and n are relatively prime, then \(\phi(mn) &#x3D; \phi(m)\phi(n)\)</li>
+<li>Euler’s product formula, it states<br>\[ \phi(n) &#x3D; n  \prod_{p|n}^{}(1-\frac{1}{p}) \]<br>where the product is over the distinct prime numbers dividing n.</li>
+<li>Euler’s theorem<br>if \(a\) and \(n\) are coprime positive integers, and \( \phi(n)\) is Euler’s totient function, then \(a\) raised to the power  \(\phi(n)\) is congruent to 1 modulo n; that is<br>\[a^{\phi(n)} \equiv 1 \bmod n\]</li>
+<li>according to 7, we have \( a \cdot a^{\phi(n)-1} \equiv 1 \bmod n \). then<br>\[ a^{-1} &#x3D; a^{\phi(n)-1} \]</li>
+<li>Fermat’s little theorem<br>Fermat’s little theorem states that if p is a prime number, then for any integer a, the number<br>\(a^{p}-a \) is an integer multiple of p. In the notation of modular arithmetic, this is expressed as<br>\[ a^{p} \equiv a \bmod p\]</li>
+<li>Binomial theorem<br>it states<br>\[ y &#x3D; (1+n)^{x} &#x3D; \sum_{k&#x3D;0}^{x}\tbinom{x}{k}n^{k} &#x3D; 1 + nx + \tbinom{x}{2}n^2 + …\]<br>observe that, the higher degree could be divided by \(n^2\). we have<br>\[ \begin{align} \tag{0.2} (1+n)^{x} \equiv 1 + nx \bmod n^2 \end{align} \]<br>therefore, \( y - 1 \equiv nx \bmod n^2 \). then we have<br>\[ x \equiv \frac{y-1}{n} \bmod n \].<br>In paillier, later we define \( \begin{align} \tag{0.3} L(y) &#x3D; \frac{y-1}{n} \end{align} \)<br>therefore<br>\[ L(y \bmod n^2) \equiv x \bmod n \]</li>
+</ol>
+<h2 id="Paillier"><a href="#Paillier" class="headerlink" title="Paillier"></a>Paillier</h2><ol>
+<li><p>key generation<br><code>KeyGen() -&gt; (pk, sk)</code><br>randomly select two big prime numbers \(p, q\). it shoud satisfy \(gcd(pq, (p-1)(q-1)) &#x3D;1 \), \(p\) and \(q\) should have similar bit length. let \( n &#x3D; pq \), \(\lambda &#x3D; lcm(p-1, q-1)\). randomly sample \( g \in Z_{n^2}^{\ast}\). to simplify, let \( g &#x3D; n+1\). we have<br>\[ pk&#x3D;(n,g) \]<br>\[ sk &#x3D; (\lambda)\]</p>
+</li>
+<li><p>encryption<br><code>Enc(pk, m) -&gt; c</code><br>randomly sample \( r \in Z_{n}^{\ast}\), then also have \( r \in Z_{n^2}^{\ast}\), cypher is calculated<br>\[ \begin{align} \tag{1.1} c &#x3D; g^mr^n  \bmod n^2 \end{align} \]</p>
+</li>
+<li><p>Decryption<br><code>Dec(sk, c) -&gt; m</code><br>Let \(L(x) &#x3D; \frac{x-1}{n} \), we have message<br>\[ \begin{align} \tag{1.2} m &#x3D; \frac{L(c^{\lambda} \bmod n^2)}{L(g^{\lambda} \bmod n^2)} \bmod n \end{align}\]</p>
+</li>
+<li><p>proof of correctness<br>based on Eq(1), we have \[ \begin{align} \tag{1.3} c^{\lambda} \bmod n^2 &#x3D; g^{m\lambda}r^{n\lambda} \bmod n^2 \end{align}\]<br>where \( r^{n\lambda} \bmod n^2 \equiv 1 \bmod n^2\), which is proved by Carmichael theorem later on. then Eq(3) becomes<br> \[ \begin{align} \tag{1.4} c^{\lambda} \bmod n^2 &#x3D; g^{m\lambda}\bmod n^2 \end{align}\]<br>since \( g &#x3D; n+1\), we have<br>\[ \begin{align} \tag{1.5} c^{\lambda} \bmod n^2 &#x3D; (1+n)^{m\lambda}\bmod n^2 \end{align}\]<br>According to Eq(0.2), we have<br>\[ \begin{align} \tag{1.6} c^{\lambda} \bmod n^2 &#x3D; 1 + nm\lambda \bmod n^2 \end{align}\]<br>\[ \begin{align} \tag{1.7} g^{\lambda} \bmod n^2 \equiv (1+n)^{\lambda} \bmod n^2 &#x3D; 1 +\lambda n \bmod n^2 \end{align}\]<br>therefore, based on definition given by Eq(0.3) we have<br>\[ \begin{align} \tag{1.8} L(c^{\lambda} \bmod n^2) &#x3D; \frac{c^{\lambda}-1}{n} \bmod n^2 \end{align} \]<br>Substitute Eq(1.6) into Eq(1.8), we have<br>\[ \begin{align} \tag{1.9} L(c^{\lambda} \bmod n^2) &#x3D; m\lambda \bmod n^2 \end{align} \]<br>Further, we have<br>\[ \begin{align} \tag{1.10} L(g^{\lambda} \bmod n^2) &#x3D; \frac{g^\lambda -1}{n} \end{align} \]<br>Sub Eq(1.7) into Eq(1.10), we have<br>\[ \begin{align} \tag{1.11} L(g^{\lambda} \bmod n^2) &#x3D; \frac{\lambda n}{n} \equiv \lambda \bmod n^2\end{align} \]<br>At last, Eq(1.2) becomes （bu sub Eq1.9 and Eq1.11)<br>\[ \begin{align}  m &#x3D; \frac{L(c^{\lambda} \bmod n^2)}{L(g^{\lambda} \bmod n^2)} \bmod n &#x3D; \frac{m \lambda}{\lambda} \equiv m \bmod n \end{align}\]<br><b>proved!!!</b></p>
+</li>
+<li><p>Carmichael theorem<br>In number theory, a branch of mathematics, the Carmichael function \(λ(n)\) of a positive integer n is the smallest positive integer m such that \(a^{m}\equiv 1{\pmod {n}}\) (similar but different from Euler’s totient function). Carmichael’s λ function, the reduced totient function, and the least universal exponent function<br><img src="/images/paillier/carmichael_thorem.png" alt="carmichael theorem"><br><img src="/images/paillier/carmichael_thorem_2.png"><br>let \( n &#x3D; pq\), where p and q are prime numbers; \( \phi(n)\) is the Euler’s totient function. Let \(\lambda(n)\) denotes carmichael function. We have \(\phi(n)&#x3D;(p-1)(q-1)\) and \( \lambda(n)&#x3D;\phi(n) &#x3D; (p-1)(q-1)\).</p>
+</li>
+</ol>
+<p>Since \( |Z_{n^2}^{\ast}| &#x3D; \phi(n^2) &#x3D; n \phi(n)\) (according to Eq(0.1)). Thereby, for any \( w \in Z_{n^2}^{\ast}\)<br>\[ \begin{align} \tag{1.12} w^{n\phi(n)} \equiv w^{n\lambda} \equiv 1 \bmod n^2 \end{align}\]</p>
+<p>\[ \begin{align} \tag{1.13} w^{\lambda} \equiv 1 \bmod n \end{align}\]<br>Eq(1.13) is just Carmichael’s function</p>
+<p>Based on Carmichael’s theorem<br>\[ \lambda(n^2) &#x3D; lcm(\lambda(q^2),\lambda(p^2)) &#x3D; lcm(\phi(q^2),\phi(p^2)) &#x3D; lcm(q(q-1), p(p-1)) &#x3D; pq(lcm(p-1, q-1)) &#x3D; n\lambda(n) \]<br>therefore, we have</p>
+<p>\[w^{\lambda(n^2)} &#x3D; w ^{n\lambda} \equiv 1 \bmod n^2\]</p>
+<ol start="6">
+<li><p>Addition homomorphic<br><img src="/images/paillier/homomorphic_addition.png" alt="homomorphic addition"></p>
+</li>
+<li><p>Multiplication homomorphic<br><img src="/images/paillier/homomorphic_mul.png" alt="homomorphic multiplication"></p>
+</li>
+</ol>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42328228/article/details/109349590">csdn post</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/02/23/cryptography/paillier-encryption/" data-id="clk1e4wpw001h6hsj7tdyclkv" data-title="paillier encryption" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/03/02/golang/go-reflect/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          go reflect
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/02/07/cryptography/two-party-ecdsa/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">two party ecdsa</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

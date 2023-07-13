@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>rust std data structure (2D) | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="collectionsBTreeMap clear(&amp;mut self) Clears the map, removing all elements. get(&amp;self, key: &amp;Q) Returns a reference to the value corresponding to the key. get_key_value(&amp;self, k: &amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust std data structure (2D)">
+<meta property="og:url" content="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="collectionsBTreeMap clear(&amp;mut self) Clears the map, removing all elements. get(&amp;self, key: &amp;Q) Returns a reference to the value corresponding to the key. get_key_value(&amp;self, k: &amp;">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-02T14:04:38.000Z">
+<meta property="article:modified_time" content="2023-07-05T13:41:15.719Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="rust-std">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-rust/rust_std/rust-std-data-structure-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/" class="article-date">
+  <time class="dt-published" datetime="2023-05-02T14:04:38.000Z" itemprop="datePublished">2023-05-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      rust std data structure (2D)
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="collections"><a href="#collections" class="headerlink" title="collections"></a>collections</h2><h3 id="BTreeMap"><a href="#BTreeMap" class="headerlink" title="BTreeMap"></a>BTreeMap</h3><ul>
+<li><code>clear(&amp;mut self)</code> Clears the map, removing all elements.</li>
+<li><code>get(&amp;self, key: &amp;Q)</code> Returns a reference to the value corresponding to the key.</li>
+<li><code>get_key_value(&amp;self, k: &amp;Q)</code></li>
+<li><code>first_key_value(&amp;self)</code> eturns the first key-value pair in the map.</li>
+<li><code>first_entry(&amp;mut self)</code> Returns the first entry in the map for in-place manipulation</li>
+<li><code>pop_first(&amp;mut self)</code> </li>
+<li><code>last_key_value(&amp;self)</code></li>
+<li><code>last_entry(&amp;mut self)</code></li>
+<li><code>pop_last(&amp;mut self)</code></li>
+<li><code>contains_key(&amp;self, key: &amp;Q)</code></li>
+<li><code>get_mut(&amp;mut self, key: &amp;Q)</code> Returns a mutable reference to the value corresponding to the key</li>
+<li><code>insert(&amp;mut self, key: K, value: V)</code></li>
+<li><code>try_insert(&amp;mut self, key: K, value: V)</code> If the map already had this key present, nothing is updated, and an error containing the occupied entry and the value is returned.</li>
+<li><code>remove(&amp;mut self, key: &amp;Q)</code></li>
+<li><code>remove_entry(&amp;mut self, key: &amp;Q)</code></li>
+<li><code>retain&lt;F&gt;(&amp;mut self, mut f: F)</code> Retains only the elements specified by the predicate.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span>: BTreeMap&lt;<span class="type">i32</span>, <span class="type">i32</span>&gt; = (<span class="number">0</span>..<span class="number">8</span>).<span class="title function_ invoke__">map</span>(|x| (x, x*<span class="number">10</span>)).<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="comment">// Keep only the elements with even-numbered keys.</span></span><br><span class="line">map.<span class="title function_ invoke__">retain</span>(|&amp;k, _| k % <span class="number">2</span> == <span class="number">0</span>);</span><br><span class="line"><span class="built_in">assert!</span>(map.<span class="title function_ invoke__">into_iter</span>().<span class="title function_ invoke__">eq</span>(<span class="built_in">vec!</span>[(<span class="number">0</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">20</span>), (<span class="number">4</span>, <span class="number">40</span>), (<span class="number">6</span>, <span class="number">60</span>)]));</span><br></pre></td></tr></table></figure></li>
+<li><code>append(&amp;mut self, other: &amp;mut Self)</code> Moves all elements from <code>other</code> into <code>self</code>, leaving <code>other</code> empty.</li>
+<li><code>range&lt;T: ?Sized, R&gt;(&amp;self, range: R) -&gt; Range&lt;&#39;_, K, V&gt;</code> Constructs a double-ended iterator over a sub-range of elements in the map.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">use</span> std::ops::Bound::Included;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span> = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">3</span>, <span class="string">&quot;a&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">5</span>, <span class="string">&quot;b&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">8</span>, <span class="string">&quot;c&quot;</span>);</span><br><span class="line"><span class="title function_ invoke__">for</span> (&amp;key, &amp;value) <span class="keyword">in</span> map.<span class="title function_ invoke__">range</span>((<span class="title function_ invoke__">Included</span>(&amp;<span class="number">4</span>), <span class="title function_ invoke__">Included</span>(&amp;<span class="number">8</span>))) &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;key&#125;: &#123;value&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>((&amp;<span class="number">5</span>, &amp;<span class="string">&quot;b&quot;</span>)), map.<span class="title function_ invoke__">range</span>(<span class="number">4</span>..).<span class="title function_ invoke__">next</span>());</span><br></pre></td></tr></table></figure></li>
+<li><code>range_mut&lt;T: ?Sized, R&gt;(&amp;mut self, range: R) -&gt; RangeMut&lt;&#39;_, K, V&gt;</code> </li>
+<li><code>entry(&amp;mut self, key: K)</code> Gets the given key’s corresponding entry in the map for in-place manipulation.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">count</span>: BTreeMap&lt;&amp;<span class="type">str</span>, <span class="type">usize</span>&gt; = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line"><span class="comment">// count the number of occurrences of letters in the vec</span></span><br><span class="line"><span class="keyword">for</span> <span class="variable">x</span> <span class="keyword">in</span> [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>] &#123;</span><br><span class="line">    count.<span class="title function_ invoke__">entry</span>(x).<span class="title function_ invoke__">and_modify</span>(|curr| *curr += <span class="number">1</span>).<span class="title function_ invoke__">or_insert</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;a&quot;</span>], <span class="number">3</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;b&quot;</span>], <span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;c&quot;</span>], <span class="number">1</span>);</span><br></pre></td></tr></table></figure></li>
+<li><code>split_off&lt;Q: ?Sized + Ord&gt;(&amp;mut self, key: &amp;Q)</code> Splits the collection into two at the given key. Returns everything after the given key,</li>
+<li><code>drain_filter&lt;F&gt;(&amp;mut self, pred: F)</code> Creates an iterator that visits all elements (key-value pairs) in ascending key order and uses a closure to determine if an element should be removed. If the closure returns <code>true</code>, the element is removed from the map and yielded. If the closure returns <code>false</code>, or panics, the element remains in the map and will not be yielded</li>
+<li><code>into_keys(self)</code> Creates a consuming iterator visiting all the keys, in sorted order. The map cannot be used after calling this</li>
+<li><code>into_values(self)</code></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk1e4wq3002p6hsj2lwf9hko" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/06/01/rust/rust-10-concurrency/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          rust concurrency
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rust std data structure (1D)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
