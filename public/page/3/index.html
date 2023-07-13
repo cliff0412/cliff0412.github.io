@@ -71,6 +71,294 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rust/rust-async" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/13/rust/rust-async/" class="article-date">
+  <time class="dt-published" datetime="2023-01-13T09:17:10.000Z" itemprop="datePublished">2023-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/13/rust/rust-async/">rust async</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="I-x2F-O"><a href="#I-x2F-O" class="headerlink" title="I&#x2F;O"></a>I&#x2F;O</h2><p>I&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口</p>
+<h3 id="I-x2F-O-模型"><a href="#I-x2F-O-模型" class="headerlink" title="I&#x2F;O 模型"></a>I&#x2F;O 模型</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@startmindmap</span><br><span class="line">+ **I/O模型**</span><br><span class="line">++ 同步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ 阻塞I/O (BIO)</span><br><span class="line">+++_ 非阻塞I/O (NIO)</span><br><span class="line">+++_ I/O多路复用</span><br><span class="line">+++_ 信号驱动I/O</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">++ 异步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ linux (AIO, io_uring)</span><br><span class="line">+++_ windows (IOCP)</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">@endmindmap</span><br></pre></td></tr></table></figure>
+<h4 id="同步阻塞"><a href="#同步阻塞" class="headerlink" title="同步阻塞"></a>同步阻塞</h4><ul>
+<li>当用户线程发起IO请求后，会进行系统调用（system call）来让内核（Kernel）进行IO操作（系统调用是用户空间和内核空间的一个通道）；</li>
+<li>此时用户线程阻塞，等待内核将数据准备好；</li>
+<li>内核将数据准备好后会将数据从内核空间拷贝到用户空间，并返回给用户线程结束阻塞。</li>
+</ul>
+<h4 id="同步非阻塞"><a href="#同步非阻塞" class="headerlink" title="同步非阻塞"></a>同步非阻塞</h4><ul>
+<li>由用户线程发起IO请求，进行系统调用来让内核进行IO操作；</li>
+<li>此时如果内核没有准备好数据则会直接返回error，并不会阻塞用户线程，用户线程可以重复发起IO请求；</li>
+<li>当用户线程发起请求并且内核已经将数据准备好后，会将数据从内核空间拷贝到用户空间（这个过程是需要阻塞用户线程的），返回给用户。</li>
+</ul>
+<h4 id="同步多路复用"><a href="#同步多路复用" class="headerlink" title="同步多路复用"></a>同步多路复用</h4><ul>
+<li>用户线程调用select后进行系统调用（内核会监视所有select负责的socket）</li>
+<li>当用户将数据准备好后就会返回，并通知用户线程进行读取操作，此时内核将数据拷贝到用户空间并返回。此时用户线程被阻塞；</li>
+</ul>
+<h4 id="异步I-x2F-O"><a href="#异步I-x2F-O" class="headerlink" title="异步I&#x2F;O"></a>异步I&#x2F;O</h4><ul>
+<li>用户线程进行aio_read，进行系统调用切换到内核；</li>
+<li>内核立即返回，并不会阻塞用户线程；</li>
+<li>内核准备好数据后会将数据从内核空间拷贝到用户空间并通知用户线程（发送信号）操作已完成。</li>
+</ul>
+<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><h4 id="同步blocking-I-x2F-O"><a href="#同步blocking-I-x2F-O" class="headerlink" title="同步blocking I&#x2F;O"></a>同步blocking I&#x2F;O</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@startuml Test Diagram</span><br><span class="line"></span><br><span class="line">participant &quot;application&quot; as app</span><br><span class="line">participant &quot;kernel&quot; as kernel</span><br><span class="line"></span><br><span class="line">activate app</span><br><span class="line">activate kernel</span><br><span class="line">app -&gt; kernel: syscall: Read recvfrom</span><br><span class="line">kernel -&gt; kernel: wait for data (no datagram ready)</span><br><span class="line">kernel -&gt; kernel: copy datagram to user (datagram ready)</span><br><span class="line">kernel -&gt; app: return</span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
+
+<h4 id="I-x2F-O多路复用"><a href="#I-x2F-O多路复用" class="headerlink" title="I&#x2F;O多路复用"></a>I&#x2F;O多路复用</h4><h3 id="异步编程"><a href="#异步编程" class="headerlink" title="异步编程"></a>异步编程</h3><h2 id="the-Future-Trait"><a href="#the-Future-Trait" class="headerlink" title="the Future Trait"></a>the Future Trait</h2><p>A Future is an asynchronous computation that can produce a value. A simplified version of the future trait might look something like this</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">trait</span> <span class="title class_">SimpleFuture</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, wake: <span class="title function_ invoke__">fn</span>()) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Poll</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="title function_ invoke__">Ready</span>(T),</span><br><span class="line">    Pending,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>For example, consider the case where we want to read from a socket that may or may not have data available already.</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">SocketRead</span>&lt;<span class="symbol">&#x27;a</span>&gt; &#123;</span><br><span class="line">    socket: &amp;<span class="symbol">&#x27;a</span> Socket,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">SimpleFuture</span> <span class="keyword">for</span> <span class="title class_">SocketRead</span>&lt;<span class="symbol">&#x27;_</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span> = <span class="type">Vec</span>&lt;<span class="type">u8</span>&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, wake: <span class="title function_ invoke__">fn</span>()) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.socket.<span class="title function_ invoke__">has_data_to_read</span>() &#123;</span><br><span class="line">            <span class="comment">// The socket has data -- read it into a buffer and return it.</span></span><br><span class="line">            Poll::<span class="title function_ invoke__">Ready</span>(<span class="keyword">self</span>.socket.<span class="title function_ invoke__">read_buf</span>())</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// The socket does not yet have data.</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// Arrange for `wake` to be called once data is available.</span></span><br><span class="line">            <span class="comment">// When data becomes available, `wake` will be called, and the</span></span><br><span class="line">            <span class="comment">// user of this `Future` will know to call `poll` again and</span></span><br><span class="line">            <span class="comment">// receive data.</span></span><br><span class="line">            <span class="keyword">self</span>.socket.<span class="title function_ invoke__">set_readable_callback</span>(wake);</span><br><span class="line">            Poll::Pending</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> the real Future trait and how it is different</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">trait</span> <span class="title class_">Future</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(</span><br><span class="line">        <span class="comment">// Note the change from `&amp;mut self` to `Pin&lt;&amp;mut Self&gt;`:</span></span><br><span class="line">        <span class="keyword">self</span>: Pin&lt;&amp;<span class="keyword">mut</span> <span class="keyword">Self</span>&gt;,</span><br><span class="line">        <span class="comment">// and the change from `wake: fn()` to `cx: &amp;mut Context&lt;&#x27;_&gt;`:</span></span><br><span class="line">        cx: &amp;<span class="keyword">mut</span> Context&lt;<span class="symbol">&#x27;_</span>&gt;,</span><br><span class="line">    ) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>The first change you’ll notice is that our self type is no longer &amp;mut Self, but has changed to Pin&lt;&amp;mut Self&gt;. We’ll talk more about pinning in a later section, but for now know that it allows us to create futures that are immovable. Immovable objects can store pointers between their fields, e.g. struct MyFut { a: i32, ptr_to_a: *const i32 }. Pinning is necessary to enable async&#x2F;await.</p>
+<p>Secondly, wake: fn() has changed to &amp;mut Context&lt;’_&gt;. In SimpleFuture, we used a call to a function pointer (fn()) to tell the future executor that the future in question should be polled. However, since fn() is just a function pointer, it can’t store any data about which Future called wake.</p>
+<p>In a real-world scenario, a complex application like a web server may have thousands of different connections whose wakeups should all be managed separately. The Context type solves this by providing access to a value of type Waker, which can be used to wake up a specific task.</p>
+<h2 id="task-wakeups-with-Waker"><a href="#task-wakeups-with-Waker" class="headerlink" title="task wakeups with Waker"></a>task wakeups with Waker</h2><p>Waker provides a wake() method that can be used to tell the executor that the associated task should be awoken. When wake() is called, the executor knows that the task associated with the Waker is ready to make progress, and its future should be polled again.</p>
+<h2 id="referencs"><a href="#referencs" class="headerlink" title="referencs"></a>referencs</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/XMJYever/article/details/111560976">csdn blog</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clk1dmvco0019d4sje84t84dc" data-title="rust async" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth/code_analysis/geth.evm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/08/geth/code_analysis/geth.evm/" class="article-date">
+  <time class="dt-published" datetime="2023-01-08T08:24:54.000Z" itemprop="datePublished">2023-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/08/geth/code_analysis/geth.evm/">geth evm source analysis</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="overall"><a href="#overall" class="headerlink" title="overall"></a>overall</h1><p>the code is under path <code>core/vm</code><br>overview of the whole evm module <img src="/images/evm.drawio.google.png" alt="evm"></p>
+<p>the core is <code>EVM</code> struct (in evm.go), with main function in creating or call contract. a new <code>EVM</code> object is created every time when processing a transaction. inside the EVM struct, the main items are <code>Interpreter</code>, and <code>StateDB</code> (for state persistence). <code>Interpreter</code> loops through contract call instructions.Before each instruction is executed, some checks are performed to ensure sufficient gas and stack space. actual instruction execution code is recorded in <code>JumpTable</code> (256 sized array of <code>operation</code>)</p>
+<p>depending on the version of Ethereum, JumpTable may point to four different instruction sets: constantinopleInstructionSet, byzantiumInstructionSet, homesteadInstructionSet, frontierInstructionSet. Most of the instructions of these four sets of instruction sets are the same, but as the version is updated, the new version supports more instruction sets than the old version.</p>
+<h1 id="evm"><a href="#evm" class="headerlink" title="evm"></a>evm</h1><p>The <code>EVM</code> object is the most important object exported by the evm module, which represents an Ethereum virtual machine</p>
+<h2 id="creating-evm"><a href="#creating-evm" class="headerlink" title="creating evm"></a>creating evm</h2><p>Every time a transaction is processed, an EVM is created to execute the transaction. This is reflected in the function <code>ApplyTransaction</code> (core&#x2F;state_processor.go)</p>
+<h2 id="creating-contract"><a href="#creating-contract" class="headerlink" title="creating contract"></a>creating contract</h2><p>If the <code>to</code> of the transaction is empty, it means that this transaction is to create a contract, so call <code>EVM.Create</code> to perform related functions</p>
+<ul>
+<li>CREATE<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))</span><br></pre></td></tr></table></figure></li>
+<li>CREATE2<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">codeAndHash := &amp;codeAndHash&#123;code: code&#125;</span><br><span class="line">	contractAddr = crypto.CreateAddress2(caller.Address(), salt.Bytes32(), codeAndHash.Hash().Bytes())</span><br></pre></td></tr></table></figure>
+during create contract, an object <code>Contract</code> is created. A Contract object contains and maintains the necessary information during the execution of the contract, such as the contract creator, the address of the contract itself, the remaining gas of the contract, the contract code and the <code>jumpdests</code> record of the code.</li>
+</ul>
+<p>then, it invokes below method to create contract</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ret, err := evm.interpreter.Run(contract, nil, false)</span><br><span class="line">evm.StateDB.SetCode(address, ret)</span><br></pre></td></tr></table></figure>
+<p>If the operation is successful and the contract code does not exceed the length limit, call StateDB.SetCode to store the contract code in the contract account of the Ethereum state database. Of course, the storage needs to consume a certain amount of gas.</p>
+<p>You may wonder why the stored contract code is the return code after the contract runs, not the data in the original transaction (ie Transaction.data.Payload). This is because when the contract source code is compiled into binary data, in addition to the original code of the contract, the compiler also inserts some codes to perform related functions. For creation, the compiler inserts code that executes the contract’s “constructor” (that is, the contract object’s constructor method). Therefore, when the binary compiled by the compiler is submitted to the Ethereum node to create a contract, the EVM executes this binary code, in fact, it mainly executes the constructor method of the contract, and then returns other codes of the contract, so there is a <code>ret</code> variable here Stored in the state database as the actual code of the contract</p>
+<h2 id="call-contract"><a href="#call-contract" class="headerlink" title="call contract"></a>call contract</h2><p>The EVM object has three methods to implement the call of the contract, they are:</p>
+<ul>
+<li>EVM. Call</li>
+<li>EVM. CallCode</li>
+<li>EVM. DelegateCall</li>
+<li>EVM.StaticCall<br>The basic contract call function implemented by EVM.Call is nothing special. The following three calling methods are the differences compared with EVM.Call. So here we only introduce the particularity of the last three calling methods</li>
+</ul>
+<h3 id="EVM-CallCode-amp-EVM-DelegateCall"><a href="#EVM-CallCode-amp-EVM-DelegateCall" class="headerlink" title="EVM.CallCode &amp; EVM.DelegateCall"></a>EVM.CallCode &amp; EVM.DelegateCall</h3><p>The existence of EVM.CallCode and EVM.DelegateCall is to realize the characteristics of the “library” of the contract. If the code written by solidity is to be called as a library, it must be deployed on the blockchain to obtain a fixed address like a normal contract. , other contracts can call the method provided by this “library contract”. But the contract also involves some unique attributes, such as the caller of the contract, contract address, the amount of ether it owns, etc. If we directly call the code of the “library contract”, these properties must be the properties of the “library contract” itself, but this may not be what we want</p>
+<p>as an example</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A -&gt; contractB - delegateCall -&gt; libC</span><br></pre></td></tr></table></figure>
+<p><code>EVM.DelegateCall</code> sets the caller (msg.sender) of the “library contract” (libC) to A, rather than contractB; sets the address of the “library contract” (libC) to contractB.<br><code>EVM.CallCode</code> is similar to <code>EVM.DelegateCall</code>. the only difference is that <code>EVM.CallCode</code> only change the address of the “library contract” (libC) to contractB, without chanding the caller to A.<br><code>EVM.StaticCall</code> is similar to <code>EVM.Call</code>, the only difference is that EVM.StaticCall does not allow execution of instructions that modify permanently stored data</p>
+<p>during contract call, it first check whether it is precompiled contract. some precompiled contracts are</p>
+<ul>
+<li>common.BytesToAddress([]byte{1}): &amp;ecrecover{},</li>
+<li>common.BytesToAddress([]byte{2}): &amp;sha256hash{},</li>
+<li>common.BytesToAddress([]byte{3}): &amp;ripemd160hash{},</li>
+<li>common.BytesToAddress([]byte{4}): &amp;dataCopy{},</li>
+</ul>
+<h1 id="EVMInterpreter"><a href="#EVMInterpreter" class="headerlink" title="EVMInterpreter"></a>EVMInterpreter</h1><p>The interpreter object EVMInterpreter is used to interpret and execute specified contract instructions. However, note that the actual instruction interpretation and execution is not really completed by the interpreter object, but by the operation object JumpTable. The interpreter object is only responsible for parsing instruction codes one by one, and then obtains the corresponding operation object, and check objects such as the stack before calling the operation.execute function that actually executre the instruction. It can also be said that the interpreter object is only responsible for the scheduling of interpretation.</p>
+<h2 id="execution-layout"><a href="#execution-layout" class="headerlink" title="execution layout"></a>execution layout</h2><p><img src="/images/evm.layout.png" alt="layout"></p>
+<h2 id="intrinsic-gas"><a href="#intrinsic-gas" class="headerlink" title="intrinsic gas"></a>intrinsic gas</h2><p>The intrinsic gas for a transaction is the amount of gas that the transaction uses before any code runs. It is a constant transaction fee (currently 21000 gas) plus a fee for every byte of data supplied with the transaction (4 gas for a zero byte, 68 gas for non-zeros). These constants are all currently defined for geth in params&#x2F;protocol_params.go.</p>
+<h2 id="gas-cost"><a href="#gas-cost" class="headerlink" title="gas cost"></a>gas cost</h2><p>the gas cost of each instruction is stored in <code>JumpTable.operation.dynamicGas</code> or <code>JumpTable.operation.constantGas</code>. constantGas means the operation gas cost is a fixed constant. dynamicGas is a function which will return gas during runtime.</p>
+<p>In fact, not only the interpretation and execution of the instruction itself consumes gas, but also consumes gas when using memory storage and StateDB permanent storage. For most instructions, the latter two are not used (memory &amp; storage), but for some instructions (such as CODECOPY or SSTORE), their gasCost function will take memory and StateDB usage into account.</p>
+<p>a method <code>memoryGasCost</code>is used to calculate the gas consumption of memory usage. only when the required space size exceeds the current space size, the excess part needs to consume gas.</p>
+<h1 id="JumpTable"><a href="#JumpTable" class="headerlink" title="JumpTable"></a>JumpTable</h1><p>jumptable is 256 sized array of <code>operation</code></p>
+<h2 id="jump-instruction"><a href="#jump-instruction" class="headerlink" title="jump instruction"></a>jump instruction</h2><p>Among the instructions of the contract, there are two jump instructions (excluding CALL): JUMP and JUMPI. Their special feature is that the first instruction of the target address after the jump must be JUMPDEST</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">func opJump(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) &#123;</span><br><span class="line">    pos := stack.pop()</span><br><span class="line">    if !contract.validJumpdest(pos) &#123;</span><br><span class="line">        nop := contract.GetOp(pos.Uint64())</span><br><span class="line">        return nil, fmt.Errorf(&quot;invalid jump destination (%v) %v&quot;, nop, pos)</span><br><span class="line">    &#125;</span><br><span class="line">    *pc = pos.Uint64()</span><br><span class="line"></span><br><span class="line">    interpreter.intPool.put(pos)</span><br><span class="line">    return nil, nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>A function interprets and executes the JUMP instruction. The code first fetches a value from the stack as the jump destination. This value is actually an offset relative to field 0 of the contract code. Then the code will call Contract.validJumpdest to determine whether the first instruction of this destination is JUMPDEST, if it is not, an error will occur.</p>
+<p>To judge whether the first instruction of the destination is JUMPDEST, two points must be guaranteed: first, its value is the value of the opcode of the JUMPDEST instruction; second, it is an instruction, not ordinary data.</p>
+<p>Let’s introduce how Contract.validJumpdest works. In addition to comparing opcode (this is very simple), Contract will also create a bit vector object (ie bitvec, bit vector). This object will analyze the contract instructions from the beginning to the end. If the byte at a certain offset of the contract belongs to ordinary data, the “bit” corresponding to the offset value in bitvec is set to 1, and if it is an instruction, it is set to 0. In Contract.validJumpdest, it is judged whether this is a normal instruction by checking whether the “bit” of the offset value of the jump destination in this bit vector object is 0</p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter">yangzhe_blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.evm.codes/?fork=shanghai">op code manual</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="clk1dmvcq001od4sjcj9b9yb5" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth-fine-tune" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/01/geth-fine-tune/" class="article-date">
+  <time class="dt-published" datetime="2023-01-01T08:29:43.000Z" itemprop="datePublished">2023-01-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/01/geth-fine-tune/">geth_fine_tune</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>If we’re a full node on mainnet without –cache specified, bump default cache allowance<br>ctx.Set(utils.CacheFlag.Name, strconv.Itoa(4096))</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clk1dmvch0004d4sjc39tgecq" data-title="geth_fine_tune" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust/rust-07-macro" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/12/28/rust/rust-07-macro/" class="article-date">
+  <time class="dt-published" datetime="2022-12-28T02:24:21.000Z" itemprop="datePublished">2022-12-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/12/28/rust/rust-07-macro/">rust reflect and macro</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="reflect"><a href="#reflect" class="headerlink" title="reflect"></a>reflect</h2><h3 id="trait-object"><a href="#trait-object" class="headerlink" title="trait object"></a>trait object</h3><p>Rust provides dynamic dispatch through a feature called <code>trait objects</code>. Trait objects, like &amp;Foo or Box<Foo>, are normal values that store a value of any type that implements the given trait, where the precise type can only be known at <strong>runtime</strong>. more details can be found on [references 1]</p>
+<h3 id="any"><a href="#any" class="headerlink" title="any"></a>any</h3><p>This module (std::any) contains the <code>Any</code> trait, which enables dynamic typing of any <code>'static</code> type through runtime reflection. It also contains the <code>Provider</code> trait and accompanying API, which enable trait objects to provide data based on typed requests, an alternate form of runtime reflection.<br>Any itself can be used to get a TypeId</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::fmt::<span class="built_in">Debug</span>;</span><br><span class="line"><span class="keyword">use</span> std::any::Any;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">log</span>&lt;T: Any + <span class="built_in">Debug</span>&gt;(value: &amp;Any) &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">value_any</span> = value <span class="keyword">as</span> &amp;<span class="keyword">dyn</span> Any;  <span class="comment">// &amp;dyn Any (a borrowed trait object), Note that &amp;dyn Any is limited to testing whether a value is of a specified concrete type, and cannot be used to test whether a type implements a trait.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">match</span> value_any.downcast_ref::&lt;<span class="type">String</span>&gt;() &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(val_str) <span class="punctuation">-&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// do with string</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="literal">None</span> =&gt; &#123;</span><br><span class="line">            <span class="comment">// </span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="porpular-crates-using-Any"><a href="#porpular-crates-using-Any" class="headerlink" title="porpular crates using Any"></a>porpular crates using Any</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.osohq.com/">oso</a><br>The Oso Library is a batteries-included framework for building authorization in your application</li>
+<li><a target="_blank" rel="noopener" href="https://bevyengine.org/">bevy</a><br>A refreshingly simple data-driven game engine built in Rust</li>
+</ul>
+<h2 id="macro"><a href="#macro" class="headerlink" title="macro"></a>macro</h2><h3 id="rust-compile-process"><a href="#rust-compile-process" class="headerlink" title="rust compile process"></a>rust compile process</h3><p><img src="/images/rust/macros/16.compile_process.png" alt="rust compile process"></p>
+<h3 id="front-end-rustc"><a href="#front-end-rustc" class="headerlink" title="front end: rustc"></a>front end: rustc</h3><ol>
+<li>lexical analysis: Code Text -&gt; TokenStream</li>
+<li>syntax analysis: TokenStream -&gt; AST (abstract syntax tree)</li>
+<li>semantic analyzer:<br>     AST -&gt; HIR (High-Level Intermediate Representation) -&gt; Type HIR (static type analysis, syntactic desugar, e.g <code>for</code> changed to <code>loop</code>) -&gt; MIR: (Mid-Level Intermediate Representation, scope, reference &amp; borrow check)</li>
+</ol>
+<h3 id="back-end-LLVM"><a href="#back-end-LLVM" class="headerlink" title="back end: LLVM"></a>back end: LLVM</h3><p>LLVM IR -&gt; machine code</p>
+<h3 id="macros-in-compiling"><a href="#macros-in-compiling" class="headerlink" title="macros in compiling"></a>macros in compiling</h3><ul>
+<li>declarative macros: TokenStream - expand -&gt; TokenStream</li>
+<li>procedule macros: self defined AST with the help or third party crate such as syn, quote</li>
+</ul>
+<h2 id="declarative-macro-macro-rules"><a href="#declarative-macro-macro-rules" class="headerlink" title="declarative macro: macro_rules!"></a>declarative macro: macro_rules!</h2><p>Declarative macros allow us to write match-like code. The match expression is a control structure that receives an expression and then matches the result of the expression with multiple patterns. Once a pattern is matched, the code associated with the pattern will be executed</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">match</span> target &#123;</span><br><span class="line">        match_pattern_1 =&gt; expr_1,</span><br><span class="line">        match_pattern_2 =&gt; &#123;</span><br><span class="line">            statement1;</span><br><span class="line">            statement2;</span><br><span class="line">            expr_2</span><br><span class="line">        &#125;,</span><br><span class="line">        _ =&gt; expr_3</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="example-1-simplified-vec"><a href="#example-1-simplified-vec" class="headerlink" title="example 1, simplified vec!"></a>example 1, simplified <code>vec!</code></h3><p>below example use macro_rules to implement a simplified version of vec!</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[macro_export]</span></span><br><span class="line"><span class="built_in">macro_rules!</span> vec &#123;</span><br><span class="line">    ( $( $x:expr ),* ) =&gt; &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">temp_vec</span> = <span class="type">Vec</span>::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                temp_vec.<span class="title function_ invoke__">push</span>($x);</span><br><span class="line">            )*</span><br><span class="line">            temp_vec</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">v</span>: <span class="type">Vec</span>&lt;<span class="type">u32</span>&gt; = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="example-2-unless"><a href="#example-2-unless" class="headerlink" title="example 2, unless"></a>example 2, unless</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">macro_rules!</span> unless &#123;</span><br><span class="line">    ( ($arg:expr) =&gt; $branch:tt ) =&gt; ( <span class="keyword">if</span> !$arg &#123;$branch&#125;;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">cmp</span>(a:<span class="type">i32</span>, b:<span class="type">i32</span>) &#123;</span><br><span class="line">    unless!&#123;</span><br><span class="line">        (a&gt;b) =&gt; &#123;<span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125; &lt; &#123;&#125;&quot;</span>, a,b);&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="title function_ invoke__">cmp</span>(<span class="number">1</span>,<span class="number">2</span>);  <span class="comment">/// print &quot;1&lt;2&quot; as the condition is true !(a&gt;b)</span></span><br><span class="line">    <span class="title function_ invoke__">cmp</span>(<span class="number">3</span>,<span class="number">2</span>);  <span class="comment">/// print nothing</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="example-3-HashMap"><a href="#example-3-HashMap" class="headerlink" title="example 3, HashMap"></a>example 3, HashMap</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">macro_rules!</span> hashmap &#123;</span><br><span class="line">    <span class="comment">// match for &quot;a&quot; =&gt; 1, &quot;b&quot; =&gt; 2,</span></span><br><span class="line">    ( $($key:expr =&gt; $value:expr,)* ) =&gt;</span><br><span class="line">        &#123; hashmap!($($key =&gt; $value),*) &#125;; <span class="comment">// recuisive</span></span><br><span class="line">    <span class="comment">// match for &quot;a&quot; =&gt; 1, &quot;b&quot; =&gt; 2</span></span><br><span class="line">    ( $($key:expr =&gt; $value:expr),* ) =&gt; &#123; </span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">_map</span> = ::std::collections::HashMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                _map.<span class="title function_ invoke__">insert</span>($key, $value);</span><br><span class="line">            )*</span><br><span class="line">            _map</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">macro_rules!</span> hashmap_equivalent &#123;</span><br><span class="line">    ( $($key:expr =&gt; $value:expr),* $(,)*) =&gt; &#123; </span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">_map</span> = ::std::collections::HashMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                _map.<span class="title function_ invoke__">insert</span>($key, $value);</span><br><span class="line">            )*</span><br><span class="line">            _map</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">map</span> = hashmap!&#123;</span><br><span class="line">        <span class="string">&quot;a&quot;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">        <span class="string">&quot;b&quot;</span> =&gt; <span class="number">2</span>,  <span class="comment">// with or without ,</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">map_2</span> = hashmap_equivalent!&#123;</span><br><span class="line">        <span class="string">&quot;a&quot;</span> =&gt; <span class="number">1</span>, </span><br><span class="line">        <span class="string">&quot;b&quot;</span> =&gt; <span class="number">2</span>,  <span class="comment">// with or without ,</span></span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="metavariables"><a href="#metavariables" class="headerlink" title="metavariables"></a>metavariables</h3><ul>
+<li>item: an Item</li>
+<li>stmt: a Statement without the trailing semicolon (except for item statements that require semicolons)</li>
+<li>expr: an Expression</li>
+<li>ty: a Type</li>
+<li>ident: an IDENTIFIER_OR_KEYWORD or RAW_IDENTIFIER</li>
+<li>path: a TypePath style path</li>
+<li>tt: a TokenTree (a single token or tokens in matching delimiters (), [], or {})</li>
+<li>meta: an Attr, the contents of an attribute</li>
+<li>lifetime: a LIFETIME_TOKEN</li>
+<li>vis: a possibly empty Visibility qualifier</li>
+<li>literal: matches LiteralExpression<br>details to be found <a target="_blank" rel="noopener" href="https://doc.rust-lang.org/reference/macros-by-example.html">here</a></li>
+</ul>
+<h2 id="procedures-macro"><a href="#procedures-macro" class="headerlink" title="procedures macro"></a>procedures macro</h2><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://web.mit.edu/rust-lang_v1.25/arch/amd64_ubuntu1404/share/doc/rust/html/book/first-edition/trait-objects.html">rust trait object</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2022/12/28/rust/rust-07-macro/" data-id="clk1dmvcn0010d4sjcfknggr4" data-title="rust reflect and macro" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rust/crates/rust-frequently-used-crates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/12/13/rust/crates/rust-frequently-used-crates/" class="article-date">
@@ -101,7 +389,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="cljzki9l4002dm8sj2rtqegfp" data-title="rust frequently used crates" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="clk1dmvcs001wd4sj5anu16jj" data-title="rust frequently used crates" class="article-share-link">Share</a>
       
       
       
@@ -171,7 +459,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="cljzki9kw000tm8sj9a59b2o4" data-title="rust cargo all in one" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="clk1dmvco0016d4sjeamx2heo" data-title="rust cargo all in one" class="article-share-link">Share</a>
       
       
       
@@ -211,7 +499,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="cljzki9kp0003m8sj1gl1c3cn" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clk1dmvcg0003d4sj6l4b8azf" data-title="eth_sign" class="article-share-link">Share</a>
       
       
       
@@ -262,7 +550,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="cljzki9kq0005m8sj8s05g88b" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clk1dmvch0005d4sj32ek7xoj" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
@@ -329,7 +617,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="cljzki9kx0013m8sj94323ogc" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="clk1dmvcp001fd4sjay3rg5ba" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
       
       
       
@@ -375,266 +663,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="cljzki9ky0014m8sjbpe3f3sm" data-title="rust tools" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-sugar" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/17/rust/rust-sugar/" class="article-date">
-  <time class="dt-published" datetime="2022-11-17T07:47:13.000Z" itemprop="datePublished">2022-11-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/17/rust/rust-sugar/">rust sugar</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="formatted-print"><a href="#formatted-print" class="headerlink" title="formatted print"></a>formatted print</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Positional arguments can be used</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;0&#125;, this is &#123;1&#125;. &#123;1&#125;, this is &#123;0&#125;&quot;</span>, <span class="string">&quot;Alice&quot;</span>, <span class="string">&quot;Bob&quot;</span>);</span><br><span class="line"><span class="comment">// As can named arguments.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;subject&#125; &#123;verb&#125; &#123;object&#125;&quot;</span>,</span><br><span class="line">            object=<span class="string">&quot;the lazy dog&quot;</span>,</span><br><span class="line">            subject=<span class="string">&quot;the quick brown fox&quot;</span>,</span><br><span class="line">            verb=<span class="string">&quot;jumps over&quot;</span>);</span><br><span class="line"><span class="comment">// Different formatting can be invoked by specifying the format character</span></span><br><span class="line"><span class="comment">// after a `:`.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 10:               &#123;&#125;&quot;</span>,   <span class="number">69420</span>); <span class="comment">// 69420</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 2 (binary):       &#123;:b&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10000111100101100</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 8 (octal):        &#123;:o&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 207454</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 16 (hexadecimal): &#123;:x&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10f2c</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 16 (hexadecimal): &#123;:X&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10F2C</span></span><br><span class="line"><span class="comment">// You can right-justify text with a specified width. This will</span></span><br><span class="line"><span class="comment">// output &quot;    1&quot;. (Four white spaces and a &quot;1&quot;, for a total width of 5.)</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:&gt;5&#125;&quot;</span>, number=<span class="number">1</span>);</span><br><span class="line"><span class="comment">// You can pad numbers with extra zeroes,</span></span><br><span class="line"><span class="comment">// and left-adjust by flipping the sign. This will output &quot;10000&quot;.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:0&lt;5&#125;&quot;</span>, number=<span class="number">1</span>);</span><br><span class="line"><span class="comment">// You can use named arguments in the format specifier by appending a `$`.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:0&gt;width$&#125;&quot;</span>, number=<span class="number">1</span>, width=<span class="number">5</span>);</span><br></pre></td></tr></table></figure>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/rust-by-example/hello/print.html">reference</a></li>
-</ul>
-<h2 id="syntax"><a href="#syntax" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// print to stderr</span></span><br><span class="line">eprintln!(<span class="string">&quot;server error: &#123;&#125;&quot;</span>, e);</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">MyTupleStruct</span>&lt;M&gt;(M);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">myTupleStruct</span> =  MyTupleStruct::&lt;<span class="type">String</span>&gt;(<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>));</span><br><span class="line"></span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">position</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">find</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">any</span>()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">mut</span> A: <span class="type">u32</span> = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
-
-<h2 id="attributes"><a href="#attributes" class="headerlink" title="attributes"></a>attributes</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![allow(warnings)]</span></span><br><span class="line"><span class="meta">#[allow(dead_code)]</span></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="comment">// Suppress all warnings from casts which overflow.</span></span><br><span class="line"><span class="meta">#![allow(overflowing_literals)]</span></span><br><span class="line"><span class="meta">#![allow(unreachable_code)]</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h2><p>The compiler will not rearrange the memory layout</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[repr(C)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    a:<span class="type">u8</span>,</span><br><span class="line">    b:<span class="type">u32</span>,</span><br><span class="line">    c:<span class="type">u16</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="ptr"><a href="#ptr" class="headerlink" title="ptr"></a>ptr</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">NonNull::<span class="title function_ invoke__">new_unchecked</span>()</span><br><span class="line"></span><br><span class="line"><span class="meta">#![feature(new_uninit)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">five</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_uninit</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">five</span> = <span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="comment">// Deferred initialization:</span></span><br><span class="line">    five.<span class="title function_ invoke__">as_mut_ptr</span>().<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    five.<span class="title function_ invoke__">assume_init</span>()</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*five, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_zeroed</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="keyword">unsafe</span> &#123; zero.<span class="title function_ invoke__">assume_init</span>() &#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*zero, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::alloc::&#123;alloc, Layout&#125;;</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">ptr</span> = <span class="title function_ invoke__">alloc</span>(Layout::new::&lt;<span class="type">i32</span>&gt;()) <span class="keyword">as</span> *<span class="keyword">mut</span> <span class="type">i32</span>;</span><br><span class="line">    ptr.<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span> = <span class="type">Box</span>::<span class="title function_ invoke__">from_raw</span>(ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="cljzki9ky0019m8sj2yt95nok" data-title="rust sugar" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-cargo-doc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/13/rust/rust-cargo-doc/" class="article-date">
-  <time class="dt-published" datetime="2022-11-13T07:41:59.000Z" itemprop="datePublished">2022-11-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/13/rust/rust-cargo-doc/">cargo doc</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="文档注释"><a href="#文档注释" class="headerlink" title="文档注释"></a>文档注释</h2><h3 id="用于生成文档"><a href="#用于生成文档" class="headerlink" title="用于生成文档"></a>用于生成文档</h3><ul>
-<li>使用 &#x2F;&#x2F;&#x2F;</li>
-<li>支持 Markdown</li>
-<li>放置在被说没条目之前</li>
-</ul>
-<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// adds one to the number given</span></span><br><span class="line"><span class="comment">/// </span></span><br><span class="line"><span class="comment">/// # Examples</span></span><br><span class="line"><span class="comment">/// ```</span></span><br><span class="line"><span class="comment">/// let arg = 5;</span></span><br><span class="line"><span class="comment">/// let answer = my_crate::add_one(arg);</span></span><br><span class="line"><span class="comment">/// </span></span><br><span class="line"><span class="comment">/// assert_eq!(6, answer);</span></span><br><span class="line"><span class="comment">/// ```</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add_one</span>(x: <span class="type">i32</span>) <span class="punctuation">-&gt;</span> <span class="type">i32</span> &#123;</span><br><span class="line">    x + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="命令"><a href="#命令" class="headerlink" title="命令"></a>命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo doc  ## 生成的html放在 target/doc 目录下</span><br><span class="line">cargo doc --open ## 构建当前crate的文档 (也包含crate依赖项的文档)</span><br></pre></td></tr></table></figure>
-<h3 id="常用章节"><a href="#常用章节" class="headerlink" title="常用章节"></a>常用章节</h3><ul>
-<li><code># Examples</code></li>
-<li><code>Panics</code>: 可能panic的场景</li>
-<li><code>Errors</code>: 如果fn返回Result, 描述可能的错误种类, 以及导致错误的条件</li>
-<li><code>Safety</code>: 如果fn出入unsafe调用, 解释unsafe的原因, 以及调用者确保的使用前提</li>
-</ul>
-<h3 id="文档注释作为测试"><a href="#文档注释作为测试" class="headerlink" title="文档注释作为测试"></a>文档注释作为测试</h3><ul>
-<li>运行cargo test, doc中用# Example标记的实例代码会用来测试运行</li>
-</ul>
-<h3 id="为包含注释的项添加文档注释"><a href="#为包含注释的项添加文档注释" class="headerlink" title="为包含注释的项添加文档注释"></a>为包含注释的项添加文档注释</h3><ul>
-<li>符号: &#x2F;&#x2F;!</li>
-<li>这类注释通常用描述crate和模块:<ul>
-<li>crate root (按惯例 src&#x2F;lib.rs)</li>
-<li>一个模块内，将crate火模块作为一个整体进行记录</li>
-</ul>
-</li>
-</ul>
-<h2 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h2><p>&#x2F;&#x2F;!  - 模块级稳定注释, 置于模块头部<br>&#x2F;&#x2F;!! - 模块级稳定注释, 但是和上面注释置于同一行</p>
-<p>&#x2F;&#x2F;!  - 模块级稳定注释, 会换行</p>
-<p>&#x2F;*!  - 模块级稳定注释 <em>&#x2F;<br>&#x2F;</em>!！ - 模块级稳定注释, 和上面同一行 *&#x2F;</p>
-<p>&#x2F;&#x2F; 普通行注释<br>&#x2F;&#x2F;&#x2F; 行级文档注释<br>&#x2F;&#x2F;&#x2F;&#x2F; 普通行注释</p>
-<p>&#x2F;* 普通块级注释 <em>&#x2F;<br>&#x2F;</em>* 会级文档注释   *&#x2F;</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/13/rust/rust-cargo-doc/" data-id="cljzki9kx0011m8sj6jflhaqn" data-title="cargo doc" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-geth/code_analysis/geth.1.rpc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/08/geth/code_analysis/geth.1.rpc/" class="article-date">
-  <time class="dt-published" datetime="2022-11-08T06:23:08.000Z" itemprop="datePublished">2022-11-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/08/geth/code_analysis/geth.1.rpc/">rpc</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>package rpc implements bi-directional JSON-RPC 2.0 on multiple transports (http, ws, ipc). After creating a server or client instance, objects can be registered to make them visible as ‘services’. Exported methods that follow specific conventions can be called remotely. It also has support for the publish&#x2F;subscribe pattern.</p>
-<h2 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h2><h3 id="rpc-endpoints-callback"><a href="#rpc-endpoints-callback" class="headerlink" title="rpc endpoints (callback)"></a>rpc endpoints (callback)</h3><p>Methods that satisfy the following criteria are made available for remote access:</p>
-<ul>
-<li>method must be exported</li>
-<li>method returns 0, 1 (response or error) or 2 (response and error) values</li>
-</ul>
-<p>The server offers the ServeCodec method which accepts a ServerCodec instance. It will read requests from the codec, process the request and sends the response back to the client using the codec. The server can execute requests concurrently. Responses can be sent back to the client out of order.</p>
-<p>An example server which uses the JSON codec:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> CalculatorService <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Add(a, b <span class="type">int</span>) <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Div(a, b <span class="type">int</span>) (<span class="type">int</span>, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> b == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>, errors.New(<span class="string">&quot;divide by zero&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> a/b, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">calculator := <span class="built_in">new</span>(CalculatorService)</span><br><span class="line">server := NewServer()</span><br><span class="line">server.RegisterName(<span class="string">&quot;calculator&quot;</span>, calculator)</span><br><span class="line">l, _ := net.ListenUnix(<span class="string">&quot;unix&quot;</span>, &amp;net.UnixAddr&#123;Net: <span class="string">&quot;unix&quot;</span>, Name: <span class="string">&quot;/tmp/calculator.sock&quot;</span>&#125;)</span><br><span class="line">server.ServeListener(l)</span><br></pre></td></tr></table></figure>
-
-<h3 id="subscriptions"><a href="#subscriptions" class="headerlink" title="subscriptions"></a>subscriptions</h3><p>The package also supports the publish subscribe pattern through the use of subscriptions.<br>A method that is considered eligible for notifications must satisfy the following<br>criteria:</p>
-<ul>
-<li>method must be exported</li>
-<li>first method argument type must be context.Context</li>
-<li>method must have return types (rpc.Subscription, error)</li>
-</ul>
-<p>An example method:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *BlockChainService)</span></span> NewBlocks(ctx context.Context) (rpc.Subscription, <span class="type">error</span>) &#123;</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Reverse-Calls"><a href="#Reverse-Calls" class="headerlink" title="Reverse Calls"></a>Reverse Calls</h3><p>In any method handler, an instance of rpc.Client can be accessed through the <code>ClientFromContext</code> method. Using this client instance, server-to-client method calls can be performed on the RPC connection.</p>
-<h2 id="server"><a href="#server" class="headerlink" title="server"></a>server</h2><p>to start rpc service, the invoking chain is as below</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node/node.go[func (n *Node) Start()] -&gt; node/node.go[func (n *Node) openEndpoints()] -&gt; node/node.go[func (n *Node) startRPC()]</span><br></pre></td></tr></table></figure>
-
-<h3 id="API-registration"><a href="#API-registration" class="headerlink" title="API registration"></a>API registration</h3>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="cljzki9kz001em8sjd2gx4zhz" data-title="rpc" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-08-project-management" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/06/rust/rust-08-project-management/" class="article-date">
-  <time class="dt-published" datetime="2022-11-06T07:33:55.000Z" itemprop="datePublished">2022-11-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/06/rust/rust-08-project-management/">rust project management</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="basic-concepts"><a href="#basic-concepts" class="headerlink" title="basic concepts"></a>basic concepts</h2><ul>
-<li><strong>Packages</strong>: A Cargo feature that lets you build, test, and share crates</li>
-<li><strong>Crates</strong>: A tree of modules that produces a library or executable</li>
-<li><strong>Modules and use</strong>: Let you control the organization, scope, and privacy of paths</li>
-<li><strong>Paths</strong>: A way of naming an item, such as a struct, function, or module</li>
-</ul>
-<h3 id="package"><a href="#package" class="headerlink" title="package"></a>package</h3><ol>
-<li>one package can only has one library Crate. default is src&#x2F;lib.rs</li>
-<li>one package can have multiple binary Crates (under src&#x2F;bin). default src&#x2F;main.rs</li>
-<li>one package has at least one crate，no matter lib or bin。</li>
-<li>one package could simultaneously have src&#x2F;main.rs and src&#x2F;lib.rs (crate name same to package name)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cargo new my-project --lib  ## create a library project</span><br></pre></td></tr></table></figure></li>
-</ol>
-<h3 id="crate"><a href="#crate" class="headerlink" title="crate"></a>crate</h3><ul>
-<li>binary or library</li>
-<li>The crate root is a source file that the Rust compiler starts from and makes up the root module of your crate</li>
-</ul>
-<h3 id="module"><a href="#module" class="headerlink" title="module"></a>module</h3><ul>
-<li>keyword <code>mod</code> </li>
-<li>module could be nested。</li>
-<li>module includes(struct、enum、const、trait、func, etc)</li>
-</ul>
-<h3 id="path"><a href="#path" class="headerlink" title="path"></a>path</h3><ul>
-<li>absolute path: use crate name or <code>crate</code></li>
-<li>relative path:，use self, super etc<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">serve_order</span>() &#123;&#125;</span><br><span class="line"><span class="keyword">mod</span> back_of_house &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">fix_incorrect_order</span>() &#123;</span><br><span class="line">        <span class="title function_ invoke__">cook_order</span>();</span><br><span class="line">        super::<span class="title function_ invoke__">serve_order</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">cook_order</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> front_of_house &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">mod</span> hosting &#123;</span><br><span class="line">        <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add_to_waitlist</span>() &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">eat_at_restaurant</span>() &#123;</span><br><span class="line">    <span class="comment">// Absolute path</span></span><br><span class="line">    crate::front_of_house::hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">    <span class="comment">// Relative path</span></span><br><span class="line">    front_of_house::hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="Bringing-Paths-into-Scope-with-the-use-Keyword"><a href="#Bringing-Paths-into-Scope-with-the-use-Keyword" class="headerlink" title="Bringing Paths into Scope with the use Keyword"></a>Bringing Paths into Scope with the use Keyword</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::io;</span><br><span class="line"><span class="keyword">use</span> std::io::Write;</span><br><span class="line"><span class="keyword">use</span> std::io:: &#123; <span class="keyword">self</span>, Write&#125; ;</span><br><span class="line"><span class="keyword">use</span> std::&#123;cmp::Ordering, io&#125;;</span><br><span class="line"><span class="keyword">use</span> std::fmt::<span class="type">Result</span>;</span><br><span class="line"><span class="keyword">use</span> std::io::<span class="type">Result</span> <span class="keyword">as</span> IoResult;</span><br><span class="line"><span class="keyword">use</span> std::collections::*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">use</span> crate::front_of_house::hosting; <span class="comment">// re-exporting names with pub use</span></span><br></pre></td></tr></table></figure>
-<h3 id="Separating-Modules-into-Different-Files"><a href="#Separating-Modules-into-Different-Files" class="headerlink" title="Separating Modules into Different Files"></a>Separating Modules into Different Files</h3><p>Filename: src&#x2F;lib.rs</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> front_of_house;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">use</span> crate::front_of_house::hosting;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">eat_at_restaurant</span>() &#123;</span><br><span class="line">    hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">    hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">    hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Filename: src&#x2F;front_of_house.rs</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">mod</span> hosting &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add_to_waitlist</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="profile"><a href="#profile" class="headerlink" title="profile"></a>profile</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo build ## dev: [unoptimized + debuginfo]</span><br><span class="line">cargo build --release ## [optimized]</span><br></pre></td></tr></table></figure>
-<ul>
-<li>config<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[profile.dev]</span><br><span class="line">opt-level = 0</span><br><span class="line"></span><br><span class="line">[profile.release]</span><br><span class="line">opt-level = 3</span><br><span class="line"></span><br><span class="line"># profile for the wasm example (from project ethers-rs)</span><br><span class="line">[profile.release.package.ethers-wasm]</span><br><span class="line">opt-level = &quot;s&quot;  # Tell `rustc` to optimize for small code size.</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="cljzki9kx000wm8sj3e1b5htl" data-title="rust project management" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="clk1dmvcq001hd4sjhpl6gsut" data-title="rust tools" class="article-share-link">Share</a>
       
       
       
@@ -652,7 +681,7 @@
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -666,7 +695,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -676,7 +705,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 12px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
     </div>
   </div>
 
@@ -698,23 +727,23 @@
       <ul>
         
           <li>
+            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
+          </li>
+        
+          <li>
             <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
           </li>
         
           <li>
             <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/01/rust/rust-10-concurrency/">rust concurrency</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/">rust std data structure (2D)</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/">rust std data structure (1D)</a>
           </li>
         
       </ul>

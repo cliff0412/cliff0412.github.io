@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>cryptography (1) group &amp; field | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Groupa group is a set of elements \( G \) together with an operation \( \circ \). a group has the following properties  the group operation \( \circ \) is closed. that is, for all \( a,b, \in G">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cryptography (1) group &amp; field">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="Groupa group is a set of elements \( G \) together with an operation \( \circ \). a group has the following properties  the group operation \( \circ \) is closed. that is, for all \( a,b, \in G">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-06-03T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-07-13T16:01:11.422Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cryptography/cryptography-01-primitive-group-and-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" class="article-date">
+  <time class="dt-published" datetime="2023-06-03T06:29:26.000Z" itemprop="datePublished">2023-06-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      cryptography (1) group &amp; field
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+
+
+<h2 id="Group"><a href="#Group" class="headerlink" title="Group"></a>Group</h2><p>a group is a set of elements \( G \) together with an operation \( \circ \). a group has the following properties</p>
+<ol>
+<li>the group operation \( \circ \) is closed. that is, for all \( a,b, \in G  \), it holds that \( a \circ b &#x3D; c \in G \)</li>
+<li>the group operation is associative. That is, \( a \circ (b \circ c) &#x3D; (a \circ b) \circ c \) for all \( a,b,c \in G \)</li>
+<li>there is an element \( 1 \in G \), called the neutral element (or identity element), such that \( a \circ \ &#x3D; 1 \circ a\) for all \( a \in G \)</li>
+<li>For each \( a \in G \) there exists an element \( a^{-1} \in G\), called the inverse of a, such that \( a \circ a^{-1} &#x3D; 1 \).</li>
+<li>a group G is abelian (or commutative) if, furthermore, \( a \circ b &#x3D; b \circ a \) for all \( a, b \in G \)</li>
+</ol>
+<h3 id="Example-of-Group"><a href="#Example-of-Group" class="headerlink" title="Example of Group"></a>Example of Group</h3><p>the set of integers \( Z_{m} &#x3D; 0,1,…,m-1 \) and the operation addition modulo \( m \) forma group with the neutral element 0. every element \( a \) has an inverse \(  -a \). note that this set does not form a group with the operation multiplication gecause mose eleents \(  a \) do not have an inverse such that \(  a a^{-1} &#x3D; 1 \bmod m\).</p>
+<p>In order to have all four basic arithmetic operations (i.e. addition, subtraction, multiplication, division) in one structure, we need a set which contains an additive and a multiplicative group. this is what we call a field.</p>
+<h2 id="Field"><a href="#Field" class="headerlink" title="Field"></a>Field</h2><p>A field is a set of elements with the following properties</p>
+<ul>
+<li>all elements of \( F\) form an additive group with the group operation \( + \) and the neutral element \( 0 \)</li>
+<li>all element of \( F \) except \( 0 \) form a multiplicative group with the gorup operation \( x \) and the neutral element \( 1 \) .</li>
+<li>when the two group operations are mixed, the distributivety law holds, i.e., for all \( a,b,c \in F: a(b+c) &#x3D; (ab) + (ac) \)</li>
+</ul>
+<h3 id="Example-of-Field"><a href="#Example-of-Field" class="headerlink" title="Example of Field"></a>Example of Field</h3><p>the set \( R \) of real numbers is a field with the neutral element 0 for the additive group and the neutral element 1 for the multiplicative group. every real number \( a \) has an additive inverse, namely \( -a \), and every nonzero element \( a \) has a multiplicative inverse \( 1 \div a \)</p>
+<h2 id="Galois-Field"><a href="#Galois-Field" class="headerlink" title="Galois Field"></a>Galois Field</h2><p>In cryptography, we are almose always interested in fields with a <strong>finite</strong> number of elements, which we call finite fields or <code>Galois field</code>. the number of elements in the field is called the <code>order</code> or <code>cardinality</code> of the field. Of fundamental importance is the following theorem</p>
+<hr>
+<p>a field with order <code>m</code> only exists if <code>m</code> is a prime power, i.e, \( m &#x3D; p^{n} \), for some positive integer <code>n</code> and prime integer <code>p</code>. <code>p</code> is called the characteristic of the finite field</p>
+<hr>
+<p>the theorem implies that there are, for instance, finite fields with 11 elements (\( 11^{1} \)), or with 81 elements \( 81 &#x3D; 3^{4} \) or with 256 elements (\( 256 &#x3D; 2^{8} \)). </p>
+<h2 id="Prime-Field"><a href="#Prime-Field" class="headerlink" title="Prime Field"></a>Prime Field</h2><p>the most intuitive examples of finite fields are fields of prime order, i.e., fields with \( n &#x3D;1 \). elements of the field \( GF(p) \) can be represented by integers \( 0,1,…, p-1 \).</p>
+<h2 id="Extension-Field-GF-2-m"><a href="#Extension-Field-GF-2-m" class="headerlink" title="Extension Field GF(2^m)"></a>Extension Field <code>GF(2^m)</code></h2><p>In AES the finite field contains 256 elements and is denoted as \( GF(2^8) \).<br>However, if the order  of a finite field is not prime, and \( 2^8 \) is clearly not a prime, the addition and multiplication operation cannot be represented by addition and multiplication of integers modulo \( 2^8 \). such fields with \( m &gt;1 \) are called <code>extension field</code>. in order to deal with extension fields we need (1) a different notation for field elements and (2) different rules for performing arithmetic with the elements. elements of extension fields can be represented as <code>polynomials</code>, and computation in the extension field is achieved by performing a certain type of <code>polynomial arithmetic</code>.</p>
+<p>In the field \( GF(2^8) \), which is used in AES, each element \( A \in GF(2^8) \) is thus represented as:<br>\[ A(x) &#x3D; a_{7}x^7 + …+a_{1}x+a_{0}, a_{i} \in GF(2) &#x3D; {0,1} \]<br>It is also important to observe that every polynomial can simply be stored in digital form as an 8-bit vector<br>\[ A &#x3D; (a_7,a_6,a_5,a_4,a_3,a_2,a_1,a_0) \]</p>
+<h3 id="addition-and-subtraction-in-GF-2-m"><a href="#addition-and-subtraction-in-GF-2-m" class="headerlink" title="addition and subtraction in GF(2^m)"></a>addition and subtraction in <code>GF(2^m)</code></h3><p>addition and subtraction are simply achieved by performing polynomial addition and subtraction. note that we perform modulo 2 addition (or subtraction) with the coefficients.<br>\[ A(x) &#x3D; x^7 + x^6 + x^4 + 1 \]<br>\[ B(x) &#x3D; x^4 + x^2+ 1 \]<br>\[ A(x) + B(x) &#x3D; x^7 + x^6+ x^2 \]</p>
+<h3 id="multiplication-in-GF-2-m"><a href="#multiplication-in-GF-2-m" class="headerlink" title="multiplication in GF(2^m)"></a>multiplication in <code>GF(2^m)</code></h3><p>firstly, two elements (represented by their polynomials) of a finite field <code>GF(2^m)</code> are multiplied usig the standard polynomial multiplication rule \[ A(x) \dot B(x) &#x3D; C(x) \]. In general, the product polynomial \[ C(x) \] will have a degree higher than <code>m-1</code> and has to be reduced. to do that, the product of the multiplication is divided by a certain polyhomial, and we consider only the remainder after the polynomial division. we need <strong>irreducible</strong> polynomials for the module reduction. irreducible polynomials are roughly comparable to prime numbers. their only factors are 1 and polynomial itself.<br>Thus, every field <code>GF(2^m)</code> requires an irreducible polynomial <code>P(x)</code> of degree <code>m</code>.<br>For AES, the irreducible polynomial is<br>\[ P(x) &#x3D; x^8 + x^4+ x^3 +x + 1 \]<br>the main algorithm for computing multiplicative inverse is the extended Euclidean algorithm, which is introduced in other posts.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk1dmvci0007d4sjfy9c73ci" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          rust std smart pointer &amp; interior mutability
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/06/01/rust/rust-10-concurrency/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rust concurrency</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
