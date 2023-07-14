@@ -107,7 +107,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk1e4wpw001l6hsjedcxczok" data-title="zkp a brief understanding" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk1y35rb001fx7sj9mji8e1r" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
@@ -150,8 +150,11 @@
 
 
 <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>the security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1].</p>
-<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>todo!()</p>
-<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>todo!()</p>
+<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>the gcd of two positive integers \(r_0\) and \(r_1\) is denoted by<br>\[gcd(r_0, r_1)\]<br>the Eucliedean algorithm is used to calculate gcd, based on as simple observation that<br>\[gcd(r_0, r_1) &#x3D; gcd(r_0-r_1, r_1)\]<br>where we assume \(r_0 &gt; r_1\)<br>This property can easily be proven: Let \(gcd(r_0, r_1) &#x3D; g\), since \(g\) divides both  \(r_0\) and \(r_1\), we can write \(r_0 &#x3D; g \cdot x\) and \(r_1 &#x3D; g \cdot y\), where \(x&gt;y\) and \(x\) and \(y\) are coprime integers, i.e., they do not have common factors. Moreover, it is easy to show that \((x-y)\) and \(y\) are also coprime. it follows from here that<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(g \cdot (x-y), g\cdot y) &#x3D; g\]</p>
+<p>it also follow immediately that we can apply the process iteratively:<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(r_0 - mr_1, r_1) \]<br>as long as \((r_0 - mr_1) &gt;0\). the algorithm use the fewest number of steps if we choose maximum value of \(m\). this is the case if we compute:<br>\[gcd(r_0, r_1) &#x3D; gcd( r_1, r_0 \bmod r_1) \]<br>this process can be applied recursively until we obtain finally \[gcd(r_l, 0) &#x3D; r_l \]<br>the euclidean algorithm is very efficient, even with the very long numbers. the number of iterations is close to the number of digits of the input operands. that means, for instance, that the number of iterations of a gcd involving 1024-bit nubmers is 1024 times a constant.</p>
+<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>an extension of the Euclidean algorithm allows us to compute <em><strong>modular inverse</strong></em>. in addition to computing the gcd, the <em><strong>extended Euclidean algorithm</strong></em> computes a linear combination of the form<br>\[gcd(r_0, r_1) &#x3D; s \cdot r_0 + t\cdot r_1 \]<br>where s and t are integer coefficients. this equation is ofthen referred to as <em><strong>Diophantine equation</strong></em></p>
+<p>the detail of the algorithm can be foud in section 6.3.2 of the book understanding cryptography by Christof Paar. Here presents the general idea by using an example.<br>let \(r_0 &#x3D;973 , r_1 &#x3D; 301\). during the steps of Euclidean Algorithm, we obtain \(973 &#x3D; 3\cdot301 + 70\)<br>which is \[r_0 &#x3D; q_1 \cdot r_1 + r_2\]<br>rearrange:<br>\[r_2 &#x3D;  r_0 + (-q_1) \cdot r_1\]<br>replacing (r_0, r_1) and iteratively by (r_1, r_2), … (r_{i-1}, r_{i}), util \(r_{i+1} &#x3D; 0\)<br>then \(r_{i}\) is \(gcd(r_0,r_1)\), and can have a representation of<br>\[gcd(r_0, r_1) &#x3D; s\cdot r_0 + t\cdot r_1 \].<br>since the inverse only exists if \(gcd(r_0, r_1)&#x3D;1\). we obtain<br>\[ s\cdot r_0 + t\cdot r_1 &#x3D; 1\]<br>taking this equation modulo \(r_0\) we obtain<br>\[ s\cdot 0 + t\cdot r_1 \equiv 1 \bmod r_0\]<br>\[  t\cdot r_1 \equiv 1 \bmod r_0\]<br>t is the definition of the inverse of \(r_1\)</p>
+<p>Thus, if we need to compute an inverse \(a^{-1} \bmod m\), we apply EEA with the input parameters \(m\) and \(a\)</p>
 <h2 id="Euler’s-Phi-Function"><a href="#Euler’s-Phi-Function" class="headerlink" title="Euler’s Phi Function"></a>Euler’s Phi Function</h2><p>we consider the ring \( Z_m\) i.e., the set of integers \({0,1,…,m-1}\). we are interested in teh problem of knowing how many numbers in this set are relatively prime to m. this quantity is given by Euler’s phi function, which is \(\Phi(m)\)</p>
 <hr>
 <p>let m have the following canonical factorization<br>\[ m &#x3D; p_{1}^{e_1} \cdot p_{2}^{e_2} \cdot … \cdot p_{n}^{e_n}\]<br>where the \(p_i\) are distinct prime numbers and \( e_i\) are positive integers, then</p>
@@ -175,7 +178,12 @@
 </ol>
 <hr>
 <p>the condition that \( gcd(e,\Phi(n)) &#x3D; 1\) ensures that the inverse of \(e\) exists modulo \(\Phi(n)\), so that there is always a private key \(d\).<br>the computation of key keys \(d\) and \(e\) canb e doen at once using the extended Euclidean algorith. </p>
-<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><p>todo!()</p>
+<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><hr>
+<p><strong>RSA Encryption</strong> Given the privaate key \( k_{pub} &#x3D; (n,e) \) and the plaintext \(x\), the encryption is:<br>\[ y &#x3D; e_{k_{pub}}(x) \equiv x^{e} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
+<hr>
+<hr>
+<p><strong>RSA Decryption</strong> Given the public key \d &#x3D; k_{pr} \) and the plaintext \(y\), the decryption is:<br>\[ x &#x3D; d_{k_{pr}}(y) \equiv y^{d} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
+<hr>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] <a target="_blank" rel="noopener" href="https://web.williams.edu/Mathematics/lg5/302/RSA.pdf">A Method for Obtaining Digital<br>Signatures and Public-Key Cryptosystems</a></li>
 </ul>
@@ -183,7 +191,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/" data-id="clk1e4wpw001j6hsj9vpw0y0r" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/" data-id="clk1y35r5000ax7sj73ra0eeb" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -248,7 +256,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/" data-id="clk1e4wpw001e6hsj1lfmhvaa" data-title="cryptography (2) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/" data-id="clk1y35r40008x7sj2qxdhlba" data-title="cryptography (2) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -354,7 +362,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk1e4wq2002h6hsjd2u10w1i" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk1y35rf001ux7sjgme78e4r" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -427,7 +435,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk1e4wq1002b6hsj2xfef22t" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk1y35rd001px7sjcvoi9b3k" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -501,7 +509,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk1e4wpv001c6hsjfftj9tr6" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk1y35r40007x7sjegmv62sv" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -556,7 +564,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk1e4wpt000u6hsj6fqz3nu7" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk1y35r9000xx7sjgadp69ny" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -622,7 +630,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk1e4wq3002p6hsj2lwf9hko" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk1y35rf001wx7sjh09scn24" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
       
       
       
@@ -739,7 +747,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk1e4wq1002c6hsj7olz9y4o" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk1y35re001sx7sj50g4hcd0" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
@@ -786,7 +794,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk1e4wps000n6hsj472tg11o" data-title="rust functional programming" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk1y35r9000vx7sj066db7j5" data-title="rust functional programming" class="article-share-link">Share</a>
       
       
       
