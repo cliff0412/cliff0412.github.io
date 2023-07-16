@@ -157,6 +157,57 @@
 
 
   
+    <article id="post-cryptography/elliptic_curve/elliptic-curve-pairing" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" class="article-date">
+  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Pairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can check whether or not \(p * q &#x3D; r\), having just P, Q and R as inputs. This might seem like the fundamental security guarantees of elliptic curves are being broken, as information about p is leaking from just knowing P, but it turns out that the leakage is highly contained — specifically, the <em><strong>decisional Diffie Hellman problem</strong></em> is easy, but the computational Diffie Hellman problem (knowing P and Q in the above example, computing R &#x3D; G * p * q) and the discrete logarithm problem (recovering p from P) remain computationally infeasible.</p>
+<p> whereas traditional elliptic curve math lets you check linear constraints on the numbers (eg. if P &#x3D; G * p, Q &#x3D; G * q and R &#x3D; G * r, checking 5 * P + 7 * Q &#x3D; 11 * R is really checking that 5 * p + 7 * q &#x3D; 11 * r), pairings let you check quadratic constraints (eg. checking e(P, Q) * e(G, G * 5) &#x3D; 1 is really checking that p * q + 5 &#x3D; 0).</p>
+<p> Now, what is this funny e(P, Q) operator that we introduced above? This is the pairing. Mathematicians also sometimes call it a bilinear map; the word “bilinear” here basically means that it satisfies the constraints:</p>
+<p>\[ e(P, Q + R) &#x3D; e(P, Q) * e(P, R) \]<br>\[ e(P + S, Q) &#x3D; e(P, Q) * e(S, Q) \]<br>Note that + and * can be arbitrary operators; when you’re creating fancy new kinds of mathematical objects, abstract algebra doesn’t care how + and * are defined, as long as they are consistent in the usual ways.</p>
+<p>If P, Q, R and S were simple numbers, then making a simple pairing is easy: we can do e(x, y) &#x3D; 2^xy. Then, we can see:<br>\[e(3, 4+ 5) &#x3D; 2^(3 * 9) &#x3D; 2^{27}\]<br>\[e(3, 4) * e(3, 5) &#x3D; 2^(3 * 4) * 2^(3 * 5) &#x3D; 2^{12} * 2^{15} &#x3D; 2^{27} \]<br>However, such simple pairings are not suitable for cryptography because the objects that they work on are simple integers and are too easy to analyze;</p>
+<p>It turns out that it is possible to make a bilinear map over elliptic curve points — that is, come up with a function e(P, Q) where the inputs P and Q are elliptic curve points, and where the output is what’s called an \(F_{p^¹²}\) element</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clk5l3u9t0000nksjbj616v2x" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cryptography/cryptography-04-digital-signature" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" class="article-date">
@@ -821,123 +872,6 @@
 
 
   
-    <article id="post-rust/rust_std/rust-std-data-structure-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/" class="article-date">
-  <time class="dt-published" datetime="2023-05-01T14:04:38.000Z" itemprop="datePublished">2023-05-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/">rust std data structure (1D)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="array"><a href="#array" class="headerlink" title="array"></a>array</h2><p>A <strong>fixed-size</strong> array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N.</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">todo!()</span><br></pre></td></tr></table></figure>
-
-<h2 id="slice"><a href="#slice" class="headerlink" title="slice"></a>slice</h2><p>A <strong>dynamically-sized view</strong> into a contiguous sequence, [T].</p>
-<ul>
-<li><code>len()</code>: Returns the number of elements in the slice</li>
-<li><code>is_empty()</code></li>
-<li><code>first()</code> Returns the first element of the slice, or <code>None</code> if it is empty.</li>
-<li><code>first_mut()</code> Returns a mutable <strong>pointer</strong> to the first element of the slice, or <code>None</code> if it is empty</li>
-<li><code>split_first()</code> Returns the first and all the rest of the elements of the slice, or <code>None</code> if it is empty.</li>
-<li><code>split_first_mut()</code> </li>
-<li><code>split_last()</code></li>
-<li><code>split_last_mut()</code></li>
-<li><code>last()</code></li>
-<li><code>last_mut()</code></li>
-<li><code>get&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice depending on the type of index.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;<span class="number">40</span>), v.<span class="title function_ invoke__">get</span>(<span class="number">1</span>));</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>][..]), v.<span class="title function_ invoke__">get</span>(<span class="number">0</span>..<span class="number">2</span>));</span><br></pre></td></tr></table></figure></li>
-<li><code>get_mut&lt;I&gt;(index: I)</code></li>
-<li><code>get_unchecked&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice, without doing bounds checking</li>
-<li><code>get_unchecked_mut&lt;I&gt;(index: I)</code></li>
-<li><code>as_ptr(&amp;self) -&gt; *const T</code> Returns a raw pointer to the slice’s buffer<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        <span class="built_in">assert_eq!</span>(x.<span class="title function_ invoke__">get_unchecked</span>(i), &amp;*x_ptr.<span class="title function_ invoke__">add</span>(i));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><code>as_mut_ptr(&amp;mut self) -&gt; *mut T</code> <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_mut_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        *x_ptr.<span class="title function_ invoke__">add</span>(i) += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(x, &amp;[<span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>as_ptr_range(&amp;self) -&gt; Range&lt;*const T&gt;</code> Returns the two raw pointers spanning the slice.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">const</span> <span class="keyword">fn</span> <span class="title function_">as_ptr_range</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> Range&lt;*<span class="keyword">const</span> T&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">start</span> = <span class="keyword">self</span>.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">end</span> = <span class="keyword">unsafe</span> &#123; start.<span class="title function_ invoke__">add</span>(<span class="keyword">self</span>.<span class="title function_ invoke__">len</span>()) &#125;;</span><br><span class="line">    start..end</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><code>as_mut_ptr_range(&amp;mut self) -&gt; Range&lt;*mut T&gt;</code></li>
-<li><code>swap(&amp;mut self, a: usize, b: usize)</code> Swaps two elements in the slice.</li>
-<li><code>reverse(&amp;mut self)</code> Reverses the order of elements in the slice, in place.</li>
-<li><code>windows(&amp;self, size: usize)</code> Returns an iterator over all contiguous windows of length <code>size</code>. The windows overlap. If the slice is shorter than <code>size</code>, the iterator returns no values.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">windows</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>chunks(&amp;self, chunk_size: usize)</code> Returns an iterator over <code>chunk_size</code> elements of the slice at a time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>chunks_mut()</code></li>
-<li><code>chunks_exact(&amp;self, chunk_size: usize)</code><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks_exact</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">remainder</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>as_chunks_unchecked&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, assuming that there’s no remainder</li>
-<li><code>as_chunks&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, starting at the beginning of the slice, and a remainder slice with length strictly less than <code>N</code></li>
-<li><code>as_rchunks&lt;const N: usize&gt;(&amp;self)</code> r means reverse</li>
-<li><code>group_by&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over the slice producing non-overlapping runs of elements using the predicate to separate them. The predicate is called on two elements following themselves, it means the predicate is called on <code>slice[0]</code> and <code>slice[1]</code> then on <code>slice[1]</code> and <code>slice[2]</code> and so on<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(slice_group_by)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = &amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">group_by</span>(|a, b| a &lt;= b);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>split_at(&amp;self, mid: usize)</code> Divides one slice into two at an index.</li>
-<li><code>split&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over subslices separated by elements that match <code>pred</code>. The matched element is not contained in the subslices.</li>
-<li><code>splitn&lt;F&gt;(&amp;self, n: usize, pred: F)</code> </li>
-<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the slice contains an element with the given value.</li>
-<li><code>starts_with(&amp;self, needle: &amp;[T])</code> eturns <code>true</code> if <code>needle</code> is a prefix of the slice<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(!v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">50</span>]));</span><br></pre></td></tr></table></figure></li>
-<li><code>ends_with(&amp;self, needle: &amp;[T])</code> </li>
-<li><code>strip_prefix</code> Returns a subslice with the prefix removed.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;[<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">10</span>]), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">40</span>, <span class="number">30</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">50</span>]), <span class="literal">None</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">prefix</span> : &amp;<span class="type">str</span> = <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="string">b&quot;hello&quot;</span>.<span class="title function_ invoke__">strip_prefix</span>(prefix.<span class="title function_ invoke__">as_bytes</span>()),</span><br><span class="line">           <span class="title function_ invoke__">Some</span>(<span class="string">b&quot;llo&quot;</span>.<span class="title function_ invoke__">as_ref</span>()));</span><br></pre></td></tr></table></figure></li>
-<li><code>strip_suffix</code></li>
-<li><code>binary_search(&amp;self, x: &amp;T)</code>  Binary searches this slice for a given element.</li>
-<li><code>sort_unstable(&amp;mut self)</code> Sorts the slice, but might not preserve the order of equal elements.</li>
-<li><code>rotate_left(&amp;mut self, mid: usize)</code> Rotates the slice in-place such that the first <code>mid</code> elements of the slice move to the end while the last <code>self.len() - mid</code> elements move to the front.</li>
-<li><code>fill(&amp;mut self, value: T)</code> Fills <code>self</code> with elements by cloning <code>value</code>.</li>
-<li><code>clone_from_slice(&amp;mut self, src: &amp;[T])</code> Copies the elements from <code>src</code> into <code>self</code>.</li>
-<li><code>copy_from_slice(&amp;mut self, src: &amp;[T])</code> </li>
-<li><code>is_sorted(&amp;self)</code> </li>
-<li><code>take&lt;&#39;a, R: OneSidedRange&lt;usize&gt;&gt;(self: &amp;mut &amp;&#39;a Self, range: R)</code> Removes the subslice corresponding to the given range</li>
-<li><code>get_many_mut&lt;const N: usize&gt;</code> Returns mutable references to many indices at once.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(get_many_mut)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Ok</span>([a, b]) = v.<span class="title function_ invoke__">get_many_mut</span>([<span class="number">0</span>, <span class="number">2</span>]) &#123;</span><br><span class="line">    *a = <span class="number">413</span>;</span><br><span class="line">    *b = <span class="number">612</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(v, &amp;[<span class="number">413</span>, <span class="number">2</span>, <span class="number">612</span>]);</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="alloc-vec-Vec"><a href="#alloc-vec-Vec" class="headerlink" title="alloc::vec::Vec"></a>alloc::vec::Vec</h2><ul>
-<li><code>fn truncate(&amp;mut self, len: usize)</code> Shortens the vector, keeping the first <code>len</code> elements and dropping the rest</li>
-</ul>
-<h2 id="std-collections-VecDeque"><a href="#std-collections-VecDeque" class="headerlink" title="std::collections::VecDeque"></a>std::collections::VecDeque</h2><p>A double-ended queue (deque) implemented with a growable ring buffer.<br>Since VecDeque is a ring buffer, its elements are not necessarily contiguous in memory. If you want to access the elements as a single slice, such as for efficient sorting, you can use make_contiguous. It rotates the VecDeque so that its elements do not wrap, and returns a mutable slice to the now-contiguous element sequence.</p>
-<ul>
-<li><code>swap(&amp;mut self, i: usize, j: usize)</code></li>
-<li><code>reserve_exact(&amp;mut self, additional: usize)</code> Reserves the minimum capacity for at least <code>additional</code> more elements to be inserted in the given deque. Does nothing if the capacity is already sufficient.</li>
-<li><code>reserve(&amp;mut self, additional: usize)</code></li>
-<li><code>shrink_to_fit(&amp;mut self)</code> Shrinks the capacity of the deque as much as possible.</li>
-<li><code>truncate(&amp;mut self, len: usize)</code> Shortens the deque, keeping the first <code>len</code> elements and dropping the rest.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">buf</span> = VecDeque::<span class="title function_ invoke__">new</span>();</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">5</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">10</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">15</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>]);</span><br><span class="line">buf.<span class="title function_ invoke__">truncate</span>(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>iter(&amp;self)</code></li>
-<li><code>as_slices(&amp;self)</code></li>
-<li><code>slice_ranges&lt;R&gt;(&amp;self, range: R)</code> Given a range into the logical buffer of the deque, this function return two ranges into the physical buffer that correspond to the given range</li>
-<li><code>range&lt;R&gt;(&amp;self, range: R)</code> Creates an iterator that covers the specified range in the deque.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">deque</span>: VecDeque&lt;_&gt; = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].<span class="title function_ invoke__">into</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">range</span> = deque.<span class="title function_ invoke__">range</span>(<span class="number">2</span>..).<span class="title function_ invoke__">copied</span>().collect::&lt;VecDeque&lt;_&gt;&gt;();</span><br><span class="line"><span class="built_in">assert_eq!</span>(range, [<span class="number">3</span>]);</span><br><span class="line"><span class="comment">// A full range covers all contents</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">all</span> = deque.<span class="title function_ invoke__">range</span>(..);</span><br><span class="line"><span class="built_in">assert_eq!</span>(all.<span class="title function_ invoke__">len</span>(), <span class="number">3</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>drain&lt;R&gt;(&amp;mut self, range: R)</code> Removes the specified range from the deque in bulk, returning all removed elements as an iterator.</li>
-<li><code>clear(&amp;mut self)</code></li>
-<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the deque contains an element equal to the given value</li>
-<li><code>front(&amp;self)</code> Provides a reference to the front element</li>
-<li><code>front_mut(&amp;mut self)</code></li>
-<li><code>back(&amp;self)</code></li>
-<li><code>back_mut(&amp;mut self)</code></li>
-<li><code>pop_front(&amp;mut self)</code></li>
-<li><code>pop_back(&amp;mut self)</code></li>
-<li><code>push_front(&amp;mut self, value: T)</code></li>
-<li><code>push_back(&amp;mut self, value: T)</code></li>
-</ul>
-<h2 id="std-collections-LinkedList"><a href="#std-collections-LinkedList" class="headerlink" title="std::collections::LinkedList"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/collections/struct.LinkedList.html">std::collections::LinkedList</a></h2>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk5adu2u001s0psj9swb19n8" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -966,7 +900,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
     </div>
   </div>
 
@@ -992,6 +926,10 @@
           </li>
         
           <li>
+            <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
+          </li>
+        
+          <li>
             <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
           </li>
         
@@ -1001,10 +939,6 @@
         
           <li>
             <a href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
           </li>
         
       </ul>

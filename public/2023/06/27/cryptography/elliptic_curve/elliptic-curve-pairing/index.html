@@ -4,14 +4,19 @@
   <meta charset="utf-8">
   
   
-  <title>Tag: rust | cliff&#39;s personal blog</title>
+  <title>elliptic curve paring | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="cliff&#39;s personal blog">
-<meta property="og:url" content="https://cliff0412.github.io/tags/rust/page/2/index.html">
+  <meta name="description" content="introductionPairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can">
+<meta property="og:type" content="article">
+<meta property="og:title" content="elliptic curve paring">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="introductionPairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-06-27T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-07-16T15:21:10.500Z">
 <meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -69,159 +74,75 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2022" class="archive-year">2022</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2022/11/06/rust/rust-08-project-management/" class="archive-article-date">
-  <time class="dt-published" datetime="2022-11-06T07:33:55.000Z" itemprop="datePublished">Nov 6</time>
+        <section id="main"><article id="post-cryptography/elliptic_curve/elliptic-curve-pairing" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" class="article-date">
+  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/11/06/rust/rust-08-project-management/">rust project management</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      elliptic curve paring
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2022/10/30/rust/rust-06-smart-pointer/" class="archive-article-date">
-  <time class="dt-published" datetime="2022-10-30T03:00:38.000Z" itemprop="datePublished">Oct 30</time>
-</a>
+    <div class="e-content article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/10/30/rust/rust-06-smart-pointer/">rust smart pointer</a>
-    </h1>
-  
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2022/10/25/rust/rust-05-memory-layout/" class="archive-article-date">
-  <time class="dt-published" datetime="2022-10-25T02:54:13.000Z" itemprop="datePublished">Oct 25</time>
-</a>
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Pairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can check whether or not \(p * q &#x3D; r\), having just P, Q and R as inputs. This might seem like the fundamental security guarantees of elliptic curves are being broken, as information about p is leaking from just knowing P, but it turns out that the leakage is highly contained — specifically, the <em><strong>decisional Diffie Hellman problem</strong></em> is easy, but the computational Diffie Hellman problem (knowing P and Q in the above example, computing R &#x3D; G * p * q) and the discrete logarithm problem (recovering p from P) remain computationally infeasible.</p>
+<p> whereas traditional elliptic curve math lets you check linear constraints on the numbers (eg. if P &#x3D; G * p, Q &#x3D; G * q and R &#x3D; G * r, checking 5 * P + 7 * Q &#x3D; 11 * R is really checking that 5 * p + 7 * q &#x3D; 11 * r), pairings let you check quadratic constraints (eg. checking e(P, Q) * e(G, G * 5) &#x3D; 1 is really checking that p * q + 5 &#x3D; 0).</p>
+<p> Now, what is this funny e(P, Q) operator that we introduced above? This is the pairing. Mathematicians also sometimes call it a bilinear map; the word “bilinear” here basically means that it satisfies the constraints:</p>
+<p>\[ e(P, Q + R) &#x3D; e(P, Q) * e(P, R) \]<br>\[ e(P + S, Q) &#x3D; e(P, Q) * e(S, Q) \]<br>Note that + and * can be arbitrary operators; when you’re creating fancy new kinds of mathematical objects, abstract algebra doesn’t care how + and * are defined, as long as they are consistent in the usual ways.</p>
+<p>If P, Q, R and S were simple numbers, then making a simple pairing is easy: we can do e(x, y) &#x3D; 2^xy. Then, we can see:<br>\[e(3, 4+ 5) &#x3D; 2^(3 * 9) &#x3D; 2^{27}\]<br>\[e(3, 4) * e(3, 5) &#x3D; 2^(3 * 4) * 2^(3 * 5) &#x3D; 2^{12} * 2^{15} &#x3D; 2^{27} \]<br>However, such simple pairings are not suitable for cryptography because the objects that they work on are simple integers and are too easy to analyze;</p>
+<p>It turns out that it is possible to make a bilinear map over elliptic curve points — that is, come up with a function e(P, Q) where the inputs P and Q are elliptic curve points, and where the output is what’s called an \(F_{p^¹²}\) element</p>
+
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/10/25/rust/rust-05-memory-layout/">rust memory layout</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2022/10/18/rust/rust-04-lifetime/" class="archive-article-date">
-  <time class="dt-published" datetime="2022-10-18T13:33:26.000Z" itemprop="datePublished">Oct 18</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clk5l3u9t0000nksjbj616v2x" data-title="elliptic curve paring" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/10/18/rust/rust-04-lifetime/">rust lifetime</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2022/10/11/rust/rust-03-ownership/" class="archive-article-date">
-  <time class="dt-published" datetime="2022-10-11T09:09:28.000Z" itemprop="datePublished">Oct 11</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/10/11/rust/rust-03-ownership/">rust ownership</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2022/10/04/rust/rust-02-basics/" class="archive-article-date">
-  <time class="dt-published" datetime="2022-10-04T07:55:04.000Z" itemprop="datePublished">Oct 4</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/10/04/rust/rust-02-basics/">rust basics</a>
-    </h1>
-  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          zkp a brief understanding (1)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cryptography (4) digital signature</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2022/09/27/rust/rust-01-resource/" class="archive-article-date">
-  <time class="dt-published" datetime="2022-09-27T14:04:38.000Z" itemprop="datePublished">Sep 27</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/09/27/rust/rust-01-resource/">rust resource</a>
-    </h1>
-  
 
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-
-  <nav id="page-nav">
-    
-    <a class="extend prev" rel="prev" href="/tags/rust/">&laquo; Prev</a><a class="page-number" href="/tags/rust/">1</a><span class="page-number current">2</span>
-  </nav>
 
 </section>
         
