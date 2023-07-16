@@ -71,9 +71,9 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/cryptography-04-digital-signature" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/20/zkp/zkp-a-brief-understanding/" class="article-date">
+    <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" class="article-date">
   <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
 </a>
     
@@ -85,7 +85,79 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+      <a class="p-name article-title" href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="Elgamal-Digital-Signature-Scheme"><a href="#Elgamal-Digital-Signature-Scheme" class="headerlink" title="Elgamal Digital Signature Scheme"></a>Elgamal Digital Signature Scheme</h2><p>The Elgammal signature scheme is based on the difficulty of computing discrete logarithms. Unlike RSA, where encryption and digital signature are almoste identical operations, the Elgamal digital signature is quite different from the encryption scheme with teh same name.</p>
+<h3 id="key-generation"><a href="#key-generation" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<ol>
+<li>Choose a large prime \(p\).</li>
+<li>Choose a primitive element \(\alpha\) of \(Z_{p}^{\ast}\), or a subgroup of \(Z_{p}^{\ast}\).</li>
+<li>Choose a random integer \(d \in {2,3,…,p-2}\)</li>
+<li>Compute \(\beta &#x3D; \alpha^{d} \bmod p\)</li>
+</ol>
+<hr>
+<p>The public key is now formed by \(k_{pub} &#x3D; (p, \alpha, \beta)\), and the private key by \(k_{pr}&#x3D;d\)<br>\(Z_{p}^{\ast}\) is the set of integers who are smaller than \(p\) and coprime to \(p\)</p>
+<h3 id="signature-and-verification"><a href="#signature-and-verification" class="headerlink" title="signature and verification"></a>signature and verification</h3><p>Usign the private ey and parameters of the public key, the signature<br>\[sig_{k_{pr}}(x, k_{E}) &#x3D; (r,s)\]<br>\(x\) is the message. \(k_{E}\) is a random value, which forms an ephemeral private key</p>
+<hr>
+<p><strong>Elgamal Signature Generation</strong></p>
+<ol>
+<li>choose a random ephemeral key \(k_{E} \in {0,1,2,..,p-2}\) such that \(gcd(k_{E}, p-1) &#x3D; 1\)</li>
+<li>compute the signatue parameters:<br>\[r \equiv \alpha^{k_{E}} \bmod p\]<br>\[s \equiv (x - d \cdot r)k_{E}^{-1} \bmod p-1\]</li>
+</ol>
+<hr>
+<p>on the receiving side, the signature is verified as \(ver_{k_{pub}}(x,(r,s))\) using the public key, the signature and the message.</p>
+<hr>
+<p><strong>Elgamal Signature Verification</strong></p>
+<ol>
+<li>comput the value<br>\[t \equiv \beta^{r} \cdot r^s \bmod p\]</li>
+<li>the verification follows form<br>\begin{equation}<br>t &#x3D;<br>\begin{cases}<br>\equiv \alpha^{x} \bmod p &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv \alpha^{x} \bmod p  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<h2 id="Digital-Signature-Algorithm-DSA"><a href="#Digital-Signature-Algorithm-DSA" class="headerlink" title="Digital Signature Algorithm (DSA)"></a>Digital Signature Algorithm (DSA)</h2><p>The native Elgamal signature algorithm described above is rarely used in practice. Instead, a much more popular variant is used, known as the Digital Signature Algorithm (DSA). It is a federal US government standard for digital signatures and was proposed by NIST (National Institute of Standards and Technology). Its main advantages over the Elgamal signature scheme are that the signature is only 320-bit long and that some of the attacks<br> that can threaten the Elgamal scheme are not applicable.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clk4qz0yy0008xxsje32o1a5j" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" class="article-date">
+  <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
     </h1>
   
 
@@ -107,7 +179,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk3mz2kj001iuqsj68j68127" data-title="zkp a brief understanding" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" data-id="clk4qz0z6001hxxsjdqrk3lc4" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
@@ -154,7 +226,7 @@
 <p>the elliptic curve over \( Z_{p}, p&gt;3 \), is the set of all pairs \( (x,y) \in Z_{p} \) which fulfill<br> \[ y^2 \equiv x^3 + a \cdot x + b \bmod p \]<br>together with an imaginary point of infinity \( \mathcal{O} \), where<br> \[ a,b \in Z_{p} \]<br> and the condition \( 4 \cdot a^3 + 27 \cdot b^2 \neq 0 \bmod p \)</p>
 <hr>
 <p>the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \( -16(4a^3) + 27b^2 \) is nonzero.</p>
-<h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
+<h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/cryptography/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
 <hr>
 <p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
 <hr>
@@ -172,7 +244,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clk3mz2kb000buqsj223z52q0" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clk4qz0yz000axxsj8sqd1f78" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -200,7 +272,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (3) RSA cryptosystem</a>
+      <a class="p-name article-title" href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
     </h1>
   
 
@@ -249,6 +321,7 @@
 <hr>
 <p><strong>RSA Decryption</strong> Given the public key \d &#x3D; k_{pr} \) and the plaintext \(y\), the decryption is:<br>\[ x &#x3D; d_{k_{pr}}(y) \equiv y^{d} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
 <hr>
+<h2 id="Digital-signature"><a href="#Digital-signature" class="headerlink" title="Digital signature"></a>Digital signature</h2><p>the message \(x\) that is being signed is in the range \(1,2,…,n-1\)<br><img src="/images/cryptography/rsa/rsa_signature.png" alt="rsa digital signature"></p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] <a target="_blank" rel="noopener" href="https://web.williams.edu/Mathematics/lg5/302/RSA.pdf">A Method for Obtaining Digital<br>Signatures and Public-Key Cryptosystems</a></li>
 </ul>
@@ -256,7 +329,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clk3mz2ka0009uqsj32lj2q2t" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clk4qz0yy0007xxsj3jcs8f64" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -362,7 +435,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk3mz2kq0033uqsj6589bk2e" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk4qz0zc003cxxsj1dq7clri" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -435,7 +508,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk3mz2kp0030uqsj0h57coki" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk4qz0z80022xxsj3rje4x8k" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -509,7 +582,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk3mz2ka0008uqsj9ouydsbz" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk4qz0yx0005xxsjc2rp2mxv" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -564,7 +637,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk3mz2kh000zuqsj39l393qj" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk4qz0z40013xxsjhwov22yq" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -630,7 +703,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk3mz2kq0032uqsj61mdbpo8" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk4qz0z90027xxsjco8th87w" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
       
       
       
@@ -747,58 +820,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk3mz2kp002zuqsjcziohhoy" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk4qz0z90025xxsj1qfx7bqj" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-09-functional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/04/11/rust/rust-09-functional/" class="article-date">
-  <time class="dt-published" datetime="2023-04-11T14:04:38.000Z" itemprop="datePublished">2023-04-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/04/11/rust/rust-09-functional/">rust functional programming</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="iterator"><a href="#iterator" class="headerlink" title="iterator"></a>iterator</h2><ul>
-<li><code>iter()</code> Returns an iterator over the <strong>slice</strong></li>
-<li><code>into_iter()</code> Creates a consuming iterator, that is, one that moves each value out of the vector</li>
-<li><code>iter_mut()</code> Returns an iterator that allows modifying each value.</li>
-</ul>
-<h2 id="flat-map"><a href="#flat-map" class="headerlink" title="flat_map"></a>flat_map</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Creates an iterator that works like map, but flattens nested structure.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// The [`map`] adapter is very useful, but only when the closure</span></span><br><span class="line"><span class="comment">/// argument produces values. If it produces an iterator instead, there&#x27;s</span></span><br><span class="line"><span class="comment">/// an extra layer of indirection. `flat_map()` will remove this extra layer</span></span><br><span class="line"><span class="comment">/// on its own.</span></span><br></pre></td></tr></table></figure>
-<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">words</span> = [<span class="string">&quot;alpha&quot;</span>, <span class="string">&quot;beta&quot;</span>, <span class="string">&quot;gamma&quot;</span>];</span><br><span class="line"><span class="comment">// chars() returns an iterator</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">merged</span>: <span class="type">String</span> = words.<span class="title function_ invoke__">iter</span>()</span><br><span class="line">                          .<span class="title function_ invoke__">flat_map</span>(|s| s.<span class="title function_ invoke__">chars</span>())</span><br><span class="line">                          .<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="built_in">assert_eq!</span>(merged, <span class="string">&quot;alphabetagamma&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk3mz2kh0011uqsj73dj1fkg" data-title="rust functional programming" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
 
     </footer>
   </div>
@@ -836,7 +862,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
     </div>
   </div>
 
@@ -858,7 +884,11 @@
       <ul>
         
           <li>
-            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+            <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
           </li>
         
           <li>
@@ -866,15 +896,11 @@
           </li>
         
           <li>
-            <a href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (3) RSA cryptosystem</a>
+            <a href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
           </li>
         
           <li>
             <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
           </li>
         
       </ul>

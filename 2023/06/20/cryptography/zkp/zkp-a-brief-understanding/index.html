@@ -4,18 +4,20 @@
   <meta charset="utf-8">
   
   
-  <title>eth_sign | cliff&#39;s personal blog</title>
+  <title>zkp a brief understanding | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="ethereum signingECDSA recap">
+  <meta name="description" content="introductionzk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “qua">
 <meta property="og:type" content="article">
-<meta property="og:title" content="eth_sign">
-<meta property="og:url" content="https://cliff0412.github.io/2022/11/28/eth-sign/index.html">
+<meta property="og:title" content="zkp a brief understanding">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="ethereum signingECDSA recap">
+<meta property="og:description" content="introductionzk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “qua">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-11-28T03:47:56.000Z">
-<meta property="article:modified_time" content="2022-11-28T03:52:30.181Z">
+<meta property="article:published_time" content="2023-06-20T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-07-12T14:58:22.472Z">
 <meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
+<meta property="article:tag" content="zkp">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -73,10 +75,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-eth-sign" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-cryptography/zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/11/28/eth-sign/" class="article-date">
-  <time class="dt-published" datetime="2022-11-28T03:47:56.000Z" itemprop="datePublished">2022-11-28</time>
+    <a href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" class="article-date">
+  <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
 </a>
     
   </div>
@@ -87,7 +89,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      eth_sign
+      zkp a brief understanding
     </h1>
   
 
@@ -95,33 +97,45 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="ethereum-signing"><a href="#ethereum-signing" class="headerlink" title="ethereum signing"></a>ethereum signing</h1><h2 id="ECDSA-recap"><a href="#ECDSA-recap" class="headerlink" title="ECDSA recap"></a>ECDSA recap</h2>
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>zk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “quadratic arithmetic program” (QAP), and transforming the code of a function into one of these is itself highly nontrivial.</p>
+<p>The example that we will choose is a simple one: proving that you know the solution to a cubic equation: <code>x**3 + x + 5 == 35</code></p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649">vitalik’s blog: qap zero to hero</a></li>
+</ul>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/28/eth-sign/" data-id="clk3mz2k80003uqsjh38q77z7" data-title="eth_sign" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" data-id="clk4qz0z6001hxxsjdqrk3lc4" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2022/12/06/rust/rust-cargo-all-in-one/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          rust cargo all in one
+          cryptography (4) digital signature
         
       </div>
     </a>
   
   
-    <a href="/2022/11/27/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">how to use hexo</div>
+      <div class="article-nav-title">cryptography (3) elliptic curve</div>
     </a>
   
 </nav>
@@ -151,7 +165,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
     </div>
   </div>
 
@@ -173,7 +187,11 @@
       <ul>
         
           <li>
-            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+            <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
           </li>
         
           <li>
@@ -181,15 +199,11 @@
           </li>
         
           <li>
-            <a href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (3) RSA cryptosystem</a>
+            <a href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
           </li>
         
           <li>
             <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
           </li>
         
       </ul>
