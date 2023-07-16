@@ -125,11 +125,79 @@
 </ol>
 <hr>
 <h2 id="Digital-Signature-Algorithm-DSA"><a href="#Digital-Signature-Algorithm-DSA" class="headerlink" title="Digital Signature Algorithm (DSA)"></a>Digital Signature Algorithm (DSA)</h2><p>The native Elgamal signature algorithm described above is rarely used in practice. Instead, a much more popular variant is used, known as the Digital Signature Algorithm (DSA). It is a federal US government standard for digital signatures and was proposed by NIST (National Institute of Standards and Technology). Its main advantages over the Elgamal signature scheme are that the signature is only 320-bit long and that some of the attacks<br> that can threaten the Elgamal scheme are not applicable.</p>
+<h3 id="key-generation-1"><a href="#key-generation-1" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<p><strong>key Generation for DSA</strong></p>
+<ol>
+<li>Generate a prime \(p\) with \(2^1023 &lt; p &lt; 2^1024\)</li>
+<li>find a prime divisor \(q\) of \(p-1\) \(2^159 &lt; q &lt; 2^160\)</li>
+<li>Find an element \(\alpha\) with \( ord(\alpha) &#x3D; q\), i.e., \alpha genertes the subgroup with \(q\) elements.</li>
+<li>choose a random integer \(d\) with \(0 &lt; d &lt; q\).</li>
+<li>compute \(\beta \equiv \alpha^{d} \bmod p\).<br>the keys are now:<br>\(k_{pub} &#x3D; (p, q, \alpha, \beta)\)<br>\(k_{pr}&#x3D; (d)\)</li>
+</ol>
+<hr>
+<p>The central idea of DSA is that there are two cyclic groups involved. One is the large cyclic group \(Z_{p}*{\ast}\), the order of which has bit length of 1024 bit. The second one is in the 160-bit subgroup of \(Z_{p}^{\ast}\). this set-up yields shorter signature.</p>
+<h3 id="Signature-and-Verification"><a href="#Signature-and-Verification" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><p>As in the Elgamal signatue scheme, the DSA signature consists of a pair of integers \((r,s)\). Since each of the two parameters is only 160-bit long, the total signature length is 320 bit. </p>
+<hr>
+<p><strong>DSA signature generation</strong></p>
+<ol>
+<li>choose an integer as random ephemeral key \(k_{E}\) with \(0 &lt; k_{E} &lt; q\).</li>
+<li>compute \(r \equiv (\alpha^{k_{E}} \bmod p) \bmod q\)</li>
+<li>compute \(s \equiv (SHA(x) + d \cdot r)k_{E}^{-1} \bmod q \)</li>
+</ol>
+<hr>
+<p>The signature verification process is as follows:</p>
+<hr>
+<p><strong>DSA signature verification</strong></p>
+<ol>
+<li>compute auxilary value \(w \equiv s^{-1} \bmod q\).</li>
+<li>compute auxilary value \(u_{1} \equiv w \cdot SHA(x) \bmod q\).</li>
+<li>compute auxilary value \(u_{2} \equiv w \cdot r \bmod q\).</li>
+<li>compute \(v \equiv (\alpha^{u_1} \cdot \beta^{u_2} \bmod p) \bmod q\).</li>
+<li>the verification \(ver_{k_{pub}}(x, (r,s))\) folows from<br>\begin{equation}<br>v &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<h2 id="Elliptic-Curve-Digital-Signature-Algorithm-ECDSA"><a href="#Elliptic-Curve-Digital-Signature-Algorithm-ECDSA" class="headerlink" title="Elliptic Curve Digital Signature Algorithm (ECDSA)"></a>Elliptic Curve Digital Signature Algorithm (ECDSA)</h2><p>Elliptic curves have several advantages over RSA and over DL schemes like Elgamal or DSA. In particular, in abscence of strong attacks against elliptic curve cryptosystems (ECC), bit lengths in the range of 160-256 bit can be chosen which provide security equivalent to 1024-3072 bit RSA and DL scheme. The shorter bit length of ECC often results in shorter processing time and in shorter signatures.<br>The ECDSA standard is defined for elliptic curves over prime fields \(Z_{p}\) adn Galois fields \(GF(2^m)\). the former is often preferred in practice, and we only introduce this one in what follows</p>
+<h3 id="key-generation-2"><a href="#key-generation-2" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<p><strong>Key Generation for ECDSA</strong></p>
+<ol>
+<li>Use and elliptic curve E with</li>
+</ol>
+<ul>
+<li>modulus p</li>
+<li>coefficients a and b</li>
+<li>a point A which generates a cyclic group of prime order q.</li>
+</ul>
+<ol start="2">
+<li>choose a random integer d with \(0 &lt; d &lt; q\)</li>
+<li>compute \(B &#x3D; dA\).<br>The keys are now<br>\(k_{pub} &#x3D; (p,a,b,q,A,B)\)<br>\(k_{pr} &#x3D; (d)\)</li>
+</ol>
+<hr>
+<h3 id="Signature-and-Verification-1"><a href="#Signature-and-Verification-1" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><hr>
+<p><strong>ECDSA Signature Generation</strong></p>
+<ol>
+<li>choose an integer as random ephemeral key \(k_{E}\) with \( 0 &lt; k_{E} &lt; q\).</li>
+<li>compute \(R &#x3D; k_{E}A\)</li>
+<li>Let \(r &#x3D; x_{R}\)</li>
+<li>compute \(s \equiv (h(x) + d \cdot r)k_{E}^{-1} \bmod q\)</li>
+</ol>
+<hr>
+<p>the signature verification process is as follows</p>
+<hr>
+<p><strong>ECDSA Signature Verification</strong></p>
+<ol>
+<li>Compute auxiliary value \(w \equiv s^{-1} \bmod q\)</li>
+<li>compute auxilary value \(u_1 \equiv w \cdot h(x) \bmod q\)</li>
+<li>compute auxiliary value \(u_2 &#x3D; w \cdot r \bmod q\)</li>
+<li>compute \(P &#x3D; u_1 A + u_2 B\).</li>
+<li>the verification \(ver{k_{pub}}(x, (r,s))\) follows from<br>\begin{equation}<br>x_{P} &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<p>The point multiplication, which is in most cases by the far the most arithmetic intensive operation, can be precomputed by choosing the ephemeral key ahead of time.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clk4qz0yy0008xxsje32o1a5j" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clk4sjzzm000aofsj62am2966" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
       
       
       
@@ -179,7 +247,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" data-id="clk4qz0z6001hxxsjdqrk3lc4" data-title="zkp a brief understanding" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" data-id="clk4sjzzt001iofsj5f219qa6" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
@@ -244,7 +312,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clk4qz0yz000axxsj8sqd1f78" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clk4sjzzl0008ofsjc9z43usj" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -329,7 +397,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clk4qz0yy0007xxsj3jcs8f64" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clk4sjzzl0007ofsj05l8frvy" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -435,7 +503,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk4qz0zc003cxxsj1dq7clri" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk4sjzzz0039ofsj72gx9dsm" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -508,7 +576,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk4qz0z80022xxsj3rje4x8k" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk4sjzzv0024ofsjcdqa4dbl" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -582,7 +650,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk4qz0yx0005xxsjc2rp2mxv" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk4sjzzk0005ofsj6z7xbxfl" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -637,7 +705,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk4qz0z40013xxsjhwov22yq" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk4sjzzr0013ofsj6wi71v7f" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -703,7 +771,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk4qz0z90027xxsjco8th87w" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk4sjzzw0029ofsjgx9d6544" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
       
       
       
@@ -820,7 +888,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk4qz0z90025xxsj1qfx7bqj" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk4sjzzw0027ofsj952sej9f" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
