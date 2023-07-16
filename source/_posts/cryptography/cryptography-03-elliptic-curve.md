@@ -1,6 +1,6 @@
 ---
-title: cryptography (2) elliptic curve
-date: 2023-06-10 14:29:26
+title: cryptography (3) elliptic curve
+date: 2023-06-17 14:29:26
 tags: [cryptography]
 ---
 <script
@@ -21,7 +21,7 @@ together with an imaginary point of infinity \\( \mathcal{O} \\), where
 the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \\( -16(4a^3) + 27b^2 \\) is nonzero.
 
 ## operations on elliptic curve
-![point addition](/images/elliptic_curve/point_addition.webp)
+![point addition](/images/cryptography/elliptic_curve/point_addition.webp)
 let's denote the group operation with the addition symbol `+`. "addition" means that given two points and their coordinates, say \\( P = (x_1, y_1) \\) and \\( Q = (x_2, y_2) \\), we have to compute the coordidnate of a third point \\( R (x_3, y_3) \\). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling `(P+P = 2P)` is a tangent line through the point P, and the rest is same.
 the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below 
 ***

@@ -71,9 +71,9 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/cryptography-04-digital-signature" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/20/zkp/zkp-a-brief-understanding/" class="article-date">
+    <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" class="article-date">
   <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
 </a>
     
@@ -85,7 +85,147 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+      <a class="p-name article-title" href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="Elgamal-Digital-Signature-Scheme"><a href="#Elgamal-Digital-Signature-Scheme" class="headerlink" title="Elgamal Digital Signature Scheme"></a>Elgamal Digital Signature Scheme</h2><p>The Elgammal signature scheme is based on the difficulty of computing discrete logarithms. Unlike RSA, where encryption and digital signature are almoste identical operations, the Elgamal digital signature is quite different from the encryption scheme with teh same name.</p>
+<h3 id="key-generation"><a href="#key-generation" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<ol>
+<li>Choose a large prime \(p\).</li>
+<li>Choose a primitive element \(\alpha\) of \(Z_{p}^{\ast}\), or a subgroup of \(Z_{p}^{\ast}\).</li>
+<li>Choose a random integer \(d \in {2,3,…,p-2}\)</li>
+<li>Compute \(\beta &#x3D; \alpha^{d} \bmod p\)</li>
+</ol>
+<hr>
+<p>The public key is now formed by \(k_{pub} &#x3D; (p, \alpha, \beta)\), and the private key by \(k_{pr}&#x3D;d\)<br>\(Z_{p}^{\ast}\) is the set of integers who are smaller than \(p\) and coprime to \(p\)</p>
+<h3 id="signature-and-verification"><a href="#signature-and-verification" class="headerlink" title="signature and verification"></a>signature and verification</h3><p>Usign the private ey and parameters of the public key, the signature<br>\[sig_{k_{pr}}(x, k_{E}) &#x3D; (r,s)\]<br>\(x\) is the message. \(k_{E}\) is a random value, which forms an ephemeral private key</p>
+<hr>
+<p><strong>Elgamal Signature Generation</strong></p>
+<ol>
+<li>choose a random ephemeral key \(k_{E} \in {0,1,2,..,p-2}\) such that \(gcd(k_{E}, p-1) &#x3D; 1\)</li>
+<li>compute the signatue parameters:<br>\[r \equiv \alpha^{k_{E}} \bmod p\]<br>\[s \equiv (x - d \cdot r)k_{E}^{-1} \bmod p-1\]</li>
+</ol>
+<hr>
+<p>on the receiving side, the signature is verified as \(ver_{k_{pub}}(x,(r,s))\) using the public key, the signature and the message.</p>
+<hr>
+<p><strong>Elgamal Signature Verification</strong></p>
+<ol>
+<li>comput the value<br>\[t \equiv \beta^{r} \cdot r^s \bmod p\]</li>
+<li>the verification follows form<br>\begin{equation}<br>t &#x3D;<br>\begin{cases}<br>\equiv \alpha^{x} \bmod p &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv \alpha^{x} \bmod p  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<h2 id="Digital-Signature-Algorithm-DSA"><a href="#Digital-Signature-Algorithm-DSA" class="headerlink" title="Digital Signature Algorithm (DSA)"></a>Digital Signature Algorithm (DSA)</h2><p>The native Elgamal signature algorithm described above is rarely used in practice. Instead, a much more popular variant is used, known as the Digital Signature Algorithm (DSA). It is a federal US government standard for digital signatures and was proposed by NIST (National Institute of Standards and Technology). Its main advantages over the Elgamal signature scheme are that the signature is only 320-bit long and that some of the attacks<br> that can threaten the Elgamal scheme are not applicable.</p>
+<h3 id="key-generation-1"><a href="#key-generation-1" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<p><strong>key Generation for DSA</strong></p>
+<ol>
+<li>Generate a prime \(p\) with \(2^1023 &lt; p &lt; 2^1024\)</li>
+<li>find a prime divisor \(q\) of \(p-1\) \(2^159 &lt; q &lt; 2^160\)</li>
+<li>Find an element \(\alpha\) with \( ord(\alpha) &#x3D; q\), i.e., \alpha genertes the subgroup with \(q\) elements.</li>
+<li>choose a random integer \(d\) with \(0 &lt; d &lt; q\).</li>
+<li>compute \(\beta \equiv \alpha^{d} \bmod p\).<br>the keys are now:<br>\(k_{pub} &#x3D; (p, q, \alpha, \beta)\)<br>\(k_{pr}&#x3D; (d)\)</li>
+</ol>
+<hr>
+<p>The central idea of DSA is that there are two cyclic groups involved. One is the large cyclic group \(Z_{p}*{\ast}\), the order of which has bit length of 1024 bit. The second one is in the 160-bit subgroup of \(Z_{p}^{\ast}\). this set-up yields shorter signature.</p>
+<h3 id="Signature-and-Verification"><a href="#Signature-and-Verification" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><p>As in the Elgamal signatue scheme, the DSA signature consists of a pair of integers \((r,s)\). Since each of the two parameters is only 160-bit long, the total signature length is 320 bit. </p>
+<hr>
+<p><strong>DSA signature generation</strong></p>
+<ol>
+<li>choose an integer as random ephemeral key \(k_{E}\) with \(0 &lt; k_{E} &lt; q\).</li>
+<li>compute \(r \equiv (\alpha^{k_{E}} \bmod p) \bmod q\)</li>
+<li>compute \(s \equiv (SHA(x) + d \cdot r)k_{E}^{-1} \bmod q \)</li>
+</ol>
+<hr>
+<p>The signature verification process is as follows:</p>
+<hr>
+<p><strong>DSA signature verification</strong></p>
+<ol>
+<li>compute auxilary value \(w \equiv s^{-1} \bmod q\).</li>
+<li>compute auxilary value \(u_{1} \equiv w \cdot SHA(x) \bmod q\).</li>
+<li>compute auxilary value \(u_{2} \equiv w \cdot r \bmod q\).</li>
+<li>compute \(v \equiv (\alpha^{u_1} \cdot \beta^{u_2} \bmod p) \bmod q\).</li>
+<li>the verification \(ver_{k_{pub}}(x, (r,s))\) folows from<br>\begin{equation}<br>v &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<h2 id="Elliptic-Curve-Digital-Signature-Algorithm-ECDSA"><a href="#Elliptic-Curve-Digital-Signature-Algorithm-ECDSA" class="headerlink" title="Elliptic Curve Digital Signature Algorithm (ECDSA)"></a>Elliptic Curve Digital Signature Algorithm (ECDSA)</h2><p>Elliptic curves have several advantages over RSA and over DL schemes like Elgamal or DSA. In particular, in abscence of strong attacks against elliptic curve cryptosystems (ECC), bit lengths in the range of 160-256 bit can be chosen which provide security equivalent to 1024-3072 bit RSA and DL scheme. The shorter bit length of ECC often results in shorter processing time and in shorter signatures.<br>The ECDSA standard is defined for elliptic curves over prime fields \(Z_{p}\) adn Galois fields \(GF(2^m)\). the former is often preferred in practice, and we only introduce this one in what follows</p>
+<h3 id="key-generation-2"><a href="#key-generation-2" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<p><strong>Key Generation for ECDSA</strong></p>
+<ol>
+<li>Use and elliptic curve E with</li>
+</ol>
+<ul>
+<li>modulus p</li>
+<li>coefficients a and b</li>
+<li>a point A which generates a cyclic group of prime order q.</li>
+</ul>
+<ol start="2">
+<li>choose a random integer d with \(0 &lt; d &lt; q\)</li>
+<li>compute \(B &#x3D; dA\).<br>The keys are now<br>\(k_{pub} &#x3D; (p,a,b,q,A,B)\)<br>\(k_{pr} &#x3D; (d)\)</li>
+</ol>
+<hr>
+<h3 id="Signature-and-Verification-1"><a href="#Signature-and-Verification-1" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><hr>
+<p><strong>ECDSA Signature Generation</strong></p>
+<ol>
+<li>choose an integer as random ephemeral key \(k_{E}\) with \( 0 &lt; k_{E} &lt; q\).</li>
+<li>compute \(R &#x3D; k_{E}A\)</li>
+<li>Let \(r &#x3D; x_{R}\)</li>
+<li>compute \(s \equiv (h(x) + d \cdot r)k_{E}^{-1} \bmod q\)</li>
+</ol>
+<hr>
+<p>the signature verification process is as follows</p>
+<hr>
+<p><strong>ECDSA Signature Verification</strong></p>
+<ol>
+<li>Compute auxiliary value \(w \equiv s^{-1} \bmod q\)</li>
+<li>compute auxilary value \(u_1 \equiv w \cdot h(x) \bmod q\)</li>
+<li>compute auxiliary value \(u_2 &#x3D; w \cdot r \bmod q\)</li>
+<li>compute \(P &#x3D; u_1 A + u_2 B\).</li>
+<li>the verification \(ver{k_{pub}}(x, (r,s))\) follows from<br>\begin{equation}<br>x_{P} &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<p>The point multiplication, which is in most cases by the far the most arithmetic intensive operation, can be precomputed by choosing the ephemeral key ahead of time.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clk4sjzzm000aofsj62am2966" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" class="article-date">
+  <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
     </h1>
   
 
@@ -107,7 +247,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk1e4wpw001l6hsjedcxczok" data-title="zkp a brief understanding" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/" data-id="clk4sjzzt001iofsj5f219qa6" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
@@ -121,9 +261,9 @@
 
 
   
-    <article id="post-cryptography/cryptography-03-rsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/cryptography-03-elliptic-curve" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/17/cryptography/cryptography-03-rsa/" class="article-date">
+    <a href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/" class="article-date">
   <time class="dt-published" datetime="2023-06-17T06:29:26.000Z" itemprop="datePublished">2023-06-17</time>
 </a>
     
@@ -135,7 +275,72 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+      <a class="p-name article-title" href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/">cryptography (3) elliptic curve</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+
+<h2 id="elliptic-curve-definition"><a href="#elliptic-curve-definition" class="headerlink" title="elliptic curve definition"></a>elliptic curve definition</h2><p>for cryptographic use, we need to conside the curve not over the real numbers but over a finite field. the most popular fields <code>GF(p)</code>, where all arithmetic is performed modulo a prime p.</p>
+<hr>
+<p>the elliptic curve over \( Z_{p}, p&gt;3 \), is the set of all pairs \( (x,y) \in Z_{p} \) which fulfill<br> \[ y^2 \equiv x^3 + a \cdot x + b \bmod p \]<br>together with an imaginary point of infinity \( \mathcal{O} \), where<br> \[ a,b \in Z_{p} \]<br> and the condition \( 4 \cdot a^3 + 27 \cdot b^2 \neq 0 \bmod p \)</p>
+<hr>
+<p>the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \( -16(4a^3) + 27b^2 \) is nonzero.</p>
+<h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/cryptography/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
+<hr>
+<p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
+<hr>
+<p>note that the parameter s is the slope of the line through P and Q in the case of point addition, or the slope of the tangent through P in the case of point doubling.<br>Furthmore, we define an abstract point at infinity as the neutral element \( \mathcal{O} \).<br>\[ P + \mathcal{O} &#x3D; P\]<br>according the group definition, we can now also define the inverse <code>-P</code> of any group element P as<br>\[ P + (-P) &#x3D; \mathcal{O}\]<br>Therefore, the inverse of \( P &#x3D; (x_p, y_p) \) is just \( P &#x3D; (x_p, -y_p)\). since  \( -y_p \equiv p - y_p\), hence<br>\[ -P &#x3D; (x_p, p-y_p) \]</p>
+<h2 id="DLP-discrete-log-problem-with-Elliptic-curve"><a href="#DLP-discrete-log-problem-with-Elliptic-curve" class="headerlink" title="DLP(discrete log problem) with Elliptic curve"></a>DLP(discrete log problem) with Elliptic curve</h2><p>to set up DL cryptosystems it is important to know the order of the group.<br>Hasse’s theorem</p>
+<hr>
+<p>given an elliptic curve E modulo p, the number of points on the curve is denoted by #E and is bounded by:<br>\[ p+1-2\sqrt{p} \leq \#E \leq p+1+2\sqrt{p} \]</p>
+<hr>
+<p>Elliptic Curved Discrete Logarithm Problem (ECDLP)</p>
+<hr>
+<p>Given an elliptic curve E. We consider a primitive elemnt P and another element T. The DL problem is finding the integer d, where \( 1 \leq d \leq \#E \), such that:<br>\[ P + P + ….+ P &#x3D; dP &#x3D; T \]</p>
+<hr>
+<p>In cryptosystems, d is the private key which is an integer, while the public key T is a point on the curve with coordinates \( T &#x3D; (x_T, y_T)\)<br>Usually a <strong>square-and-multiply</strong> algorithm is used to calculate point multiplication (the algorithm detail is not coverred in this post). </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clk4sjzzl0008ofsjc9z43usj" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/cryptography-02-rsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/10/cryptography/cryptography-02-rsa/" class="article-date">
+  <time class="dt-published" datetime="2023-06-10T06:29:26.000Z" itemprop="datePublished">2023-06-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
     </h1>
   
 
@@ -150,8 +355,11 @@
 
 
 <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>the security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1].</p>
-<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>todo!()</p>
-<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>todo!()</p>
+<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>the gcd of two positive integers \(r_0\) and \(r_1\) is denoted by<br>\[gcd(r_0, r_1)\]<br>the Eucliedean algorithm is used to calculate gcd, based on as simple observation that<br>\[gcd(r_0, r_1) &#x3D; gcd(r_0-r_1, r_1)\]<br>where we assume \(r_0 &gt; r_1\)<br>This property can easily be proven: Let \(gcd(r_0, r_1) &#x3D; g\), since \(g\) divides both  \(r_0\) and \(r_1\), we can write \(r_0 &#x3D; g \cdot x\) and \(r_1 &#x3D; g \cdot y\), where \(x&gt;y\) and \(x\) and \(y\) are coprime integers, i.e., they do not have common factors. Moreover, it is easy to show that \((x-y)\) and \(y\) are also coprime. it follows from here that<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(g \cdot (x-y), g\cdot y) &#x3D; g\]</p>
+<p>it also follow immediately that we can apply the process iteratively:<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(r_0 - mr_1, r_1) \]<br>as long as \((r_0 - mr_1) &gt;0\). the algorithm use the fewest number of steps if we choose maximum value of \(m\). this is the case if we compute:<br>\[gcd(r_0, r_1) &#x3D; gcd( r_1, r_0 \bmod r_1) \]<br>this process can be applied recursively until we obtain finally \[gcd(r_l, 0) &#x3D; r_l \]<br>the euclidean algorithm is very efficient, even with the very long numbers. the number of iterations is close to the number of digits of the input operands. that means, for instance, that the number of iterations of a gcd involving 1024-bit nubmers is 1024 times a constant.</p>
+<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>an extension of the Euclidean algorithm allows us to compute <em><strong>modular inverse</strong></em>. in addition to computing the gcd, the <em><strong>extended Euclidean algorithm</strong></em> computes a linear combination of the form<br>\[gcd(r_0, r_1) &#x3D; s \cdot r_0 + t\cdot r_1 \]<br>where s and t are integer coefficients. this equation is ofthen referred to as <em><strong>Diophantine equation</strong></em></p>
+<p>the detail of the algorithm can be foud in section 6.3.2 of the book understanding cryptography by Christof Paar. Here presents the general idea by using an example.<br>let \(r_0 &#x3D;973 , r_1 &#x3D; 301\). during the steps of Euclidean Algorithm, we obtain \(973 &#x3D; 3\cdot301 + 70\)<br>which is \[r_0 &#x3D; q_1 \cdot r_1 + r_2\]<br>rearrange:<br>\[r_2 &#x3D;  r_0 + (-q_1) \cdot r_1\]<br>replacing (r_0, r_1) and iteratively by (r_1, r_2), … (r_{i-1}, r_{i}), util \(r_{i+1} &#x3D; 0\)<br>then \(r_{i}\) is \(gcd(r_0,r_1)\), and can have a representation of<br>\[gcd(r_0, r_1) &#x3D; s\cdot r_0 + t\cdot r_1 \].<br>since the inverse only exists if \(gcd(r_0, r_1)&#x3D;1\). we obtain<br>\[ s\cdot r_0 + t\cdot r_1 &#x3D; 1\]<br>taking this equation modulo \(r_0\) we obtain<br>\[ s\cdot 0 + t\cdot r_1 \equiv 1 \bmod r_0\]<br>\[  t\cdot r_1 \equiv 1 \bmod r_0\]<br>t is the definition of the inverse of \(r_1\)</p>
+<p>Thus, if we need to compute an inverse \(a^{-1} \bmod m\), we apply EEA with the input parameters \(m\) and \(a\)</p>
 <h2 id="Euler’s-Phi-Function"><a href="#Euler’s-Phi-Function" class="headerlink" title="Euler’s Phi Function"></a>Euler’s Phi Function</h2><p>we consider the ring \( Z_m\) i.e., the set of integers \({0,1,…,m-1}\). we are interested in teh problem of knowing how many numbers in this set are relatively prime to m. this quantity is given by Euler’s phi function, which is \(\Phi(m)\)</p>
 <hr>
 <p>let m have the following canonical factorization<br>\[ m &#x3D; p_{1}^{e_1} \cdot p_{2}^{e_2} \cdot … \cdot p_{n}^{e_n}\]<br>where the \(p_i\) are distinct prime numbers and \( e_i\) are positive integers, then</p>
@@ -175,7 +383,13 @@
 </ol>
 <hr>
 <p>the condition that \( gcd(e,\Phi(n)) &#x3D; 1\) ensures that the inverse of \(e\) exists modulo \(\Phi(n)\), so that there is always a private key \(d\).<br>the computation of key keys \(d\) and \(e\) canb e doen at once using the extended Euclidean algorith. </p>
-<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><p>todo!()</p>
+<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><hr>
+<p><strong>RSA Encryption</strong> Given the privaate key \( k_{pub} &#x3D; (n,e) \) and the plaintext \(x\), the encryption is:<br>\[ y &#x3D; e_{k_{pub}}(x) \equiv x^{e} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
+<hr>
+<hr>
+<p><strong>RSA Decryption</strong> Given the public key \d &#x3D; k_{pr} \) and the plaintext \(y\), the decryption is:<br>\[ x &#x3D; d_{k_{pr}}(y) \equiv y^{d} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
+<hr>
+<h2 id="Digital-signature"><a href="#Digital-signature" class="headerlink" title="Digital signature"></a>Digital signature</h2><p>the message \(x\) that is being signed is in the range \(1,2,…,n-1\)<br><img src="/images/cryptography/rsa/rsa_signature.png" alt="rsa digital signature"></p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] <a target="_blank" rel="noopener" href="https://web.williams.edu/Mathematics/lg5/302/RSA.pdf">A Method for Obtaining Digital<br>Signatures and Public-Key Cryptosystems</a></li>
 </ul>
@@ -183,72 +397,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/" data-id="clk1e4wpw001j6hsj9vpw0y0r" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/cryptography-02-elliptic-curve" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/" class="article-date">
-  <time class="dt-published" datetime="2023-06-10T06:29:26.000Z" itemprop="datePublished">2023-06-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-<h2 id="elliptic-curve-definition"><a href="#elliptic-curve-definition" class="headerlink" title="elliptic curve definition"></a>elliptic curve definition</h2><p>for cryptographic use, we need to conside the curve not over the real numbers but over a finite field. the most popular fields <code>GF(p)</code>, where all arithmetic is performed modulo a prime p.</p>
-<hr>
-<p>the elliptic curve over \( Z_{p}, p&gt;3 \), is the set of all pairs \( (x,y) \in Z_{p} \) which fulfill<br> \[ y^2 \equiv x^3 + a \cdot x + b \bmod p \]<br>together with an imaginary point of infinity \( \mathcal{O} \), where<br> \[ a,b \in Z_{p} \]<br> and the condition \( 4 \cdot a^3 + 27 \cdot b^2 \neq 0 \bmod p \)</p>
-<hr>
-<p>the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \( -16(4a^3) + 27b^2 \) is nonzero.</p>
-<h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
-<hr>
-<p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
-<hr>
-<p>note that the parameter s is the slope of the line through P and Q in the case of point addition, or the slope of the tangent through P in the case of point doubling.<br>Furthmore, we define an abstract point at infinity as the neutral element \( \mathcal{O} \).<br>\[ P + \mathcal{O} &#x3D; P\]<br>according the group definition, we can now also define the inverse <code>-P</code> of any group element P as<br>\[ P + (-P) &#x3D; \mathcal{O}\]<br>Therefore, the inverse of \( P &#x3D; (x_p, y_p) \) is just \( P &#x3D; (x_p, -y_p)\). since  \( -y_p \equiv p - y_p\), hence<br>\[ -P &#x3D; (x_p, p-y_p) \]</p>
-<h2 id="DLP-discrete-log-problem-with-Elliptic-curve"><a href="#DLP-discrete-log-problem-with-Elliptic-curve" class="headerlink" title="DLP(discrete log problem) with Elliptic curve"></a>DLP(discrete log problem) with Elliptic curve</h2><p>to set up DL cryptosystems it is important to know the order of the group.<br>Hasse’s theorem</p>
-<hr>
-<p>given an elliptic curve E modulo p, the number of points on the curve is denoted by #E and is bounded by:<br>\[ p+1-2\sqrt{p} \leq \#E \leq p+1+2\sqrt{p} \]</p>
-<hr>
-<p>Elliptic Curved Discrete Logarithm Problem (ECDLP)</p>
-<hr>
-<p>Given an elliptic curve E. We consider a primitive elemnt P and another element T. The DL problem is finding the integer d, where \( 1 \leq d \leq \#E \), such that:<br>\[ P + P + ….+ P &#x3D; dP &#x3D; T \]</p>
-<hr>
-<p>In cryptosystems, d is the private key which is an integer, while the public key T is a point on the curve with coordinates \( T &#x3D; (x_T, y_T)\)<br>Usually a <strong>square-and-multiply</strong> algorithm is used to calculate point multiplication (the algorithm detail is not coverred in this post). </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/" data-id="clk1e4wpw001e6hsj1lfmhvaa" data-title="cryptography (2) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clk4sjzzl0007ofsj05l8frvy" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -354,7 +503,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk1e4wq2002h6hsjd2u10w1i" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk4sjzzz0039ofsj72gx9dsm" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -427,7 +576,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk1e4wq1002b6hsj2xfef22t" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk4sjzzv0024ofsjcdqa4dbl" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -501,7 +650,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk1e4wpv001c6hsjfftj9tr6" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk4sjzzk0005ofsj6z7xbxfl" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -556,7 +705,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk1e4wpt000u6hsj6fqz3nu7" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk4sjzzr0013ofsj6wi71v7f" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -622,7 +771,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk1e4wq3002p6hsj2lwf9hko" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk4sjzzw0029ofsjgx9d6544" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
       
       
       
@@ -739,58 +888,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk1e4wq1002c6hsj7olz9y4o" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk4sjzzw0027ofsj952sej9f" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-09-functional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/04/11/rust/rust-09-functional/" class="article-date">
-  <time class="dt-published" datetime="2023-04-11T14:04:38.000Z" itemprop="datePublished">2023-04-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/04/11/rust/rust-09-functional/">rust functional programming</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="iterator"><a href="#iterator" class="headerlink" title="iterator"></a>iterator</h2><ul>
-<li><code>iter()</code> Returns an iterator over the <strong>slice</strong></li>
-<li><code>into_iter()</code> Creates a consuming iterator, that is, one that moves each value out of the vector</li>
-<li><code>iter_mut()</code> Returns an iterator that allows modifying each value.</li>
-</ul>
-<h2 id="flat-map"><a href="#flat-map" class="headerlink" title="flat_map"></a>flat_map</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Creates an iterator that works like map, but flattens nested structure.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// The [`map`] adapter is very useful, but only when the closure</span></span><br><span class="line"><span class="comment">/// argument produces values. If it produces an iterator instead, there&#x27;s</span></span><br><span class="line"><span class="comment">/// an extra layer of indirection. `flat_map()` will remove this extra layer</span></span><br><span class="line"><span class="comment">/// on its own.</span></span><br></pre></td></tr></table></figure>
-<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">words</span> = [<span class="string">&quot;alpha&quot;</span>, <span class="string">&quot;beta&quot;</span>, <span class="string">&quot;gamma&quot;</span>];</span><br><span class="line"><span class="comment">// chars() returns an iterator</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">merged</span>: <span class="type">String</span> = words.<span class="title function_ invoke__">iter</span>()</span><br><span class="line">                          .<span class="title function_ invoke__">flat_map</span>(|s| s.<span class="title function_ invoke__">chars</span>())</span><br><span class="line">                          .<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="built_in">assert_eq!</span>(merged, <span class="string">&quot;alphabetagamma&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk1e4wps000n6hsj472tg11o" data-title="rust functional programming" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
 
     </footer>
   </div>
@@ -828,7 +930,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 16px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18px;">geth</a> <a href="/tags/golang/" style="font-size: 12px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
     </div>
   </div>
 
@@ -850,23 +952,23 @@
       <ul>
         
           <li>
-            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+            <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
           </li>
         
           <li>
-            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
+            <a href="/2023/06/20/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
           </li>
         
           <li>
-            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
+            <a href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/">cryptography (3) elliptic curve</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
           </li>
         
           <li>
             <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
           </li>
         
       </ul>
