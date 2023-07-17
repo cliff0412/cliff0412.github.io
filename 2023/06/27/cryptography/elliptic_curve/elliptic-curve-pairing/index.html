@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>elliptic curve paring | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="introductionPairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can">
+<meta property="og:type" content="article">
+<meta property="og:title" content="elliptic curve paring">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="introductionPairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cliff0412.github.io/images/cryptography/elliptic_curve/paring_ec.png">
+<meta property="article:published_time" content="2023-06-27T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-07-16T16:04:41.867Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/cryptography/elliptic_curve/paring_ec.png">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cryptography/elliptic_curve/elliptic-curve-pairing" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" class="article-date">
+  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      elliptic curve paring
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Pairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can check whether or not \(p * q &#x3D; r\), having just P, Q and R as inputs. This might seem like the fundamental security guarantees of elliptic curves are being broken, as information about p is leaking from just knowing P, but it turns out that the leakage is highly contained — specifically, the <em><strong>decisional Diffie Hellman problem</strong></em> is easy, but the computational Diffie Hellman problem (knowing P and Q in the above example, computing R &#x3D; G * p * q) and the discrete logarithm problem (recovering p from P) remain computationally infeasible.</p>
+<p> whereas traditional elliptic curve math lets you check linear constraints on the numbers (eg. if P &#x3D; G * p, Q &#x3D; G * q and R &#x3D; G * r, checking 5 * P + 7 * Q &#x3D; 11 * R is really checking that 5 * p + 7 * q &#x3D; 11 * r), pairings let you check quadratic constraints (eg. checking e(P, Q) * e(G, G * 5) &#x3D; 1 is really checking that p * q + 5 &#x3D; 0).</p>
+<p> Now, what is this funny e(P, Q) operator that we introduced above? This is the pairing. Mathematicians also sometimes call it a bilinear map; the word “bilinear” here basically means that it satisfies the constraints:</p>
+<p>\[ e(P, Q + R) &#x3D; e(P, Q) * e(P, R) \]<br>\[ e(P + S, Q) &#x3D; e(P, Q) * e(S, Q) \]<br>Note that + and * can be arbitrary operators; when you’re creating fancy new kinds of mathematical objects, abstract algebra doesn’t care how + and * are defined, as long as they are consistent in the usual ways.</p>
+<p>If P, Q, R and S were simple numbers, then making a simple pairing is easy: we can do e(x, y) &#x3D; 2^xy. Then, we can see:<br>\[e(3, 4+ 5) &#x3D; 2^(3 * 9) &#x3D; 2^{27}\]<br>\[e(3, 4) * e(3, 5) &#x3D; 2^(3 * 4) * 2^(3 * 5) &#x3D; 2^{12} * 2^{15} &#x3D; 2^{27} \]<br>However, such simple pairings are not suitable for cryptography because the objects that they work on are simple integers and are too easy to analyze;</p>
+<p>It turns out that it is possible to make a bilinear map over elliptic curve points — that is, come up with a function e(P, Q) where the inputs P and Q are elliptic curve points, and where the output is what’s called an \(F_{p^¹²}\) (extension field) element</p>
+<p>An elliptic curve pairing is a map G2 x G1 -&gt; Gt, where:</p>
+<ul>
+<li>G1 is an elliptic curve, where points satisfy an equation of the form y² &#x3D; x³ + b, and where both coordinates are elements of F_p (ie. they are simple numbers, except arithmetic is all done modulo some prime number)</li>
+<li>G2 is an elliptic curve, where points satisfy the same equation as G1, except where the coordinates are elements of \(F_{p^¹²}\). we define a new “magic number” w, which is defined by a 12th degree polynomial like w^12 - 18 * w^6 + 82 &#x3D; 0</li>
+<li>Gt is the type of object that the result of the elliptic curve goes into. In the curves that we look at, Gt is \(F_{p^¹²}\)<br>The main property that it must satisfy is bilinearity, which in presented above</li>
+</ul>
+<p>There are two other important criteria:</p>
+<ul>
+<li><strong>Efficient computability</strong> (eg. we can make an easy pairing by simply taking the discrete logarithms of all points and multiplying them together, but this is as computationally hard as breaking elliptic curve cryptography in the first place, so it doesn’t count)</li>
+<li><strong>Non-degeneracy</strong> (sure, you could just define e(P, Q) &#x3D; 1, but that’s not a particularly useful pairing)</li>
+</ul>
+<h2 id="math-intuition-behind-paring"><a href="#math-intuition-behind-paring" class="headerlink" title="math intuition behind paring"></a>math intuition behind paring</h2><p>The math behind why pairing functions work is quite tricky and involves quite a bit of advanced algebra going even beyond what we’ve seen so far, but I’ll provide an outline. First of all, we need to define the concept of a divisor, basically an alternative way of representing functions on elliptic curve points. A <strong>divisor</strong> of a function basically counts the zeroes and the infinities of the function. To see what this means, let’s go through a few examples. Let us fix some point P &#x3D; (P_x, P_y), and consider the following function:<br>\[f(x, y) &#x3D; x - P_x\]</p>
+<p>The divisor is [P] + [-P] - 2 * [O] (the square brackets are used to represent the fact that we are referring to the presence of the point P in the set of zeroes and infinities of the function, not the point P itself; [P] + [Q] is not the same thing as [P + Q]). The reasoning is as follows:</p>
+<ul>
+<li>The function is equal to zero at P, since x is P_x, so x - P_x &#x3D; 0</li>
+<li>The function is equal to zero at -P, since -P and P share the same x coordinate</li>
+<li>The function goes to infinity as x goes to infinity, so we say the function is equal to infinity at O. There’s a technical reason why this infinity needs to be counted twice, so O gets added with a “multiplicity” of -2 (negative because it’s an infinity and not a zero, two because of this double counting).<br>The technical reason is roughly this: because the equation of the curve is x³ &#x3D; y² + b, y goes to infinity “1.5 times faster” than x does in order for y² to keep up with x³; hence, if a linear function includes only x then it is represented as an infinity of multiplicity 2, but if it includes y then it is represented as an infinity of multiplicity 3.</li>
+</ul>
+<p>Where a, b and c are carefully chosen so that the line passes through points P and Q. Because of how elliptic curve addition works (see the diagram at the top), this also means that it passes through -P-Q. And it goes up to infinity dependent on both x and y, so the divisor becomes [P]+ [Q] + [-P-Q] - 3 * [O]. (multiplicity of 3 because it involves y)<br><img src="/images/cryptography/elliptic_curve/paring_ec.png" alt="ec_pariling"><br>We know that every “rational function” (ie. a function defined only using a finite number of +, -, * and &#x2F; operations on the coordinates of the point) uniquely corresponds to some divisor, up to multiplication by a constant (ie. if two functions F and G have the same divisor, then F &#x3D; G * k for some constant k).<br>For any two functions F and G, the divisor of F * G is equal to the divisor of F plus the divisor of G (in math textbooks, you’ll see (F * G) &#x3D; (F) + (G)), so for example if f(x, y) &#x3D; P_x - x, then (f³) &#x3D; 3 * [P] + 3 * [-P] - 6 * [O]; P and -P are “triple-counted” to account for the fact that f³ approaches 0 at those points “three times as quickly” in a certain mathematical sense.</p>
+<p>Note that there is a theorem that states that if you “remove the square brackets” from a divisor of a function, the points must add up to O ([P] + [Q] + [-P-Q] - 3 * [O] clearly fits, as P + Q - P - Q - 3 * O &#x3D; O), and any divisor that has this property is the divisor of a function.</p>
+<h2 id="Tate-pairings"><a href="#Tate-pairings" class="headerlink" title="Tate pairings"></a>Tate pairings</h2><p>Consider the following functions, defined via their divisors:</p>
+<ul>
+<li>(F_P) &#x3D; n * [P] - n * [O], where n is the order of G1, ie. n * P &#x3D; O for any P</li>
+<li>(F_Q) &#x3D; n * [Q] - n * [O]</li>
+<li>(g) &#x3D; [P + Q] - [P] - [Q] + [O]<br>Now, let’s look at the product F_P * F_Q * g^n. The divisor is:</li>
+</ul>
+<p>n * [P] - n * [O] + n * [Q] - n * [O] + n * [P + Q] - n * [P] - n * [Q] + n * [O]</p>
+<p>Which simplifies neatly to:</p>
+<p>n * [P + Q] - n * [O]<br>Notice that this divisor is of exactly the same format as the divisor for F_P and F_Q above. Hence, F_P * F_Q * g^n &#x3D; F_(P + Q).</p>
+<p>Now, we introduce a procedure called the “final exponentiation” step, where we take the result of our functions above (F_P, F_Q, etc.) and raise it to the power z &#x3D; (p¹² - 1) &#x2F; n, where p¹² - 1 is the order of the multiplicative group in F_p¹² (ie. for any x ϵ F_p¹², x^(p¹² - 1) &#x3D; 1). Notice that if you apply this exponentiation to any result that has already been raised to the power of n, you get an exponentiation to the power of p¹² - 1, so the result turns into 1. Hence, after final exponentiation, g^n cancels out and we get F_P^z * F_Q^z &#x3D; F_(P + Q)^z. There’s some bilinearity for you.<br>Now, if you want to make a function that’s bilinear in both arguments, you need to go into spookier math, where instead of taking F_P of a value directly, you take F_P of a divisor, and that’s where the full “Tate pairing” comes from. To prove some more results you have to deal with notions like “linear equivalence” and “Weil reciprocity”, and the rabbit hole goes on from there. You can find more reading material on all of this [2] and he[3].<br>Every elliptic curve has a value called an embedding degree; essentially, the smallest k such that p^k - 1 is a multiple of n (where p is the prime used for the field and n is the curve order). In the fields above, k &#x3D; 12, and in the fields used for traditional ECC (ie. where we don’t care about pairings), the embedding degree is often extremely large, to the point that pairings are computationally infeasible to compute; however, if we are not careful then we can generate fields where k &#x3D; 4 or even 1.</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] <a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/exploring-elliptic-curve-pairings-c73c1864e627">vitalik’s blog on paring</a></li>
+<li>[2] <a target="_blank" rel="noopener" href="https://www.math.ru.nl/~bosma/Students/MScThesis_DennisMeffert.pdf">bilinear pairings in cryptography by Dennis Meffert</a></li>
+<li>[3] <a target="_blank" rel="noopener" href="https://people.cs.nctu.edu.tw/~rjchen/ECC2012S/Elliptic%20Curves%20Number%20Theory%20And%20Cryptography%202n.pdf">Elliptic Curves number theory and cryptography by Kenneth H. Rosen</a></li>
+<li>[4] <a target="_blank" rel="noopener" href="https://crypto.stanford.edu/pbc/notes/ep/miller.html">Miller’s Algorithm</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clk6y8vr1001wc5sjgcnod902" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          elliptic curve paring
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">zkp a brief understanding (1)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">elliptic curve paring</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding (1)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/">cryptography (3) elliptic curve</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
