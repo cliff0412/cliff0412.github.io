@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   
   
-  <title>elliptic curve paring | cliff&#39;s personal blog</title>
+  <title>zkp under the hood | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="IntroductionThis article will focus on the Pinocchio protocol by Parno, Gentry, Howell and Raykova from 2013 (often called PGHR13); there are a few variations on the basic mechanism, so a zk-SNARK">
+  <meta name="description" content="The medium of proof: PolynomialIf a prover claims to know some polynomial (no matter how large its degree is) that the verifier also knows, they can follow a simple protocol to verify the statement">
 <meta property="og:type" content="article">
-<meta property="og:title" content="elliptic curve paring">
+<meta property="og:title" content="zkp under the hood">
 <meta property="og:url" content="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="IntroductionThis article will focus on the Pinocchio protocol by Parno, Gentry, Howell and Raykova from 2013 (often called PGHR13); there are a few variations on the basic mechanism, so a zk-SNARK">
+<meta property="og:description" content="The medium of proof: PolynomialIf a prover claims to know some polynomial (no matter how large its degree is) that the verifier also knows, they can follow a simple protocol to verify the statement">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-07-01T06:29:26.000Z">
-<meta property="article:modified_time" content="2023-07-16T16:10:22.971Z">
+<meta property="article:modified_time" content="2023-07-17T15:06:35.873Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta name="twitter:card" content="summary">
@@ -88,7 +88,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      elliptic curve paring
+      zkp under the hood
     </h1>
   
 
@@ -101,8 +101,30 @@
   type="text/javascript">
 </script>
 
-<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>This article will focus on the Pinocchio protocol by Parno, Gentry, Howell and Raykova from 2013 (often called PGHR13); there are a few variations on the basic mechanism, so a zk-SNARK scheme implemented in practice may work slightly differently, but the basic principles will in general remain the same.</p>
+<h2 id="The-medium-of-proof-Polynomial"><a href="#The-medium-of-proof-Polynomial" class="headerlink" title="The medium of proof: Polynomial"></a>The medium of proof: Polynomial</h2><p>If a prover claims to know some polynomial (no matter how large its degree is) that the verifier also knows, they can follow a simple protocol to verify the statement<br>• Verifier chooses a random value for x and evaluates his polynomial locally<br>• Verifier gives x to the prover and asks to evaluate the polynomial in question<br>• Prover evaluates his polynomial at x and gives the result to the verifier<br>• Verifier checks if the local result is equal to the prover’s result, and if so then the statement is proven with a high confidence</p>
+<h2 id="Non-Interactive-Zero-Knowledge-of-a-Polynomial"><a href="#Non-Interactive-Zero-Knowledge-of-a-Polynomial" class="headerlink" title="Non-Interactive Zero-Knowledge of a Polynomial"></a>Non-Interactive Zero-Knowledge of a Polynomial</h2><ol>
+<li><p>Proving Knowledge of a Polynomial<br>A polynomial can be expressed in the form (where n is the degree of the polynomial):<br>\[c_n x^n + …+ c_1 x^1 + c_0 x^0\]<br>It one claims that he know a polynomial, it is actually the knowledge of the polynomial’s coefficients.</p>
+</li>
+<li><p>Factorization<br>The Fundamental Theorem of Algebra states that any polynomial can be factored into linear po- lynomials (i.e., a degree 1 polynomials representing a line), as long it is solvable. Consequently, we can represent any valid polynomial as a product of its factors:<br>\[(x-a_0)(x-a_1)…(x-a_n) &#x3D; 0\]</p>
+</li>
+</ol>
+<p>if the prover wants to prove that indeed his polynomial has specific roots without disclosing the polynomial itself, he needs to prove that his polynomial \(p(x)\) is the multiplication of those cofactors \(t(x) &#x3D; (x − x_0)(x − x_1)\), called target polynomial, where \(x_0, x_1\) are the specific roots. i.e.:<br>\[p(x) &#x3D; t(x) \cdot h(x)\]<br>A natural way to find \(h(x)\) is through the division \(h(x) &#x3D; \frac{p(x)}{t(x)}\)</p>
+<blockquote>
+<p>for simplicity, onwards we will use polynomial’s letter variable to denote its evaluation, e.g., \(p &#x3D; p(r)\)</p>
+</blockquote>
+<p>Using our polynomial identity check protocol we can compare polynomials \(p(x)\) and \(t(x)·h(x)\):</p>
+<ul>
+<li>Verifier samples a random value \(r\), calculates \(t &#x3D; t(r)\) (i.e., evaluates) and gives \(r\) to the prover</li>
+<li>Prover calculates \(h(x) &#x3D; \frac{p(x)}{t(x)}\) and evaluates \(p(r)\) and \(h(r)\); the resulting values \(p,h\) are<br>provided to the verifier</li>
+<li>Verifier then checks that \(p &#x3D; t \cdot h\), if so those polynomials are equal, meaning that \(p(x)\) has \(t(x)\) as a cofactor.</li>
+</ul>
+<p><strong>Remark 3.1</strong> Now we can check a polynomial for specific properties without learning the polyno- mial itself, so this already gives us some form of zero-knowledge and succinctness. Nonetheless, there are multiple issues with this construction:<br>• Prover may not know the claimed polynomial \(p(x)\) at all. He can calculate evaluation \(t &#x3D; t(r)\), select a random number \(h\) and set \(p &#x3D; t \cdot h\), which will be accepted by the verifier as valid, since equation holds.<br>• Because prover knows the random point \(x &#x3D; r\), he can construct any polynomial which has one shared point at \(r\) with \(t(r) \cdot h(r)\).<br>• In the original statement, prover claims to know a polynomial of a particular degree, in the current protocol there is no enforcement of degree. Hence prover can cheat by using a polynomial of higher degree which also satisfies the cofactors check.</p>
+<ol start="3">
+<li>Obscure Evaluation<br>Two first issues of remark 3.1 are possible because values are presented at raw, prover knows r and t(r). It would be ideal if those values would be given as a black box, so one cannot temper with the protocol, but still able to compute operations on those obscure values.<br>3.1. Homomorphic Encryption<br>There are multiple ways to achieve homomorphic properties of encryption, and we will briefly introduce a simple one. The general idea is to choose a base number \(g\) and do ecncryption of a value \(x\) by exponentiate of \(g\)<br>\[E(x) &#x3D; g^{x} \bmod p\]<br>For example, let \(E(x_1) &#x3D; g^{x_1} \bmod p\), and \(E(x_2) &#x3D; g^{x_2} \bmod p\), then<br>\[E(x_2) \cdot E(x_1) &#x3D; g^{x_1 + x_2} &#x3D; E(x_1 + x_2) \]</li>
+</ol>
+<p>3.2. Encrypted Polynomial</p>
 <h2 id="referneces"><a href="#referneces" class="headerlink" title="referneces"></a>referneces</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1906.07221.pdf">why and how zk-SNARK works by Maksym</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell">zkSNARKs in a nutshell</a></li>
 <li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2013/279.pdf">Pinocchio protocol by Parno, Gentry, Howell</a></li>
 </ul>
@@ -110,7 +132,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="clk6y8vr4002gc5sjhkbh3mgt" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="clk8gp6ia0024ersj3kmldfqs" data-title="zkp under the hood" class="article-share-link">Share</a>
       
       
       
@@ -177,7 +199,7 @@
       <ul>
         
           <li>
-            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">elliptic curve paring</a>
+            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp under the hood</a>
           </li>
         
           <li>

@@ -85,7 +85,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">elliptic curve paring</a>
+      <a class="p-name article-title" href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp under the hood</a>
     </h1>
   
 
@@ -98,8 +98,30 @@
   type="text/javascript">
 </script>
 
-<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>This article will focus on the Pinocchio protocol by Parno, Gentry, Howell and Raykova from 2013 (often called PGHR13); there are a few variations on the basic mechanism, so a zk-SNARK scheme implemented in practice may work slightly differently, but the basic principles will in general remain the same.</p>
+<h2 id="The-medium-of-proof-Polynomial"><a href="#The-medium-of-proof-Polynomial" class="headerlink" title="The medium of proof: Polynomial"></a>The medium of proof: Polynomial</h2><p>If a prover claims to know some polynomial (no matter how large its degree is) that the verifier also knows, they can follow a simple protocol to verify the statement<br>• Verifier chooses a random value for x and evaluates his polynomial locally<br>• Verifier gives x to the prover and asks to evaluate the polynomial in question<br>• Prover evaluates his polynomial at x and gives the result to the verifier<br>• Verifier checks if the local result is equal to the prover’s result, and if so then the statement is proven with a high confidence</p>
+<h2 id="Non-Interactive-Zero-Knowledge-of-a-Polynomial"><a href="#Non-Interactive-Zero-Knowledge-of-a-Polynomial" class="headerlink" title="Non-Interactive Zero-Knowledge of a Polynomial"></a>Non-Interactive Zero-Knowledge of a Polynomial</h2><ol>
+<li><p>Proving Knowledge of a Polynomial<br>A polynomial can be expressed in the form (where n is the degree of the polynomial):<br>\[c_n x^n + …+ c_1 x^1 + c_0 x^0\]<br>It one claims that he know a polynomial, it is actually the knowledge of the polynomial’s coefficients.</p>
+</li>
+<li><p>Factorization<br>The Fundamental Theorem of Algebra states that any polynomial can be factored into linear po- lynomials (i.e., a degree 1 polynomials representing a line), as long it is solvable. Consequently, we can represent any valid polynomial as a product of its factors:<br>\[(x-a_0)(x-a_1)…(x-a_n) &#x3D; 0\]</p>
+</li>
+</ol>
+<p>if the prover wants to prove that indeed his polynomial has specific roots without disclosing the polynomial itself, he needs to prove that his polynomial \(p(x)\) is the multiplication of those cofactors \(t(x) &#x3D; (x − x_0)(x − x_1)\), called target polynomial, where \(x_0, x_1\) are the specific roots. i.e.:<br>\[p(x) &#x3D; t(x) \cdot h(x)\]<br>A natural way to find \(h(x)\) is through the division \(h(x) &#x3D; \frac{p(x)}{t(x)}\)</p>
+<blockquote>
+<p>for simplicity, onwards we will use polynomial’s letter variable to denote its evaluation, e.g., \(p &#x3D; p(r)\)</p>
+</blockquote>
+<p>Using our polynomial identity check protocol we can compare polynomials \(p(x)\) and \(t(x)·h(x)\):</p>
+<ul>
+<li>Verifier samples a random value \(r\), calculates \(t &#x3D; t(r)\) (i.e., evaluates) and gives \(r\) to the prover</li>
+<li>Prover calculates \(h(x) &#x3D; \frac{p(x)}{t(x)}\) and evaluates \(p(r)\) and \(h(r)\); the resulting values \(p,h\) are<br>provided to the verifier</li>
+<li>Verifier then checks that \(p &#x3D; t \cdot h\), if so those polynomials are equal, meaning that \(p(x)\) has \(t(x)\) as a cofactor.</li>
+</ul>
+<p><strong>Remark 3.1</strong> Now we can check a polynomial for specific properties without learning the polyno- mial itself, so this already gives us some form of zero-knowledge and succinctness. Nonetheless, there are multiple issues with this construction:<br>• Prover may not know the claimed polynomial \(p(x)\) at all. He can calculate evaluation \(t &#x3D; t(r)\), select a random number \(h\) and set \(p &#x3D; t \cdot h\), which will be accepted by the verifier as valid, since equation holds.<br>• Because prover knows the random point \(x &#x3D; r\), he can construct any polynomial which has one shared point at \(r\) with \(t(r) \cdot h(r)\).<br>• In the original statement, prover claims to know a polynomial of a particular degree, in the current protocol there is no enforcement of degree. Hence prover can cheat by using a polynomial of higher degree which also satisfies the cofactors check.</p>
+<ol start="3">
+<li>Obscure Evaluation<br>Two first issues of remark 3.1 are possible because values are presented at raw, prover knows r and t(r). It would be ideal if those values would be given as a black box, so one cannot temper with the protocol, but still able to compute operations on those obscure values.<br>3.1. Homomorphic Encryption<br>There are multiple ways to achieve homomorphic properties of encryption, and we will briefly introduce a simple one. The general idea is to choose a base number \(g\) and do ecncryption of a value \(x\) by exponentiate of \(g\)<br>\[E(x) &#x3D; g^{x} \bmod p\]<br>For example, let \(E(x_1) &#x3D; g^{x_1} \bmod p\), and \(E(x_2) &#x3D; g^{x_2} \bmod p\), then<br>\[E(x_2) \cdot E(x_1) &#x3D; g^{x_1 + x_2} &#x3D; E(x_1 + x_2) \]</li>
+</ol>
+<p>3.2. Encrypted Polynomial</p>
 <h2 id="referneces"><a href="#referneces" class="headerlink" title="referneces"></a>referneces</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1906.07221.pdf">why and how zk-SNARK works by Maksym</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell">zkSNARKs in a nutshell</a></li>
 <li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2013/279.pdf">Pinocchio protocol by Parno, Gentry, Howell</a></li>
 </ul>
@@ -107,7 +129,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="clk6y8vr4002gc5sjhkbh3mgt" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="clk8gp6ia0024ersj3kmldfqs" data-title="zkp under the hood" class="article-share-link">Share</a>
       
       
       
@@ -194,7 +216,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clk6y8vr1001wc5sjgcnod902" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clk8gp6i7001kersj36idfq8g" data-title="elliptic curve paring" class="article-share-link">Share</a>
       
       
       
@@ -280,7 +302,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="clk6y8vr40028c5sjc9m5abui" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="clk8gp6ia0027ersj00id26wv" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
       
       
       
@@ -420,7 +442,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clk6y8vqs000ac5sjfhuy1moh" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clk8gp6hy0005ersjekkz57h9" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
       
       
       
@@ -485,7 +507,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clk6y8vqr0008c5sj9u418j6e" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clk8gp6hy0006ersjaemk48ki" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -570,7 +592,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clk6y8vqr0007c5sjf0oh7hi4" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clk8gp6hz0007ersj3bdigu82" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -676,7 +698,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk6y8vr4002dc5sjaa9jhkrr" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk8gp6id0034ersj88ulcg60" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -749,7 +771,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk6y8vr4002bc5sjdt0g1oet" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk8gp6ib002eersjc1wm3h6o" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -823,7 +845,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk6y8vqr0005c5sj0xah6w2f" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk8gp6hx0002ersjaoec4kz4" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -878,7 +900,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk6y8vqy0013c5sj9g2d4d2c" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk8gp6i50013ersj3w4y57gx" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
@@ -942,7 +964,7 @@
       <ul>
         
           <li>
-            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">elliptic curve paring</a>
+            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp under the hood</a>
           </li>
         
           <li>
