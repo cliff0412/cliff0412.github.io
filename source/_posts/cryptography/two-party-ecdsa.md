@@ -13,7 +13,7 @@ this post is my reading summary of paper Yehuda Lindell 2017: Fast secure two-pa
 
 Unlike other schemes like RSA, Schnorr signatures and more, it is particularly hard to construct efficient threshold signature protocols for ECDSA as there is an inverse computaion of \\( k \\).
 
-In this paper, we consider the specific case of two parties (and thus no honest majority) and con-struct a protocol that is approximately two orders of magnitude faster than the previous best.
+In this paper, we consider the specific case of two parties (and thus no honest majority) and construct a protocol that is approximately two orders of magnitude faster than the previous best.
 
 ## Comparing ECDSA signing to EC-Schnorr signing
 In both cases, the public verification key is an elliptic curve point \\( Q \\) and the private signing key is \\( x \\) such that \\( Q = x \cdot G \\), where \\( G \\) is the generator point of an EC group of order \\( q \\).
