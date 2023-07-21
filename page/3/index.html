@@ -100,7 +100,7 @@
 
 <h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>this post is my reading summary of paper Yehuda Lindell 2017: Fast secure two-party ecdsa signing. the implementation could be found in tss-lib (golang), zengo’s library (rust).</p>
 <p>Unlike other schemes like RSA, Schnorr signatures and more, it is particularly hard to construct efficient threshold signature protocols for ECDSA as there is an inverse computaion of \( k \).</p>
-<p>In this paper, we consider the specific case of two parties (and thus no honest majority) and con-struct a protocol that is approximately two orders of magnitude faster than the previous best.</p>
+<p>In this paper, we consider the specific case of two parties (and thus no honest majority) and construct a protocol that is approximately two orders of magnitude faster than the previous best.</p>
 <h2 id="Comparing-ECDSA-signing-to-EC-Schnorr-signing"><a href="#Comparing-ECDSA-signing-to-EC-Schnorr-signing" class="headerlink" title="Comparing ECDSA signing to EC-Schnorr signing"></a>Comparing ECDSA signing to EC-Schnorr signing</h2><p>In both cases, the public verification key is an elliptic curve point \( Q \) and the private signing key is \( x \) such that \( Q &#x3D; x \cdot G \), where \( G \) is the generator point of an EC group of order \( q \).<br><img src="/images/two_party_ecdsa/schnorr_ecdsa_comparison.png" alt="schnorr ecdsa comparison"></p>
 <p>Observe that Schnorr signing can be easily distributed since the private key \( x \) and the value k are both used in a linear equation.  In contrast, in ECDSA signing, the equation for computing \( s \) includes \( k^{-1} \). Now, given shares \(k_1\), \(k_2\) such that \(k_1 + k_2 &#x3D; k \bmod q\) .It is very difficult to compute \(k_1^{\prime}\), \(k_2^{\prime}\) such  that \(k_1^{\prime} + k_2^{\prime} &#x3D; k^{-1} \bmod q\)</p>
 <p>two-party protocols for ECDSA signing use multiplicative sharing of \( x \) and of \( k \). That is, the parties hold \(x_1\), \(x_2\)  such that \(x_1 \cdot x_2 &#x3D; x \bmod q\), and in each signing operation they generate \(k_1\), \(k_2\) such that \(k_1 \cdot k_2 &#x3D; k \bmod q\). This enables them to easily compute \(k^{-1}\) since each party can locally compute  \(k_i^{\prime} &#x3D; k_i^{-1} \bmod q\), and then \(k_1^{\prime}\), \(k_2^{\prime}\) are multiplicative shares of \(k^{-1}\). The parties can then use additively homomorphic encryption – specifically Paillier encryption  – in order to combine their equations. For example, \(P_1\) can compute \(c_1 &#x3D; Enc_{pk}(k_1^{-1} \cdot H(m))\) and \(c_2 &#x3D; Enc_{pk}(k_1^{-1} \cdot x_1 \cdot r)\) . Then, using scar multiplication (denoted ⊙) and homomorphic addition (denoted ⊕), \( P_2 \) can compute \( (k_2^{-1} ⊙ c_1 ) ⊕ [( k_2^{-1} \cdot x_2)  ⊙ c_2 ]\), which will be an encryption of </p>
@@ -114,7 +114,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/07/cryptography/two-party-ecdsa/" data-id="clk8gp6hz000aersj2q9j81n5" data-title="two party ecdsa" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/07/cryptography/two-party-ecdsa/" data-id="clkcad2i30007g2sj56yi9syx" data-title="two party ecdsa" class="article-share-link">Share</a>
       
       
       
@@ -222,7 +222,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clk8gp6hx0003ersjesxe2eqs" data-title="MPT" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clkcad2hy0000g2sja6nla802" data-title="MPT" class="article-share-link">Share</a>
       
       
       
@@ -294,7 +294,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clk8gp6i0000fersjhnxi8x52" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clkcad2i10001g2sj8g6pbhro" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
       
       
       
@@ -370,7 +370,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clk8gp6i50015ersj9h2ofao7" data-title="rust async" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clkcad2ia0015g2sj4fr6514s" data-title="rust async" class="article-share-link">Share</a>
       
       
       
@@ -459,7 +459,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="clk8gp6i9001uersjg7mhh3la" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="clkcad2ic001ng2sjahbf3206" data-title="geth evm source analysis" class="article-share-link">Share</a>
       
       
       
@@ -500,7 +500,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clk8gp6ht0000ersj1sec18nw" data-title="geth_fine_tune" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clkcad2i7000lg2sj8rexelzu" data-title="geth_fine_tune" class="article-share-link">Share</a>
       
       
       
@@ -582,7 +582,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/28/rust/rust-07-macro/" data-id="clk8gp6i4000yersj35z8avex" data-title="rust reflect and macro" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/28/rust/rust-07-macro/" data-id="clkcad2ia0010g2sj4z226ez0" data-title="rust reflect and macro" class="article-share-link">Share</a>
       
       
       
@@ -626,7 +626,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="clk8gp6ib002cersj7t4zfkxl" data-title="rust frequently used crates" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="clkcad2if0020g2sj4i7q14qj" data-title="rust frequently used crates" class="article-share-link">Share</a>
       
       
       
@@ -696,7 +696,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="clk8gp6i6001dersj81rr4uvb" data-title="rust cargo all in one" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="clkcad2ia0013g2sj6y9gapz1" data-title="rust cargo all in one" class="article-share-link">Share</a>
       
       
       
@@ -749,7 +749,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clk8gp6hw0001ersjfy1xex5i" data-title="how to use hexo" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clkcad2i5000cg2sjb7qk8j7z" data-title="how to use hexo" class="article-share-link">Share</a>
       
       
       
