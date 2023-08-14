@@ -161,6 +161,16 @@ To check correctness, we don’t actually evaluate the polynomial `t = A . s * B
 
 Note that the above is a simplification; “in the real world”, the addition, multiplication, subtraction and division will happen not with regular numbers, but rather with finite field elements — a spooky kind of arithmetic which is self-consistent, so all the algebraic laws we know and love still hold true, but where all answers are elements of some finite-sized set
 
+## KEA (Knowledge of Exponent Assumption)
+Let \\(q\\) be a prime such that \\(2q+1\\) is also prime, and let \\(g\\) be a generator
+of the order \\(q\\) subgroup of \\(Z_{2q+1}^{\ast}\\). Suppose we are given input \\(q, g, g^a\\) and want to output a pair \\((C, Y )\\) such that \\(Y = C^a\\). One way to do this is to pick some \\(c \in Z_{q}\\), let \\(C = g^c\\), and let \\(Y = (g^a)^c\\). Intuitively, `KEA1`` can be viewed as saying that this is the 'only' way to produce such a pair. The assumption captures this by saying that any adversary outputting such a pair must “know” an exponent \\(c\\) such that \\(g^c = C\\). The formalization asks that there be an “extractor” that can return \\(c\\). Roughly:
+***
+**KEA1**
+For any adversary \\(A\\) that takes input \\(q, g,g^a\\) and returns \\((C,Y)\\) with \\(Y = C^a\\), there exists an 'extractor' \\(\bar{A}\\), which given the same inputs as \\(A\\) returns \\(c\\) such that \\(g^c = C\\)
+***
 ## reference
 - [vitalik's blog: qap zero to hero](https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649)
 - [lagrange interpolating](https://mathworld.wolfram.com/LagrangeInterpolatingPolynomial.html)
+- [zkSNARKs in a nutshell](https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell)
+- [Pinocchio protocol by Parno, Gentry, Howell](https://eprint.iacr.org/2013/279.pdf)
+- [KEA](https://eprint.iacr.org/2004/008.pdf)

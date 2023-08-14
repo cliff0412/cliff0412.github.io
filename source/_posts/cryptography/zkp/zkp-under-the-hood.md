@@ -1,7 +1,7 @@
 ---
-title: zkp under the hood
+title: zkp how and why it works
 date: 2023-07-01 14:29:26
-tags: [cryptography]
+tags: [cryptography,zkp]
 ---
 <script
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
@@ -70,5 +70,3 @@ We can now update the previous version of the protocol, for a polynomial fo degr
 > Note: because the prover does not know anything about s, it makes it hard to come up with non-legitimate but still matching evaluations.
 ## referneces
 - [why and how zk-SNARK works by Maksym](https://arxiv.org/pdf/1906.07221.pdf)
-- [zkSNARKs in a nutshell](https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell)
-- [Pinocchio protocol by Parno, Gentry, Howell](https://eprint.iacr.org/2013/279.pdf)

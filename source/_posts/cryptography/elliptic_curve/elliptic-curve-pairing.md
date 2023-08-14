@@ -1,7 +1,7 @@
 ---
 title: elliptic curve paring
 date: 2023-06-27 14:29:26
-tags: [cryptography]
+tags: [cryptography,zkp]
 ---
 <script
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
