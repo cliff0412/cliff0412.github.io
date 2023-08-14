@@ -71,6 +71,132 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cryptography/zkp/zkp-demystify-zokrates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" class="article-date">
+  <time class="dt-published" datetime="2023-07-14T06:29:26.000Z" itemprop="datePublished">2023-07-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><h3 id="source-file"><a href="#source-file" class="headerlink" title="source file"></a>source file</h3><p>an example, <code>square.zok</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def main(private field a, field b) &#123;</span><br><span class="line">    assert(a * a == b);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>The keyword private signals that we do not want to reveal this input, but still prove that we know its value.</li>
+</ul>
+<h3 id="compile"><a href="#compile" class="headerlink" title="compile"></a>compile</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates compile -i root.zok</span><br></pre></td></tr></table></figure>
+<p>after compile, it generates below files</p>
+<ul>
+<li>out</li>
+<li>out.r1cs</li>
+<li>abi.json</li>
+</ul>
+<h3 id="setup"><a href="#setup" class="headerlink" title="setup"></a>setup</h3><p>Performs a trusted setup for a given constraint system</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates setup</span><br></pre></td></tr></table></figure>
+<p>options </p>
+<ul>
+<li>-i, –input <FILE>                       Path of the binary [default: out]<br>it generates below two files</li>
+<li>proving.key</li>
+<li>verification.key</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" data-id="cllb0puy0001lansj73gja1hp" data-title="zkp demystify zokrates" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/zkp/zkp-groth16" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/07/07/cryptography/zkp/zkp-groth16/" class="article-date">
+  <time class="dt-published" datetime="2023-07-07T06:29:26.000Z" itemprop="datePublished">2023-07-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/07/07/cryptography/zkp/zkp-groth16/">zkp groth16 paper review</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+<h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Goldwasser, Micali and Rackoff [GMR89] introduced zero-knowledge proofs that enable a prover to convince a verifier that a statement is true without revealing anything else. They have three core properties:</p>
+<ul>
+<li><strong>Completeness</strong>: Given a statement and a witness, the prover can convince the verifier. </li>
+<li><strong>Soundness</strong>: A malicious prover cannot convince the verifier of a false statement. </li>
+<li><strong>Zero-knowledge</strong>: The proof does not reveal anything but the truth of the statement</li>
+</ul>
+<h3 id="1-1-Contribution"><a href="#1-1-Contribution" class="headerlink" title="1.1. Contribution"></a>1.1. Contribution</h3><p><strong>Succinct NIZK</strong> We construct a NIZK argument for arithmetic circuit satisfiability where a proof consists of only 3 group elements. In addition to being small, the proof is also easy to verify. The verifier just needs to compute a number of exponentiations proportional to the statement size and check a single pairing product equation, which only has 3 pairings.</p>
+<h2 id="2-Preliminaries"><a href="#2-Preliminaries" class="headerlink" title="2. Preliminaries"></a>2. Preliminaries</h2><h3 id="2-1-Bilinear-Groups"><a href="#2-1-Bilinear-Groups" class="headerlink" title="2.1 Bilinear Groups"></a>2.1 Bilinear Groups</h3><p>We will work over bilinear groups \((p, \mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} , e, g, h)\) with the following properties:</p>
+<ul>
+<li>\(\mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} \)are groups of prime order \(p\)</li>
+<li>The pairing \( e:\mathbb{G_{1}} \times \mathbb{G_{2}} \rightarrow \mathbb{G_{T}}\) is a bilinear map</li>
+<li>\(g\) is a generator for \(\mathbb{G_{1}}\), \(h\) is a generator for \(\mathbb{G_{2}}\), and \(e(g,h)\) is a generator for \(\mathbb{G_{T}}\)</li>
+</ul>
+<p>There are many ways to set up bilinear groups both as symmetric bilinear groups where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{1}}\) and as asymmetric bilinear groups where \(\mathbb{G_{1}} \neq \mathbb{G_{1}}\). Galbraith, Paterson and Smart [GPS08] classify bilinear groups as <strong>Type I</strong> where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{2}}\), <strong>Type II</strong> where there is an efficiently computable non-trivial homomorphism \(\Phi : \mathbb{G_{2}} \rightarrow \mathbb{G_{1}}\), and <strong>Type III</strong> where no such efficiently computable homomorphism exists in either direction between \(\mathbb{G_{1}}\) and \(\mathbb{G_{2}}\). Type III bilinear groups are the most efficient type of bilinear groups and hence the most relevant for practical applications.<br>As a notation for group elements, we write \( \lbrack a \rbrack_{1} \) for \( g^a\), \( \lbrack b \rbrack_{2}\) for \( h^b\) and \( \lbrack c \rbrack_{T}\) for \(e(g,h)^{c} \).  A vector of group elements will be represented as \( \lbrack \mathbf{a} \rbrack_{i} \).  Given two vectors of \(n\) group elements \( \lbrack \mathbf{a} \rbrack_{1} \) and \( \lbrack \mathbf{b} \rbrack_{2} \), we define their dot product as \( \lbrack \mathbf{a} \rbrack_{1} \cdot \lbrack \mathbf{b} \rbrack_{2}  &#x3D; \lbrack \mathbf{a} \cdot  \mathbf{b} \rbrack_{T} \), which can be efficiently computed using the pairing \(e\).</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/07/07/cryptography/zkp/zkp-groth16/" data-id="cllb0puy6001vansj8ujy38ii" data-title="zkp groth16 paper review" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cryptography/zkp/zkp-under-the-hood" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/" class="article-date">
@@ -85,7 +211,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp under the hood</a>
+      <a class="p-name article-title" href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp how and why it works</a>
     </h1>
   
 
@@ -145,18 +271,16 @@
 </blockquote>
 <h2 id="referneces"><a href="#referneces" class="headerlink" title="referneces"></a>referneces</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1906.07221.pdf">why and how zk-SNARK works by Maksym</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell">zkSNARKs in a nutshell</a></li>
-<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2013/279.pdf">Pinocchio protocol by Parno, Gentry, Howell</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="clkcad2ii003ag2sjevuh46eu" data-title="zkp under the hood" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="cllb0puy2001qansj7yedgm9g" data-title="zkp how and why it works" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
 
     </footer>
   </div>
@@ -239,11 +363,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clkcad2ic001gg2sj1ylo4s1g" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="cllb0puxy001hansjbjx20agn" data-title="elliptic curve paring" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
 
     </footer>
   </div>
@@ -317,15 +441,22 @@
 <p>To check correctness, we don’t actually evaluate the polynomial <code>t = A . s * B . s - C . s</code> at every point corresponding to a gate; instead, we divide <code>t</code> by another polynomial, <code>Z</code>, and check that <code>Z</code> evenly divides <code>t</code> - that is, <strong>the division <code>t / Z</code> leaves no remainder</strong>.</p>
 <p><code>Z</code> is defined as <code>(x - 1) * (x - 2) * (x - 3) ...</code> - the simplest polynomial that is equal to zero at all points that correspond to logic gates. It is an elementary fact of algebra that any polynomial that is equal to zero at all of these points has to be a multiple of this minimal polynomial, and if a polynomial is a multiple of <code>Z</code> then its evaluation at any of those points will be zero;</p>
 <p>Note that the above is a simplification; “in the real world”, the addition, multiplication, subtraction and division will happen not with regular numbers, but rather with finite field elements — a spooky kind of arithmetic which is self-consistent, so all the algebraic laws we know and love still hold true, but where all answers are elements of some finite-sized set</p>
+<h2 id="KEA-Knowledge-of-Exponent-Assumption"><a href="#KEA-Knowledge-of-Exponent-Assumption" class="headerlink" title="KEA (Knowledge of Exponent Assumption)"></a>KEA (Knowledge of Exponent Assumption)</h2><p>Let \(q\) be a prime such that \(2q+1\) is also prime, and let \(g\) be a generator<br>of the order \(q\) subgroup of \(Z_{2q+1}^{\ast}\). Suppose we are given input \(q, g, g^a\) and want to output a pair \((C, Y )\) such that \(Y &#x3D; C^a\). One way to do this is to pick some \(c \in Z_{q}\), let \(C &#x3D; g^c\), and let \(Y &#x3D; (g^a)^c\). Intuitively, &#96;KEA1&#96;&#96; can be viewed as saying that this is the ‘only’ way to produce such a pair. The assumption captures this by saying that any adversary outputting such a pair must “know” an exponent \(c\) such that \(g^c &#x3D; C\). The formalization asks that there be an “extractor” that can return \(c\). Roughly:</p>
+<hr>
+<p><strong>KEA1</strong><br>For any adversary \(A\) that takes input \(q, g,g^a\) and returns \((C,Y)\) with \(Y &#x3D; C^a\), there exists an ‘extractor’ \(\bar{A}\), which given the same inputs as \(A\) returns \(c\) such that \(g^c &#x3D; C\)</p>
+<hr>
 <h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649">vitalik’s blog: qap zero to hero</a></li>
 <li><a target="_blank" rel="noopener" href="https://mathworld.wolfram.com/LagrangeInterpolatingPolynomial.html">lagrange interpolating</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell">zkSNARKs in a nutshell</a></li>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2013/279.pdf">Pinocchio protocol by Parno, Gentry, Howell</a></li>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2004/008.pdf">KEA</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="clkcad2id001qg2sjbobi622j" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="cllb0puy90025ansjekdjh727" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
       
       
       
@@ -465,7 +596,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clkcad2i30004g2sjh4wm8zst" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="cllb0puxf000cansj9diw98pw" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
       
       
       
@@ -530,7 +661,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clkcad2i40008g2sjfe6cf4lu" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="cllb0puxd0008ansjfwdjat5n" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -615,7 +746,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clkcad2i20003g2sj63pa1kyf" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="cllb0puxb0005ansjhx3vfcsm" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -721,7 +852,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clkcad2ij003eg2sj9021ek86" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="cllb0puyd002kansj010jf1g8" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -794,140 +925,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clkcad2ig0025g2sj6m6678nk" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="cllb0puy90027ansjdexod170" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/cryptography-01-primitive-group-and-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" class="article-date">
-  <time class="dt-published" datetime="2023-06-03T06:29:26.000Z" itemprop="datePublished">2023-06-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/">cryptography (1) group &amp; field</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-
-<h2 id="Group"><a href="#Group" class="headerlink" title="Group"></a>Group</h2><p>a group is a set of elements \( G \) together with an operation \( \circ \). a group has the following properties</p>
-<ol>
-<li>the group operation \( \circ \) is closed. that is, for all \( a,b, \in G  \), it holds that \( a \circ b &#x3D; c \in G \)</li>
-<li>the group operation is associative. That is, \( a \circ (b \circ c) &#x3D; (a \circ b) \circ c \) for all \( a,b,c \in G \)</li>
-<li>there is an element \( 1 \in G \), called the neutral element (or identity element), such that \( a \circ \ &#x3D; 1 \circ a\) for all \( a \in G \)</li>
-<li>For each \( a \in G \) there exists an element \( a^{-1} \in G\), called the inverse of a, such that \( a \circ a^{-1} &#x3D; 1 \).</li>
-<li>a group G is abelian (or commutative) if, furthermore, \( a \circ b &#x3D; b \circ a \) for all \( a, b \in G \)</li>
-</ol>
-<h3 id="Example-of-Group"><a href="#Example-of-Group" class="headerlink" title="Example of Group"></a>Example of Group</h3><p>the set of integers \( Z_{m} &#x3D; 0,1,…,m-1 \) and the operation addition modulo \( m \) forma group with the neutral element 0. every element \( a \) has an inverse \(  -a \). note that this set does not form a group with the operation multiplication gecause mose eleents \(  a \) do not have an inverse such that \(  a a^{-1} &#x3D; 1 \bmod m\).</p>
-<p>In order to have all four basic arithmetic operations (i.e. addition, subtraction, multiplication, division) in one structure, we need a set which contains an additive and a multiplicative group. this is what we call a field.</p>
-<h2 id="Field"><a href="#Field" class="headerlink" title="Field"></a>Field</h2><p>A field is a set of elements with the following properties</p>
-<ul>
-<li>all elements of \( F\) form an additive group with the group operation \( + \) and the neutral element \( 0 \)</li>
-<li>all element of \( F \) except \( 0 \) form a multiplicative group with the gorup operation \( x \) and the neutral element \( 1 \) .</li>
-<li>when the two group operations are mixed, the distributivety law holds, i.e., for all \( a,b,c \in F: a(b+c) &#x3D; (ab) + (ac) \)</li>
-</ul>
-<h3 id="Example-of-Field"><a href="#Example-of-Field" class="headerlink" title="Example of Field"></a>Example of Field</h3><p>the set \( R \) of real numbers is a field with the neutral element 0 for the additive group and the neutral element 1 for the multiplicative group. every real number \( a \) has an additive inverse, namely \( -a \), and every nonzero element \( a \) has a multiplicative inverse \( 1 \div a \)</p>
-<h2 id="Galois-Field"><a href="#Galois-Field" class="headerlink" title="Galois Field"></a>Galois Field</h2><p>In cryptography, we are almose always interested in fields with a <strong>finite</strong> number of elements, which we call finite fields or <code>Galois field</code>. the number of elements in the field is called the <code>order</code> or <code>cardinality</code> of the field. Of fundamental importance is the following theorem</p>
-<hr>
-<p>a field with order <code>m</code> only exists if <code>m</code> is a prime power, i.e, \( m &#x3D; p^{n} \), for some positive integer <code>n</code> and prime integer <code>p</code>. <code>p</code> is called the characteristic of the finite field</p>
-<hr>
-<p>the theorem implies that there are, for instance, finite fields with 11 elements (\( 11^{1} \)), or with 81 elements \( 81 &#x3D; 3^{4} \) or with 256 elements (\( 256 &#x3D; 2^{8} \)). </p>
-<h2 id="Prime-Field"><a href="#Prime-Field" class="headerlink" title="Prime Field"></a>Prime Field</h2><p>the most intuitive examples of finite fields are fields of prime order, i.e., fields with \( n &#x3D;1 \). elements of the field \( GF(p) \) can be represented by integers \( 0,1,…, p-1 \).</p>
-<h2 id="Extension-Field-GF-2-m"><a href="#Extension-Field-GF-2-m" class="headerlink" title="Extension Field GF(2^m)"></a>Extension Field <code>GF(2^m)</code></h2><p>In AES the finite field contains 256 elements and is denoted as \( GF(2^8) \).<br>However, if the order  of a finite field is not prime, and \( 2^8 \) is clearly not a prime, the addition and multiplication operation cannot be represented by addition and multiplication of integers modulo \( 2^8 \). such fields with \( m &gt;1 \) are called <code>extension field</code>. in order to deal with extension fields we need (1) a different notation for field elements and (2) different rules for performing arithmetic with the elements. elements of extension fields can be represented as <code>polynomials</code>, and computation in the extension field is achieved by performing a certain type of <code>polynomial arithmetic</code>.</p>
-<p>In the field \( GF(2^8) \), which is used in AES, each element \( A \in GF(2^8) \) is thus represented as:<br>\[ A(x) &#x3D; a_{7}x^7 + …+a_{1}x+a_{0}, a_{i} \in GF(2) &#x3D; {0,1} \]<br>It is also important to observe that every polynomial can simply be stored in digital form as an 8-bit vector<br>\[ A &#x3D; (a_7,a_6,a_5,a_4,a_3,a_2,a_1,a_0) \]</p>
-<h3 id="addition-and-subtraction-in-GF-2-m"><a href="#addition-and-subtraction-in-GF-2-m" class="headerlink" title="addition and subtraction in GF(2^m)"></a>addition and subtraction in <code>GF(2^m)</code></h3><p>addition and subtraction are simply achieved by performing polynomial addition and subtraction. note that we perform modulo 2 addition (or subtraction) with the coefficients.<br>\[ A(x) &#x3D; x^7 + x^6 + x^4 + 1 \]<br>\[ B(x) &#x3D; x^4 + x^2+ 1 \]<br>\[ A(x) + B(x) &#x3D; x^7 + x^6+ x^2 \]</p>
-<h3 id="multiplication-in-GF-2-m"><a href="#multiplication-in-GF-2-m" class="headerlink" title="multiplication in GF(2^m)"></a>multiplication in <code>GF(2^m)</code></h3><p>firstly, two elements (represented by their polynomials) of a finite field <code>GF(2^m)</code> are multiplied usig the standard polynomial multiplication rule \[ A(x) \dot B(x) &#x3D; C(x) \]. In general, the product polynomial \[ C(x) \] will have a degree higher than <code>m-1</code> and has to be reduced. to do that, the product of the multiplication is divided by a certain polyhomial, and we consider only the remainder after the polynomial division. we need <strong>irreducible</strong> polynomials for the module reduction. irreducible polynomials are roughly comparable to prime numbers. their only factors are 1 and polynomial itself.<br>Thus, every field <code>GF(2^m)</code> requires an irreducible polynomial <code>P(x)</code> of degree <code>m</code>.<br>For AES, the irreducible polynomial is<br>\[ P(x) &#x3D; x^8 + x^4+ x^3 +x + 1 \]<br>the main algorithm for computing multiplicative inverse is the extended Euclidean algorithm, which is introduced in other posts.</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clkcad2i5000ag2sjgtnre76x" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-10-concurrency" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/01/rust/rust-10-concurrency/" class="article-date">
-  <time class="dt-published" datetime="2023-06-01T14:04:38.000Z" itemprop="datePublished">2023-06-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/01/rust/rust-10-concurrency/">rust concurrency</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="Send-and-Sync"><a href="#Send-and-Sync" class="headerlink" title="Send and Sync"></a>Send and Sync</h2><ul>
-<li>A type is Send if it is safe to send it to another thread.</li>
-<li>A type is Sync if it is safe to share between threads (T is Sync if and only if &amp;T is Send).</li>
-<li>raw pointers are neither Send nor Sync (because they have no safety guards).</li>
-<li>UnsafeCell isn’t Sync (and therefore Cell and RefCell aren’t).</li>
-<li>Rc isn’t Send or Sync (because the refcount is shared and unsynchronized).</li>
-</ul>
-<p>Types that aren’t automatically derived can simply implement them if desired:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">MyBox</span>(*<span class="keyword">mut</span> <span class="type">u8</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">unsafe</span> <span class="keyword">impl</span> <span class="title class_">Send</span> <span class="keyword">for</span> <span class="title class_">MyBox</span> &#123;&#125;</span><br><span class="line"><span class="keyword">unsafe</span> <span class="keyword">impl</span> <span class="title class_">Sync</span> <span class="keyword">for</span> <span class="title class_">MyBox</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
-<p>one can also unimplement Send and Sync:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(negative_impls)]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// I have some magic semantics for some synchronization primitive!</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">SpecialThreadToken</span>(<span class="type">u8</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> !<span class="built_in">Send</span> <span class="keyword">for</span> <span class="title class_">SpecialThreadToken</span> &#123;&#125;</span><br><span class="line"><span class="keyword">impl</span> !<span class="built_in">Sync</span> <span class="keyword">for</span> <span class="title class_">SpecialThreadToken</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/nomicon/send-and-sync.html">rustonomicon</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clkcad2i9000zg2sjfzr58uqc" data-title="rust concurrency" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
 
     </footer>
   </div>
@@ -965,7 +967,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 15px;">zkp</a>
     </div>
   </div>
 
@@ -987,7 +989,15 @@
       <ul>
         
           <li>
-            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp under the hood</a>
+            <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
+          </li>
+        
+          <li>
+            <a href="/2023/07/07/cryptography/zkp/zkp-groth16/">zkp groth16 paper review</a>
+          </li>
+        
+          <li>
+            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp how and why it works</a>
           </li>
         
           <li>
@@ -996,14 +1006,6 @@
         
           <li>
             <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding (1)</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/">cryptography (3) elliptic curve</a>
           </li>
         
       </ul>

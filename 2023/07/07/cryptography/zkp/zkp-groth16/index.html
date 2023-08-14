@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>zkp groth16 paper review | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="1. IntroductionGoldwasser, Micali and Rackoff [GMR89] introduced zero-knowledge proofs that enable a prover to convince a verifier that a statement is true without revealing anything else. They have">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zkp groth16 paper review">
+<meta property="og:url" content="https://cliff0412.github.io/2023/07/07/cryptography/zkp/zkp-groth16/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="1. IntroductionGoldwasser, Micali and Rackoff [GMR89] introduced zero-knowledge proofs that enable a prover to convince a verifier that a statement is true without revealing anything else. They have">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-07-07T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-08-14T15:16:17.949Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
+<meta property="article:tag" content="zkp">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cryptography/zkp/zkp-groth16" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/07/07/cryptography/zkp/zkp-groth16/" class="article-date">
+  <time class="dt-published" datetime="2023-07-07T06:29:26.000Z" itemprop="datePublished">2023-07-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      zkp groth16 paper review
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+<h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Goldwasser, Micali and Rackoff [GMR89] introduced zero-knowledge proofs that enable a prover to convince a verifier that a statement is true without revealing anything else. They have three core properties:</p>
+<ul>
+<li><strong>Completeness</strong>: Given a statement and a witness, the prover can convince the verifier. </li>
+<li><strong>Soundness</strong>: A malicious prover cannot convince the verifier of a false statement. </li>
+<li><strong>Zero-knowledge</strong>: The proof does not reveal anything but the truth of the statement</li>
+</ul>
+<h3 id="1-1-Contribution"><a href="#1-1-Contribution" class="headerlink" title="1.1. Contribution"></a>1.1. Contribution</h3><p><strong>Succinct NIZK</strong> We construct a NIZK argument for arithmetic circuit satisfiability where a proof consists of only 3 group elements. In addition to being small, the proof is also easy to verify. The verifier just needs to compute a number of exponentiations proportional to the statement size and check a single pairing product equation, which only has 3 pairings.</p>
+<h2 id="2-Preliminaries"><a href="#2-Preliminaries" class="headerlink" title="2. Preliminaries"></a>2. Preliminaries</h2><h3 id="2-1-Bilinear-Groups"><a href="#2-1-Bilinear-Groups" class="headerlink" title="2.1 Bilinear Groups"></a>2.1 Bilinear Groups</h3><p>We will work over bilinear groups \((p, \mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} , e, g, h)\) with the following properties:</p>
+<ul>
+<li>\(\mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} \)are groups of prime order \(p\)</li>
+<li>The pairing \( e:\mathbb{G_{1}} \times \mathbb{G_{2}} \rightarrow \mathbb{G_{T}}\) is a bilinear map</li>
+<li>\(g\) is a generator for \(\mathbb{G_{1}}\), \(h\) is a generator for \(\mathbb{G_{2}}\), and \(e(g,h)\) is a generator for \(\mathbb{G_{T}}\)</li>
+</ul>
+<p>There are many ways to set up bilinear groups both as symmetric bilinear groups where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{1}}\) and as asymmetric bilinear groups where \(\mathbb{G_{1}} \neq \mathbb{G_{1}}\). Galbraith, Paterson and Smart [GPS08] classify bilinear groups as <strong>Type I</strong> where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{2}}\), <strong>Type II</strong> where there is an efficiently computable non-trivial homomorphism \(\Phi : \mathbb{G_{2}} \rightarrow \mathbb{G_{1}}\), and <strong>Type III</strong> where no such efficiently computable homomorphism exists in either direction between \(\mathbb{G_{1}}\) and \(\mathbb{G_{2}}\). Type III bilinear groups are the most efficient type of bilinear groups and hence the most relevant for practical applications.<br>As a notation for group elements, we write \( \lbrack a \rbrack_{1} \) for \( g^a\), \( \lbrack b \rbrack_{2}\) for \( h^b\) and \( \lbrack c \rbrack_{T}\) for \(e(g,h)^{c} \).  A vector of group elements will be represented as \( \lbrack \mathbf{a} \rbrack_{i} \).  Given two vectors of \(n\) group elements \( \lbrack \mathbf{a} \rbrack_{1} \) and \( \lbrack \mathbf{b} \rbrack_{2} \), we define their dot product as \( \lbrack \mathbf{a} \rbrack_{1} \cdot \lbrack \mathbf{b} \rbrack_{2}  &#x3D; \lbrack \mathbf{a} \cdot  \mathbf{b} \rbrack_{T} \), which can be efficiently computed using the pairing \(e\).</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/07/07/cryptography/zkp/zkp-groth16/" data-id="cllb0puy6001vansj8ujy38ii" data-title="zkp groth16 paper review" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          zkp demystify zokrates
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">zkp how and why it works</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 15px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
+          </li>
+        
+          <li>
+            <a href="/2023/07/07/cryptography/zkp/zkp-groth16/">zkp groth16 paper review</a>
+          </li>
+        
+          <li>
+            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp how and why it works</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding (1)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
