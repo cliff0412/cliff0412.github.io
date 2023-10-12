@@ -71,10 +71,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-cryptography/zkp/zkp-demysify-zokrates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-math/fourier-series" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/07/14/cryptography/zkp/zkp-demysify-zokrates/" class="article-date">
-  <time class="dt-published" datetime="2023-07-14T06:29:26.000Z" itemprop="datePublished">2023-07-14</time>
+    <a href="/2023/10/12/math/fourier-series/" class="article-date">
+  <time class="dt-published" datetime="2023-10-12T03:13:17.000Z" itemprop="datePublished">2023-10-12</time>
 </a>
     
   </div>
@@ -85,7 +85,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/14/cryptography/zkp/zkp-demysify-zokrates/">zkp groth16</a>
+      <a class="p-name article-title" href="/2023/10/12/math/fourier-series/">fourier_series</a>
     </h1>
   
 
@@ -98,34 +98,24 @@
   type="text/javascript">
 </script>
 
-<h2 id="demo"><a href="#demo" class="headerlink" title="demo"></a>demo</h2><ol>
-<li>source file<br>an example, <code>square.zok</code><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def main(private field a, field b) &#123;</span><br><span class="line">    assert(a * a == b);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<ul>
-<li>The keyword private signals that we do not want to reveal this input, but still prove that we know its value.</li>
-</ul>
-<ol start="2">
-<li>compile<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates compile -i root.zok</span><br></pre></td></tr></table></figure>
-after compile, it outputs below files</li>
-</ol>
-<ul>
-<li>out</li>
-<li>out.r1cs</li>
-<li>abi.json</li>
-</ul>
-<ol start="3">
-<li>setup<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates setup</span><br></pre></td></tr></table></figure></li>
-</ol>
+<h2 id="Fourier-Series"><a href="#Fourier-Series" class="headerlink" title="Fourier Series"></a>Fourier Series</h2><h3 id="innter-product-of-two-functions"><a href="#innter-product-of-two-functions" class="headerlink" title="innter product of two functions"></a>innter product of two functions</h3><p>\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]<br>\(\bar{g}\) is the congugate of g on complex number system</p>
+<h3 id="Fourier-series-definition"><a href="#Fourier-series-definition" class="headerlink" title="Fourier series definition"></a>Fourier series definition</h3><p>let \(f(x)\) be a periodic function over a period of \([-\pi, +\pi]\)<br><img src="/images/math/fourier_series/f_x.png" alt="f(x)"></p>
+<p>\( f(x) \) can be transformed into below<br>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(kx) + B_{k}sin(kx)\],<br>where<br>\[ A_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)cos(kx)dx &#x3D; \frac{1}{||cos(kx)||^2}&lt;f(x),cos(kx)&gt; \]<br>\[ B_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)sin(kx)dx &#x3D; \frac{1}{||sin(kx)||^2}&lt;f(x),sin(kx)&gt; \]<br>where \(A_{k}, B_{k}\) is the projection of \(f(x)\) over \(sin(kx)\), or \(cos(kx)\)</p>
+<h3 id="if-period-is-L"><a href="#if-period-is-L" class="headerlink" title="if period is L"></a>if period is L</h3><p>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(\frac{2\pi kx}{L}) + B_{k}sin(\frac{2\pi kx}{L})\],<br>where<br>\[ A_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)cos(\frac{2\pi kx}{L})dx\]<br>\[ B_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)sin(\frac{2\pi kx}{L})dx\]</p>
+<h2 id="Complex-Fourier-Series"><a href="#Complex-Fourier-Series" class="headerlink" title="Complex Fourier Series"></a>Complex Fourier Series</h2><p>todo!()</p>
+<h2 id="Discrete-Fourier-Transform-DFT"><a href="#Discrete-Fourier-Transform-DFT" class="headerlink" title="Discrete Fourier Transform (DFT)"></a>Discrete Fourier Transform (DFT)</h2><p>The discrete Fourier transform transforms a sequence of N complex numbers<br>\[\lbrace x_{n} \rbrace :&#x3D; x_0, x_1,…, x_{N-1} \] into another sequence of complex numbers,<br>\[\lbrace X_{k} \rbrace :&#x3D; X_0, X_1,…, X_{N-1} \] which is defined by<br>\[X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot e^{-\frac{i2\pi}{N}kn}\]</p>
+<h3 id="inverse-DFT"><a href="#inverse-DFT" class="headerlink" title="inverse DFT"></a>inverse DFT</h3><p>The inverse transform is given by<br>\[x_{n} &#x3D; \frac{1}{N}\sum_{k&#x3D;0}^{N-1} X_{k} \cdot e^{\frac{i2\pi}{N}kn}\]</p>
+<h3 id="the-unitary-DFT"><a href="#the-unitary-DFT" class="headerlink" title="the unitary DFT"></a>the unitary DFT</h3><p>Another way of looking at the DFT is to note that the DFT can be expressed as the DFT matrix, a Vandermonde matrix, introduced by Sylvester in 1867.<br>\[<br>    \boldsymbol{F} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]<br>where \( \omega_{N} &#x3D; e^{-\frac{i2\pi}{N}}\) is a primitive Nth root of unity. (any complex number that yields 1 when raised to some positive integer power n)</p>
+<p>\[  \tag{1.1} X &#x3D; F \cdot x^{T}\]</p>
+<h2 id="Fast-Fourier-Transform-FFT"><a href="#Fast-Fourier-Transform-FFT" class="headerlink" title="Fast Fourier Transform (FFT)"></a>Fast Fourier Transform (FFT)</h2><p>FFT is an algorithm to compute DFT ,E.q(1.1). The original DFT contains \(N^2\) multiplications. However, FFT reduce it to \(N\cdot log(N)\)</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demysify-zokrates/" data-id="clkfhhzen0003cvsj382d9xze" data-title="zkp groth16" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/10/12/math/fourier-series/" data-id="clnmm2r6q0000meq993rk33nm" data-title="fourier_series" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
     </footer>
   </div>
   
@@ -185,7 +175,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" data-id="cllazkawc0000iisj1pth6t7r" data-title="zkp demystify zokrates" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" data-id="cllb0puy0001lansj73gja1hp" data-title="zkp demystify zokrates" class="article-share-link">Share</a>
       
       
       
@@ -199,9 +189,9 @@ after compile, it outputs below files</li>
 
 
   
-    <article id="post-cryptography/zkp/zkp-groth16" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/zkp/zkp-groth16-paper-review" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/07/07/cryptography/zkp/zkp-groth16/" class="article-date">
+    <a href="/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/" class="article-date">
   <time class="dt-published" datetime="2023-07-07T06:29:26.000Z" itemprop="datePublished">2023-07-07</time>
 </a>
     
@@ -213,7 +203,7 @@ after compile, it outputs below files</li>
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/07/cryptography/zkp/zkp-groth16/">zkp groth16 paper review</a>
+      <a class="p-name article-title" href="/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/">zkp groth16 paper review</a>
     </h1>
   
 
@@ -239,14 +229,14 @@ after compile, it outputs below files</li>
 <li>\(g\) is a generator for \(\mathbb{G_{1}}\), \(h\) is a generator for \(\mathbb{G_{2}}\), and \(e(g,h)\) is a generator for \(\mathbb{G_{T}}\)</li>
 </ul>
 <p>There are many ways to set up bilinear groups both as symmetric bilinear groups where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{1}}\) and as asymmetric bilinear groups where \(\mathbb{G_{1}} \neq \mathbb{G_{1}}\). Galbraith, Paterson and Smart [GPS08] classify bilinear groups as <strong>Type I</strong> where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{2}}\), <strong>Type II</strong> where there is an efficiently computable non-trivial homomorphism \(\Phi : \mathbb{G_{2}} \rightarrow \mathbb{G_{1}}\), and <strong>Type III</strong> where no such efficiently computable homomorphism exists in either direction between \(\mathbb{G_{1}}\) and \(\mathbb{G_{2}}\). Type III bilinear groups are the most efficient type of bilinear groups and hence the most relevant for practical applications.<br>As a notation for group elements, we write \( \lbrack a \rbrack_{1} \) for \( g^a\), \( \lbrack b \rbrack_{2}\) for \( h^b\) and \( \lbrack c \rbrack_{T}\) for \(e(g,h)^{c} \).  A vector of group elements will be represented as \( \lbrack \mathbf{a} \rbrack_{i} \).  Given two vectors of \(n\) group elements \( \lbrack \mathbf{a} \rbrack_{1} \) and \( \lbrack \mathbf{b} \rbrack_{2} \), we define their dot product as \( \lbrack \mathbf{a} \rbrack_{1} \cdot \lbrack \mathbf{b} \rbrack_{2}  &#x3D; \lbrack \mathbf{a} \cdot  \mathbf{b} \rbrack_{T} \), which can be efficiently computed using the pairing \(e\).</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<h3 id="2-2-Non-interactive-zero-knowledge-arguments-of-knowledge"><a href="#2-2-Non-interactive-zero-knowledge-arguments-of-knowledge" class="headerlink" title="2.2 Non-interactive zero-knowledge arguments of knowledge"></a>2.2 Non-interactive zero-knowledge arguments of knowledge</h3><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth</li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/07/cryptography/zkp/zkp-groth16/" data-id="clkexzbti0000cvsjdfzkgneb" data-title="zkp groth16 paper review" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/" data-id="cllb0qj0q0000dasj1qa1gx9b" data-title="zkp groth16 paper review" class="article-share-link">Share</a>
       
       
       
@@ -339,7 +329,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="clkcad2ii003ag2sjevuh46eu" data-title="zkp how and why it works" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="cllb0puy2001qansj7yedgm9g" data-title="zkp how and why it works" class="article-share-link">Share</a>
       
       
       
@@ -426,7 +416,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clkcad2ic001gg2sj1ylo4s1g" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="cllb0puxy001hansjbjx20agn" data-title="elliptic curve paring" class="article-share-link">Share</a>
       
       
       
@@ -519,7 +509,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="clkcad2id001qg2sjbobi622j" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="cllb0puy90025ansjekdjh727" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
       
       
       
@@ -659,7 +649,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clkcad2i30004g2sjh4wm8zst" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="cllb0puxf000cansj9diw98pw" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
       
       
       
@@ -724,7 +714,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clkcad2i40008g2sjfe6cf4lu" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="cllb0puxd0008ansjfwdjat5n" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -809,7 +799,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clkcad2i20003g2sj63pa1kyf" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="cllb0puxb0005ansjhx3vfcsm" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -915,7 +905,7 @@ after compile, it outputs below files</li>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clkcad2ij003eg2sj9021ek86" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="cllb0puyd002kansj010jf1g8" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -957,7 +947,7 @@ after compile, it outputs below files</li>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 14.29px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 12.86px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 15.71px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 15px;">zkp</a>
     </div>
   </div>
 
@@ -966,7 +956,7 @@ after compile, it outputs below files</li>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -979,7 +969,7 @@ after compile, it outputs below files</li>
       <ul>
         
           <li>
-            <a href="/2023/07/14/cryptography/zkp/zkp-demysify-zokrates/">zkp groth16</a>
+            <a href="/2023/10/12/math/fourier-series/">fourier_series</a>
           </li>
         
           <li>
@@ -987,7 +977,7 @@ after compile, it outputs below files</li>
           </li>
         
           <li>
-            <a href="/2023/07/07/cryptography/zkp/zkp-groth16/">zkp groth16 paper review</a>
+            <a href="/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/">zkp groth16 paper review</a>
           </li>
         
           <li>

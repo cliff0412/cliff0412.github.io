@@ -26,5 +26,10 @@ We will work over bilinear groups \\((p, \mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb
 
 There are many ways to set up bilinear groups both as symmetric bilinear groups where \\(\mathbb{G_{1}} = \mathbb{G_{1}}\\) and as asymmetric bilinear groups where \\(\mathbb{G_{1}} \neq \mathbb{G_{1}}\\). Galbraith, Paterson and Smart [GPS08] classify bilinear groups as **Type I** where \\(\mathbb{G_{1}} = \mathbb{G_{2}}\\), **Type II** where there is an efficiently computable non-trivial homomorphism \\(\Phi : \mathbb{G_{2}} \rightarrow \mathbb{G_{1}}\\), and **Type III** where no such efficiently computable homomorphism exists in either direction between \\(\mathbb{G_{1}}\\) and \\(\mathbb{G_{2}}\\). Type III bilinear groups are the most efficient type of bilinear groups and hence the most relevant for practical applications.
 As a notation for group elements, we write \\( \lbrack a \rbrack_{1} \\) for \\( g^a\\), \\( \lbrack b \rbrack_{2}\\) for \\( h^b\\) and \\( \lbrack c \rbrack_{T}\\) for \\(e(g,h)^{c} \\).  A vector of group elements will be represented as \\( \lbrack \mathbf{a} \rbrack_{i} \\).  Given two vectors of \\(n\\) group elements \\( \lbrack \mathbf{a} \rbrack_{1} \\) and \\( \lbrack \mathbf{b} \rbrack_{2} \\), we define their dot product as \\( \lbrack \mathbf{a} \rbrack_{1} \cdot \lbrack \mathbf{b} \rbrack_{2}  = \lbrack \mathbf{a} \cdot  \mathbf{b} \rbrack_{T} \\), which can be efficiently computed using the pairing \\(e\\).
+
+
+### 2.2 Non-interactive zero-knowledge arguments of knowledge
+
+
 ## references
 - [1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth
