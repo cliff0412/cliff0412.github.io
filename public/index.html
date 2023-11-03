@@ -71,6 +71,229 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-zkp/stark-101" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/03/zkp/stark-101/" class="article-date">
+  <time class="dt-published" datetime="2023-11-03T09:07:33.000Z" itemprop="datePublished">2023-11-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/03/zkp/stark-101/">stark_101</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h1 id="startk-101"><a href="#startk-101" class="headerlink" title="startk 101"></a>startk 101</h1><h2 id="trace-and-low-degree-extension"><a href="#trace-and-low-degree-extension" class="headerlink" title="trace and low degree extension"></a>trace and low degree extension</h2><p>the objective is to develop a STARK prover for the FibonacciSq sequence over a finite field. The FibonacciSq sequence is defined by the recurrence relation<br>\[ a_{n+2} &#x3D; a_{n+1} ^2 + a_n ^2 \]</p>
+<p>the statement is: <strong>I know a FieldElement \(X\in \mathbb{F}\) such that the 1023rd element of the FibonacciSq sequence starting with \(1, X\) is \(2338775057\)</strong></p>
+<p>The underlying field of this class is \(\mathbb{F}_{3221225473}\) (\(3221225473 &#x3D; 3 \cdot 2^{30} + 1\)), so all operations are done modulo 3221225473.</p>
+<h3 id="FibonacciSq-Trace"><a href="#FibonacciSq-Trace" class="headerlink" title="FibonacciSq Trace"></a>FibonacciSq Trace</h3><p> let’s construct a list <code>a</code> of length 1023, whose first two elements will be FieldElement objects representing 1 and 3141592, respectively. The next 1021 elements will be the FibonacciSq sequence induced by these two elements. <code>a</code> is called the <strong>trace</strong> of FibonacciSq, or, when the context is clear, the trace.</p>
+<h3 id="Thinking-of-Polynomials"><a href="#Thinking-of-Polynomials" class="headerlink" title="Thinking of Polynomials"></a>Thinking of Polynomials</h3><p>We now want to think of the sequence as the evaluation of some polynomial \(f\) of degree 1022.<br>We will choose the domain to be some subgroup \(G \subseteq \mathbb{F}^\times\) of size 1024, for reasons that will become clear later.</p>
+<p>(Recall that \(\mathbb{F}^\times\) denotes the multiplicative group of \(\mathbb{F}\), which we get from \(\mathbb{F}\) by omitting the zero element with the induced multiplication from the field. A subgroup of size 1024 exists because \(\mathbb{F}^\times\) is a cyclic group of size \(3\cdot 2^{30}\), so it contains a subgroup of size \(2^i\) for any \(0 \leq i \leq 30\)).</p>
+<h4 id="Find-a-Group-of-Size-1024"><a href="#Find-a-Group-of-Size-1024" class="headerlink" title="Find a Group of Size 1024"></a>Find a Group of Size 1024</h4><p>If we find an element \(g \in \mathbb{F}\) whose (multiplicative) order is 1024, then \(g\) will generate such a group. Create a list called <code>G</code> with all the elements of \(G\), such that \(G[i] :&#x3D; g^i\).</p>
+<h3 id="Evaluating-on-a-Larger-Domain"><a href="#Evaluating-on-a-Larger-Domain" class="headerlink" title="Evaluating on a Larger Domain"></a>Evaluating on a Larger Domain</h3><p>then, interpolating <code>G</code> over <code>a</code> we get a polynomial <code>f</code>. The trace, viewed as evaluations of a polynomial \(f\) on \(G\), can now be extended by evaluating \(f\) over a larger domain, thereby creating a Reed-Solomon error correction code.</p>
+<h4 id="Cosets"><a href="#Cosets" class="headerlink" title="Cosets"></a>Cosets</h4><p>To that end, we must decide on a larger domain on which \(f\) will be evaluated. We will work with a domain that is 8 times larger than \(G\). <br>A natural choice for such a domain is to take some group \(H\) of size 8192 (which exists because 8192 divides \(|\mathbb{F}^\times|\)), and shift it by the generator of \(\mathbb{F}^\times\), thereby obtaining a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Coset">coset</a> of \(H\).</p>
+<p>Create a list called <code>H</code> of the elements of \(H\), and multiply each of them by the generator of \(\mathbb{F}^\times\) to obtain a list called <code>eval_domain</code>. In other words, <code>eval_domain</code> &#x3D; \(\{w\cdot h^i | 0 \leq i &lt;8192  \}\) for \(h\) the generator of \(H\) and \(w\) the generator of \(\mathbb{F}^\times\).</p>
+<h4 id="Evaluate-on-a-Coset"><a href="#Evaluate-on-a-Coset" class="headerlink" title="Evaluate on a Coset"></a>Evaluate on a Coset</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">f = interpolate_poly(G[:-<span class="number">1</span>], a)</span><br><span class="line">f_eval = [f(d) <span class="keyword">for</span> d <span class="keyword">in</span> eval_domain]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Commitments"><a href="#Commitments" class="headerlink" title="Commitments"></a>Commitments</h3><p>We will use <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/SHA-2">Sha256</a>-based <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle Trees</a> as our commitment scheme.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> merkle <span class="keyword">import</span> MerkleTree</span><br><span class="line">f_merkle = MerkleTree(f_eval)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h3><p>Theoretically, a STARK proof system is a protocol for interaction between two parties - a prover and a verifier. In practice, we convert this interactive protocol into a non-interactive proof using the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic">Fiat-Shamir Heuristic</a>. In this tutorial you will use the <code>Channel</code> class, which implements this transformation. This channel replaces the verifier in the sense that the prover (which you are writing) will send data, and receive random numbers or random <code>FieldElement</code> instances.</p>
+<h2 id="constraints"><a href="#constraints" class="headerlink" title="constraints"></a>constraints</h2><p>In this part, we are going to create a set of constraints over the trace <code>a</code>. </p>
+<h3 id="Step-1-FibonacciSq-Constraints"><a href="#Step-1-FibonacciSq-Constraints" class="headerlink" title="Step 1 - FibonacciSq Constraints"></a>Step 1 - FibonacciSq Constraints</h3><p>For <code>a</code> to be a correct trace of a FibonacciSq sequence that proves our claim:</p>
+<ol>
+<li>The first element has to be 1, namely \(a[0] &#x3D; 1\).</li>
+<li>The last element has to be 2338775057, namely \(a[1022] &#x3D; 2338775057\).</li>
+<li>The FibonacciSq rule must apply, that is - for every \(i&lt;1021\), \(a[i+2]&#x3D;a[i+1]^2+a[i]^2\).</li>
+</ol>
+<h3 id="Step-2-Polynomial-Constraints"><a href="#Step-2-Polynomial-Constraints" class="headerlink" title="Step 2 - Polynomial Constraints"></a>Step 2 - Polynomial Constraints</h3><p>Recall that <code>f</code> is a polynomial over the trace domain, that evaluates exactly to <code>a</code> over \(G \setminus {g^{1023}}\) where \(G&#x3D;{g^i : 0\leq i\leq 1023}\) is the “small” group generated by \(g\).<br></p>
+<p>We now rewrite the above three constraints in a form of polynomial constraints over <code>f</code>:</p>
+<ol>
+<li>\(a[0] &#x3D; 1\) is translated to the polynomial \(f(x) - 1\), which evalutes to 0 for \(x &#x3D; g^0\) (note that \(g^0\) is \(1\)). <br></li>
+<li>\(a[1022] &#x3D; 2338775057\) is translated to the polynomial \(f(x) - 2338775057\), which evalutes to 0 for \(x &#x3D; g^{1022}\). <br></li>
+<li>\(a[i+2]&#x3D;a[i+1]^2+a[i]^2\) for every \(i&lt;1021\) is translated to the polynomial \(f(g^2 \cdot x) - (f(g \cdot x))^2 - (f(x))^2\), which evaluates to 0 for \(x \in G \backslash {g^{1021}, g^{1022}, g^{1023}}\). <br><br></li>
+</ol>
+<h3 id="Step-3-Rational-Functions-That-are-in-Fact-Polynomials"><a href="#Step-3-Rational-Functions-That-are-in-Fact-Polynomials" class="headerlink" title="Step 3 - Rational Functions (That are in Fact Polynomials)"></a>Step 3 - Rational Functions (That are in Fact Polynomials)</h3><p>Each of the constraints above is represented by a polynomial \(u(x)\) that supposedly evaluates to \(0\) on certain elements of the group \(G\). That is, for some \(x_0, \ldots, x_k \in G\), we claim that</p>
+<p>\[u(x_0) &#x3D; \ldots &#x3D; u(x_k) &#x3D; 0\]</p>
+<p>(note that for the first two constaints, \(k&#x3D;0\) because they only refer to one point and for the third \(k&#x3D;1021\)).</p>
+<p>This is equivalent to saying that \(u(x)\) is divisible, as a polynomial, by all of \({(x-x_i)}_{i&#x3D;0}^k\), or, equivalently, by</p>
+<p>\[\prod_{i&#x3D;0}^k (x-x_i)\]</p>
+<p>Therefore, each of the three constraints above can be written as a rational function of the form:</p>
+<p>\[\frac{u(x)}{\prod_{i&#x3D;0}^k (x-x_i)}\]</p>
+<p>for the corresponding \(u(x)) and \({x_i}_{i&#x3D;0}^k). In this step we will construct these three rational functions and show that they are indeed polynomials.</p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/starkware-industries/stark101">https://github.com/starkware-industries/stark101</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/starkware/tagged/stark-math">startk_math</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/starkware/starkdex-deep-dive-introduction-7b4ef0dedba8">starkEx deep dive</a></li>
+<li>[coset] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Coset">https://en.wikipedia.org/wiki/Coset</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/03/zkp/stark-101/" data-id="cloiee53j0000ja7u4oskhbde" data-title="stark_101" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/01/cryptography/montgomery-multiplication/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T11:10:13.000Z" itemprop="datePublished">2023-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>montgomery multiplciation</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/montgomery-multiplication/" data-id="clogjcl5i0001bn7u5bol23vk" data-title="montgomery_multiplication" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/bls12-381" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/01/cryptography/bls12-381/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T11:09:11.000Z" itemprop="datePublished">2023-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="bls12-381"><a href="#bls12-381" class="headerlink" title="bls12_381"></a>bls12_381</h1><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/bls12-381/" data-id="clogjcl5g0000bn7uayq5agz8" data-title="bls12_381" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-zkp/understanding-plonk" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/01/zkp/understanding-plonk/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T09:19:04.000Z" itemprop="datePublished">2023-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@learn-zkp/note-plonk-family">https://hackmd.io/@learn-zkp/note-plonk-family</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clogjcl5j0003bn7u5agmhf4r" data-title="understanding_plonk" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/06/20/zkp/zkp-a-brief-understanding/" class="article-date">
@@ -515,291 +738,6 @@
 
 
   
-    <article id="post-rust/rust-10-concurrency" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/01/rust/rust-10-concurrency/" class="article-date">
-  <time class="dt-published" datetime="2023-06-01T14:04:38.000Z" itemprop="datePublished">2023-06-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/01/rust/rust-10-concurrency/">rust concurrency</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="Send-and-Sync"><a href="#Send-and-Sync" class="headerlink" title="Send and Sync"></a>Send and Sync</h2><ul>
-<li>A type is Send if it is safe to send it to another thread.</li>
-<li>A type is Sync if it is safe to share between threads (T is Sync if and only if &amp;T is Send).</li>
-<li>raw pointers are neither Send nor Sync (because they have no safety guards).</li>
-<li>UnsafeCell isn’t Sync (and therefore Cell and RefCell aren’t).</li>
-<li>Rc isn’t Send or Sync (because the refcount is shared and unsynchronized).</li>
-</ul>
-<p>Types that aren’t automatically derived can simply implement them if desired:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">MyBox</span>(*<span class="keyword">mut</span> <span class="type">u8</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">unsafe</span> <span class="keyword">impl</span> <span class="title class_">Send</span> <span class="keyword">for</span> <span class="title class_">MyBox</span> &#123;&#125;</span><br><span class="line"><span class="keyword">unsafe</span> <span class="keyword">impl</span> <span class="title class_">Sync</span> <span class="keyword">for</span> <span class="title class_">MyBox</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
-<p>one can also unimplement Send and Sync:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(negative_impls)]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// I have some magic semantics for some synchronization primitive!</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">SpecialThreadToken</span>(<span class="type">u8</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> !<span class="built_in">Send</span> <span class="keyword">for</span> <span class="title class_">SpecialThreadToken</span> &#123;&#125;</span><br><span class="line"><span class="keyword">impl</span> !<span class="built_in">Sync</span> <span class="keyword">for</span> <span class="title class_">SpecialThreadToken</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/nomicon/send-and-sync.html">rustonomicon</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clk1e4wpt000u6hsj6fqz3nu7" data-title="rust concurrency" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust_std/rust-std-data-structure-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/" class="article-date">
-  <time class="dt-published" datetime="2023-05-02T14:04:38.000Z" itemprop="datePublished">2023-05-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/">rust std data structure (2D)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="collections"><a href="#collections" class="headerlink" title="collections"></a>collections</h2><h3 id="BTreeMap"><a href="#BTreeMap" class="headerlink" title="BTreeMap"></a>BTreeMap</h3><ul>
-<li><code>clear(&amp;mut self)</code> Clears the map, removing all elements.</li>
-<li><code>get(&amp;self, key: &amp;Q)</code> Returns a reference to the value corresponding to the key.</li>
-<li><code>get_key_value(&amp;self, k: &amp;Q)</code></li>
-<li><code>first_key_value(&amp;self)</code> eturns the first key-value pair in the map.</li>
-<li><code>first_entry(&amp;mut self)</code> Returns the first entry in the map for in-place manipulation</li>
-<li><code>pop_first(&amp;mut self)</code> </li>
-<li><code>last_key_value(&amp;self)</code></li>
-<li><code>last_entry(&amp;mut self)</code></li>
-<li><code>pop_last(&amp;mut self)</code></li>
-<li><code>contains_key(&amp;self, key: &amp;Q)</code></li>
-<li><code>get_mut(&amp;mut self, key: &amp;Q)</code> Returns a mutable reference to the value corresponding to the key</li>
-<li><code>insert(&amp;mut self, key: K, value: V)</code></li>
-<li><code>try_insert(&amp;mut self, key: K, value: V)</code> If the map already had this key present, nothing is updated, and an error containing the occupied entry and the value is returned.</li>
-<li><code>remove(&amp;mut self, key: &amp;Q)</code></li>
-<li><code>remove_entry(&amp;mut self, key: &amp;Q)</code></li>
-<li><code>retain&lt;F&gt;(&amp;mut self, mut f: F)</code> Retains only the elements specified by the predicate.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span>: BTreeMap&lt;<span class="type">i32</span>, <span class="type">i32</span>&gt; = (<span class="number">0</span>..<span class="number">8</span>).<span class="title function_ invoke__">map</span>(|x| (x, x*<span class="number">10</span>)).<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="comment">// Keep only the elements with even-numbered keys.</span></span><br><span class="line">map.<span class="title function_ invoke__">retain</span>(|&amp;k, _| k % <span class="number">2</span> == <span class="number">0</span>);</span><br><span class="line"><span class="built_in">assert!</span>(map.<span class="title function_ invoke__">into_iter</span>().<span class="title function_ invoke__">eq</span>(<span class="built_in">vec!</span>[(<span class="number">0</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">20</span>), (<span class="number">4</span>, <span class="number">40</span>), (<span class="number">6</span>, <span class="number">60</span>)]));</span><br></pre></td></tr></table></figure></li>
-<li><code>append(&amp;mut self, other: &amp;mut Self)</code> Moves all elements from <code>other</code> into <code>self</code>, leaving <code>other</code> empty.</li>
-<li><code>range&lt;T: ?Sized, R&gt;(&amp;self, range: R) -&gt; Range&lt;&#39;_, K, V&gt;</code> Constructs a double-ended iterator over a sub-range of elements in the map.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">use</span> std::ops::Bound::Included;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span> = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">3</span>, <span class="string">&quot;a&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">5</span>, <span class="string">&quot;b&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">8</span>, <span class="string">&quot;c&quot;</span>);</span><br><span class="line"><span class="title function_ invoke__">for</span> (&amp;key, &amp;value) <span class="keyword">in</span> map.<span class="title function_ invoke__">range</span>((<span class="title function_ invoke__">Included</span>(&amp;<span class="number">4</span>), <span class="title function_ invoke__">Included</span>(&amp;<span class="number">8</span>))) &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;key&#125;: &#123;value&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>((&amp;<span class="number">5</span>, &amp;<span class="string">&quot;b&quot;</span>)), map.<span class="title function_ invoke__">range</span>(<span class="number">4</span>..).<span class="title function_ invoke__">next</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>range_mut&lt;T: ?Sized, R&gt;(&amp;mut self, range: R) -&gt; RangeMut&lt;&#39;_, K, V&gt;</code> </li>
-<li><code>entry(&amp;mut self, key: K)</code> Gets the given key’s corresponding entry in the map for in-place manipulation.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">count</span>: BTreeMap&lt;&amp;<span class="type">str</span>, <span class="type">usize</span>&gt; = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line"><span class="comment">// count the number of occurrences of letters in the vec</span></span><br><span class="line"><span class="keyword">for</span> <span class="variable">x</span> <span class="keyword">in</span> [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>] &#123;</span><br><span class="line">    count.<span class="title function_ invoke__">entry</span>(x).<span class="title function_ invoke__">and_modify</span>(|curr| *curr += <span class="number">1</span>).<span class="title function_ invoke__">or_insert</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;a&quot;</span>], <span class="number">3</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;b&quot;</span>], <span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;c&quot;</span>], <span class="number">1</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>split_off&lt;Q: ?Sized + Ord&gt;(&amp;mut self, key: &amp;Q)</code> Splits the collection into two at the given key. Returns everything after the given key,</li>
-<li><code>drain_filter&lt;F&gt;(&amp;mut self, pred: F)</code> Creates an iterator that visits all elements (key-value pairs) in ascending key order and uses a closure to determine if an element should be removed. If the closure returns <code>true</code>, the element is removed from the map and yielded. If the closure returns <code>false</code>, or panics, the element remains in the map and will not be yielded</li>
-<li><code>into_keys(self)</code> Creates a consuming iterator visiting all the keys, in sorted order. The map cannot be used after calling this</li>
-<li><code>into_values(self)</code></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clk1e4wq3002p6hsj2lwf9hko" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust_std/rust-std-data-structure-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/" class="article-date">
-  <time class="dt-published" datetime="2023-05-01T14:04:38.000Z" itemprop="datePublished">2023-05-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/">rust std data structure (1D)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="array"><a href="#array" class="headerlink" title="array"></a>array</h2><p>A <strong>fixed-size</strong> array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N.</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">todo!()</span><br></pre></td></tr></table></figure>
-
-<h2 id="slice"><a href="#slice" class="headerlink" title="slice"></a>slice</h2><p>A <strong>dynamically-sized view</strong> into a contiguous sequence, [T].</p>
-<ul>
-<li><code>len()</code>: Returns the number of elements in the slice</li>
-<li><code>is_empty()</code></li>
-<li><code>first()</code> Returns the first element of the slice, or <code>None</code> if it is empty.</li>
-<li><code>first_mut()</code> Returns a mutable <strong>pointer</strong> to the first element of the slice, or <code>None</code> if it is empty</li>
-<li><code>split_first()</code> Returns the first and all the rest of the elements of the slice, or <code>None</code> if it is empty.</li>
-<li><code>split_first_mut()</code> </li>
-<li><code>split_last()</code></li>
-<li><code>split_last_mut()</code></li>
-<li><code>last()</code></li>
-<li><code>last_mut()</code></li>
-<li><code>get&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice depending on the type of index.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;<span class="number">40</span>), v.<span class="title function_ invoke__">get</span>(<span class="number">1</span>));</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>][..]), v.<span class="title function_ invoke__">get</span>(<span class="number">0</span>..<span class="number">2</span>));</span><br></pre></td></tr></table></figure></li>
-<li><code>get_mut&lt;I&gt;(index: I)</code></li>
-<li><code>get_unchecked&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice, without doing bounds checking</li>
-<li><code>get_unchecked_mut&lt;I&gt;(index: I)</code></li>
-<li><code>as_ptr(&amp;self) -&gt; *const T</code> Returns a raw pointer to the slice’s buffer<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        <span class="built_in">assert_eq!</span>(x.<span class="title function_ invoke__">get_unchecked</span>(i), &amp;*x_ptr.<span class="title function_ invoke__">add</span>(i));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><code>as_mut_ptr(&amp;mut self) -&gt; *mut T</code> <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_mut_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        *x_ptr.<span class="title function_ invoke__">add</span>(i) += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(x, &amp;[<span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>as_ptr_range(&amp;self) -&gt; Range&lt;*const T&gt;</code> Returns the two raw pointers spanning the slice.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">const</span> <span class="keyword">fn</span> <span class="title function_">as_ptr_range</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> Range&lt;*<span class="keyword">const</span> T&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">start</span> = <span class="keyword">self</span>.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">end</span> = <span class="keyword">unsafe</span> &#123; start.<span class="title function_ invoke__">add</span>(<span class="keyword">self</span>.<span class="title function_ invoke__">len</span>()) &#125;;</span><br><span class="line">    start..end</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><code>as_mut_ptr_range(&amp;mut self) -&gt; Range&lt;*mut T&gt;</code></li>
-<li><code>swap(&amp;mut self, a: usize, b: usize)</code> Swaps two elements in the slice.</li>
-<li><code>reverse(&amp;mut self)</code> Reverses the order of elements in the slice, in place.</li>
-<li><code>windows(&amp;self, size: usize)</code> Returns an iterator over all contiguous windows of length <code>size</code>. The windows overlap. If the slice is shorter than <code>size</code>, the iterator returns no values.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">windows</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>chunks(&amp;self, chunk_size: usize)</code> Returns an iterator over <code>chunk_size</code> elements of the slice at a time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>chunks_mut()</code></li>
-<li><code>chunks_exact(&amp;self, chunk_size: usize)</code><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks_exact</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">remainder</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>as_chunks_unchecked&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, assuming that there’s no remainder</li>
-<li><code>as_chunks&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, starting at the beginning of the slice, and a remainder slice with length strictly less than <code>N</code></li>
-<li><code>as_rchunks&lt;const N: usize&gt;(&amp;self)</code> r means reverse</li>
-<li><code>group_by&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over the slice producing non-overlapping runs of elements using the predicate to separate them. The predicate is called on two elements following themselves, it means the predicate is called on <code>slice[0]</code> and <code>slice[1]</code> then on <code>slice[1]</code> and <code>slice[2]</code> and so on<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(slice_group_by)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = &amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">group_by</span>(|a, b| a &lt;= b);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>split_at(&amp;self, mid: usize)</code> Divides one slice into two at an index.</li>
-<li><code>split&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over subslices separated by elements that match <code>pred</code>. The matched element is not contained in the subslices.</li>
-<li><code>splitn&lt;F&gt;(&amp;self, n: usize, pred: F)</code> </li>
-<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the slice contains an element with the given value.</li>
-<li><code>starts_with(&amp;self, needle: &amp;[T])</code> eturns <code>true</code> if <code>needle</code> is a prefix of the slice<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(!v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">50</span>]));</span><br></pre></td></tr></table></figure></li>
-<li><code>ends_with(&amp;self, needle: &amp;[T])</code> </li>
-<li><code>strip_prefix</code> Returns a subslice with the prefix removed.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;[<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">10</span>]), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">40</span>, <span class="number">30</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">50</span>]), <span class="literal">None</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">prefix</span> : &amp;<span class="type">str</span> = <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="string">b&quot;hello&quot;</span>.<span class="title function_ invoke__">strip_prefix</span>(prefix.<span class="title function_ invoke__">as_bytes</span>()),</span><br><span class="line">           <span class="title function_ invoke__">Some</span>(<span class="string">b&quot;llo&quot;</span>.<span class="title function_ invoke__">as_ref</span>()));</span><br></pre></td></tr></table></figure></li>
-<li><code>strip_suffix</code></li>
-<li><code>binary_search(&amp;self, x: &amp;T)</code>  Binary searches this slice for a given element.</li>
-<li><code>sort_unstable(&amp;mut self)</code> Sorts the slice, but might not preserve the order of equal elements.</li>
-<li><code>rotate_left(&amp;mut self, mid: usize)</code> Rotates the slice in-place such that the first <code>mid</code> elements of the slice move to the end while the last <code>self.len() - mid</code> elements move to the front.</li>
-<li><code>fill(&amp;mut self, value: T)</code> Fills <code>self</code> with elements by cloning <code>value</code>.</li>
-<li><code>clone_from_slice(&amp;mut self, src: &amp;[T])</code> Copies the elements from <code>src</code> into <code>self</code>.</li>
-<li><code>copy_from_slice(&amp;mut self, src: &amp;[T])</code> </li>
-<li><code>is_sorted(&amp;self)</code> </li>
-<li><code>take&lt;&#39;a, R: OneSidedRange&lt;usize&gt;&gt;(self: &amp;mut &amp;&#39;a Self, range: R)</code> Removes the subslice corresponding to the given range</li>
-<li><code>get_many_mut&lt;const N: usize&gt;</code> Returns mutable references to many indices at once.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(get_many_mut)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Ok</span>([a, b]) = v.<span class="title function_ invoke__">get_many_mut</span>([<span class="number">0</span>, <span class="number">2</span>]) &#123;</span><br><span class="line">    *a = <span class="number">413</span>;</span><br><span class="line">    *b = <span class="number">612</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(v, &amp;[<span class="number">413</span>, <span class="number">2</span>, <span class="number">612</span>]);</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="alloc-vec-Vec"><a href="#alloc-vec-Vec" class="headerlink" title="alloc::vec::Vec"></a>alloc::vec::Vec</h2><ul>
-<li><code>fn truncate(&amp;mut self, len: usize)</code> Shortens the vector, keeping the first <code>len</code> elements and dropping the rest</li>
-</ul>
-<h2 id="std-collections-VecDeque"><a href="#std-collections-VecDeque" class="headerlink" title="std::collections::VecDeque"></a>std::collections::VecDeque</h2><p>A double-ended queue (deque) implemented with a growable ring buffer.<br>Since VecDeque is a ring buffer, its elements are not necessarily contiguous in memory. If you want to access the elements as a single slice, such as for efficient sorting, you can use make_contiguous. It rotates the VecDeque so that its elements do not wrap, and returns a mutable slice to the now-contiguous element sequence.</p>
-<ul>
-<li><code>swap(&amp;mut self, i: usize, j: usize)</code></li>
-<li><code>reserve_exact(&amp;mut self, additional: usize)</code> Reserves the minimum capacity for at least <code>additional</code> more elements to be inserted in the given deque. Does nothing if the capacity is already sufficient.</li>
-<li><code>reserve(&amp;mut self, additional: usize)</code></li>
-<li><code>shrink_to_fit(&amp;mut self)</code> Shrinks the capacity of the deque as much as possible.</li>
-<li><code>truncate(&amp;mut self, len: usize)</code> Shortens the deque, keeping the first <code>len</code> elements and dropping the rest.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">buf</span> = VecDeque::<span class="title function_ invoke__">new</span>();</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">5</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">10</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">15</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>]);</span><br><span class="line">buf.<span class="title function_ invoke__">truncate</span>(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>iter(&amp;self)</code></li>
-<li><code>as_slices(&amp;self)</code></li>
-<li><code>slice_ranges&lt;R&gt;(&amp;self, range: R)</code> Given a range into the logical buffer of the deque, this function return two ranges into the physical buffer that correspond to the given range</li>
-<li><code>range&lt;R&gt;(&amp;self, range: R)</code> Creates an iterator that covers the specified range in the deque.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">deque</span>: VecDeque&lt;_&gt; = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].<span class="title function_ invoke__">into</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">range</span> = deque.<span class="title function_ invoke__">range</span>(<span class="number">2</span>..).<span class="title function_ invoke__">copied</span>().collect::&lt;VecDeque&lt;_&gt;&gt;();</span><br><span class="line"><span class="built_in">assert_eq!</span>(range, [<span class="number">3</span>]);</span><br><span class="line"><span class="comment">// A full range covers all contents</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">all</span> = deque.<span class="title function_ invoke__">range</span>(..);</span><br><span class="line"><span class="built_in">assert_eq!</span>(all.<span class="title function_ invoke__">len</span>(), <span class="number">3</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>drain&lt;R&gt;(&amp;mut self, range: R)</code> Removes the specified range from the deque in bulk, returning all removed elements as an iterator.</li>
-<li><code>clear(&amp;mut self)</code></li>
-<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the deque contains an element equal to the given value</li>
-<li><code>front(&amp;self)</code> Provides a reference to the front element</li>
-<li><code>front_mut(&amp;mut self)</code></li>
-<li><code>back(&amp;self)</code></li>
-<li><code>back_mut(&amp;mut self)</code></li>
-<li><code>pop_front(&amp;mut self)</code></li>
-<li><code>pop_back(&amp;mut self)</code></li>
-<li><code>push_front(&amp;mut self, value: T)</code></li>
-<li><code>push_back(&amp;mut self, value: T)</code></li>
-</ul>
-<h2 id="std-collections-LinkedList"><a href="#std-collections-LinkedList" class="headerlink" title="std::collections::LinkedList"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/collections/struct.LinkedList.html">std::collections::LinkedList</a></h2>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clk1e4wq1002c6hsj7olz9y4o" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-09-functional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/04/11/rust/rust-09-functional/" class="article-date">
-  <time class="dt-published" datetime="2023-04-11T14:04:38.000Z" itemprop="datePublished">2023-04-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/04/11/rust/rust-09-functional/">rust functional programming</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="iterator"><a href="#iterator" class="headerlink" title="iterator"></a>iterator</h2><ul>
-<li><code>iter()</code> Returns an iterator over the <strong>slice</strong></li>
-<li><code>into_iter()</code> Creates a consuming iterator, that is, one that moves each value out of the vector</li>
-<li><code>iter_mut()</code> Returns an iterator that allows modifying each value.</li>
-</ul>
-<h2 id="flat-map"><a href="#flat-map" class="headerlink" title="flat_map"></a>flat_map</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Creates an iterator that works like map, but flattens nested structure.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// The [`map`] adapter is very useful, but only when the closure</span></span><br><span class="line"><span class="comment">/// argument produces values. If it produces an iterator instead, there&#x27;s</span></span><br><span class="line"><span class="comment">/// an extra layer of indirection. `flat_map()` will remove this extra layer</span></span><br><span class="line"><span class="comment">/// on its own.</span></span><br></pre></td></tr></table></figure>
-<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">words</span> = [<span class="string">&quot;alpha&quot;</span>, <span class="string">&quot;beta&quot;</span>, <span class="string">&quot;gamma&quot;</span>];</span><br><span class="line"><span class="comment">// chars() returns an iterator</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">merged</span>: <span class="type">String</span> = words.<span class="title function_ invoke__">iter</span>()</span><br><span class="line">                          .<span class="title function_ invoke__">flat_map</span>(|s| s.<span class="title function_ invoke__">chars</span>())</span><br><span class="line">                          .<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="built_in">assert_eq!</span>(merged, <span class="string">&quot;alphabetagamma&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clk1e4wps000n6hsj472tg11o" data-title="rust functional programming" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -818,7 +756,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -828,7 +766,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 16.67px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 18.33px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 10px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 12.86px;">zkp</a>
     </div>
   </div>
 
@@ -837,7 +775,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -850,23 +788,23 @@
       <ul>
         
           <li>
+            <a href="/2023/11/03/zkp/stark-101/">stark_101</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
+          </li>
+        
+          <li>
             <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
           </li>
         
       </ul>
