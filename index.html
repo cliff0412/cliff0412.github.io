@@ -71,10 +71,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-cryptography/zkp/zkp-demystify-zokrates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-zkp/stark-101" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" class="article-date">
-  <time class="dt-published" datetime="2023-07-14T06:29:26.000Z" itemprop="datePublished">2023-07-14</time>
+    <a href="/2023/11/03/zkp/stark-101/" class="article-date">
+  <time class="dt-published" datetime="2023-11-03T09:07:33.000Z" itemprop="datePublished">2023-11-03</time>
 </a>
     
   </div>
@@ -85,7 +85,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
+      <a class="p-name article-title" href="/2023/11/03/zkp/stark-101/">stark_101</a>
     </h1>
   
 
@@ -98,185 +98,55 @@
   type="text/javascript">
 </script>
 
-<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><h3 id="source-file"><a href="#source-file" class="headerlink" title="source file"></a>source file</h3><p>an example, <code>square.zok</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def main(private field a, field b) &#123;</span><br><span class="line">    assert(a * a == b);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>The keyword private signals that we do not want to reveal this input, but still prove that we know its value.</li>
-</ul>
-<h3 id="compile"><a href="#compile" class="headerlink" title="compile"></a>compile</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates compile -i root.zok</span><br></pre></td></tr></table></figure>
-<p>after compile, it generates below files</p>
-<ul>
-<li>out</li>
-<li>out.r1cs</li>
-<li>abi.json</li>
-</ul>
-<h3 id="setup"><a href="#setup" class="headerlink" title="setup"></a>setup</h3><p>Performs a trusted setup for a given constraint system</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates setup</span><br></pre></td></tr></table></figure>
-<p>options </p>
-<ul>
-<li>-i, –input <FILE>                       Path of the binary [default: out]<br>it generates below two files</li>
-<li>proving.key</li>
-<li>verification.key</li>
-</ul>
+<h1 id="startk-101"><a href="#startk-101" class="headerlink" title="startk 101"></a>startk 101</h1><h2 id="trace-and-low-degree-extension"><a href="#trace-and-low-degree-extension" class="headerlink" title="trace and low degree extension"></a>trace and low degree extension</h2><p>the objective is to develop a STARK prover for the FibonacciSq sequence over a finite field. The FibonacciSq sequence is defined by the recurrence relation<br>\[ a_{n+2} &#x3D; a_{n+1} ^2 + a_n ^2 \]</p>
+<p>the statement is: <strong>I know a FieldElement \(X\in \mathbb{F}\) such that the 1023rd element of the FibonacciSq sequence starting with \(1, X\) is \(2338775057\)</strong></p>
+<p>The underlying field of this class is \(\mathbb{F}_{3221225473}\) (\(3221225473 &#x3D; 3 \cdot 2^{30} + 1\)), so all operations are done modulo 3221225473.</p>
+<h3 id="FibonacciSq-Trace"><a href="#FibonacciSq-Trace" class="headerlink" title="FibonacciSq Trace"></a>FibonacciSq Trace</h3><p> let’s construct a list <code>a</code> of length 1023, whose first two elements will be FieldElement objects representing 1 and 3141592, respectively. The next 1021 elements will be the FibonacciSq sequence induced by these two elements. <code>a</code> is called the <strong>trace</strong> of FibonacciSq, or, when the context is clear, the trace.</p>
+<h3 id="Thinking-of-Polynomials"><a href="#Thinking-of-Polynomials" class="headerlink" title="Thinking of Polynomials"></a>Thinking of Polynomials</h3><p>We now want to think of the sequence as the evaluation of some polynomial \(f\) of degree 1022.<br>We will choose the domain to be some subgroup \(G \subseteq \mathbb{F}^\times\) of size 1024, for reasons that will become clear later.</p>
+<p>(Recall that \(\mathbb{F}^\times\) denotes the multiplicative group of \(\mathbb{F}\), which we get from \(\mathbb{F}\) by omitting the zero element with the induced multiplication from the field. A subgroup of size 1024 exists because \(\mathbb{F}^\times\) is a cyclic group of size \(3\cdot 2^{30}\), so it contains a subgroup of size \(2^i\) for any \(0 \leq i \leq 30\)).</p>
+<h4 id="Find-a-Group-of-Size-1024"><a href="#Find-a-Group-of-Size-1024" class="headerlink" title="Find a Group of Size 1024"></a>Find a Group of Size 1024</h4><p>If we find an element \(g \in \mathbb{F}\) whose (multiplicative) order is 1024, then \(g\) will generate such a group. Create a list called <code>G</code> with all the elements of \(G\), such that \(G[i] :&#x3D; g^i\).</p>
+<h3 id="Evaluating-on-a-Larger-Domain"><a href="#Evaluating-on-a-Larger-Domain" class="headerlink" title="Evaluating on a Larger Domain"></a>Evaluating on a Larger Domain</h3><p>then, interpolating <code>G</code> over <code>a</code> we get a polynomial <code>f</code>. The trace, viewed as evaluations of a polynomial \(f\) on \(G\), can now be extended by evaluating \(f\) over a larger domain, thereby creating a Reed-Solomon error correction code.</p>
+<h4 id="Cosets"><a href="#Cosets" class="headerlink" title="Cosets"></a>Cosets</h4><p>To that end, we must decide on a larger domain on which \(f\) will be evaluated. We will work with a domain that is 8 times larger than \(G\). <br>A natural choice for such a domain is to take some group \(H\) of size 8192 (which exists because 8192 divides \(|\mathbb{F}^\times|\)), and shift it by the generator of \(\mathbb{F}^\times\), thereby obtaining a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Coset">coset</a> of \(H\).</p>
+<p>Create a list called <code>H</code> of the elements of \(H\), and multiply each of them by the generator of \(\mathbb{F}^\times\) to obtain a list called <code>eval_domain</code>. In other words, <code>eval_domain</code> &#x3D; \(\{w\cdot h^i | 0 \leq i &lt;8192  \}\) for \(h\) the generator of \(H\) and \(w\) the generator of \(\mathbb{F}^\times\).</p>
+<h4 id="Evaluate-on-a-Coset"><a href="#Evaluate-on-a-Coset" class="headerlink" title="Evaluate on a Coset"></a>Evaluate on a Coset</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">f = interpolate_poly(G[:-<span class="number">1</span>], a)</span><br><span class="line">f_eval = [f(d) <span class="keyword">for</span> d <span class="keyword">in</span> eval_domain]</span><br></pre></td></tr></table></figure>
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" data-id="cllb0puy0001lansj73gja1hp" data-title="zkp demystify zokrates" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+<h3 id="Commitments"><a href="#Commitments" class="headerlink" title="Commitments"></a>Commitments</h3><p>We will use <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/SHA-2">Sha256</a>-based <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle Trees</a> as our commitment scheme.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> merkle <span class="keyword">import</span> MerkleTree</span><br><span class="line">f_merkle = MerkleTree(f_eval)</span><br></pre></td></tr></table></figure>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/zkp-groth16" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/07/cryptography/zkp/zkp-groth16/" class="article-date">
-  <time class="dt-published" datetime="2023-07-07T06:29:26.000Z" itemprop="datePublished">2023-07-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/07/cryptography/zkp/zkp-groth16/">zkp groth16 paper review</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-<h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Goldwasser, Micali and Rackoff [GMR89] introduced zero-knowledge proofs that enable a prover to convince a verifier that a statement is true without revealing anything else. They have three core properties:</p>
-<ul>
-<li><strong>Completeness</strong>: Given a statement and a witness, the prover can convince the verifier. </li>
-<li><strong>Soundness</strong>: A malicious prover cannot convince the verifier of a false statement. </li>
-<li><strong>Zero-knowledge</strong>: The proof does not reveal anything but the truth of the statement</li>
-</ul>
-<h3 id="1-1-Contribution"><a href="#1-1-Contribution" class="headerlink" title="1.1. Contribution"></a>1.1. Contribution</h3><p><strong>Succinct NIZK</strong> We construct a NIZK argument for arithmetic circuit satisfiability where a proof consists of only 3 group elements. In addition to being small, the proof is also easy to verify. The verifier just needs to compute a number of exponentiations proportional to the statement size and check a single pairing product equation, which only has 3 pairings.</p>
-<h2 id="2-Preliminaries"><a href="#2-Preliminaries" class="headerlink" title="2. Preliminaries"></a>2. Preliminaries</h2><h3 id="2-1-Bilinear-Groups"><a href="#2-1-Bilinear-Groups" class="headerlink" title="2.1 Bilinear Groups"></a>2.1 Bilinear Groups</h3><p>We will work over bilinear groups \((p, \mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} , e, g, h)\) with the following properties:</p>
-<ul>
-<li>\(\mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} \)are groups of prime order \(p\)</li>
-<li>The pairing \( e:\mathbb{G_{1}} \times \mathbb{G_{2}} \rightarrow \mathbb{G_{T}}\) is a bilinear map</li>
-<li>\(g\) is a generator for \(\mathbb{G_{1}}\), \(h\) is a generator for \(\mathbb{G_{2}}\), and \(e(g,h)\) is a generator for \(\mathbb{G_{T}}\)</li>
-</ul>
-<p>There are many ways to set up bilinear groups both as symmetric bilinear groups where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{1}}\) and as asymmetric bilinear groups where \(\mathbb{G_{1}} \neq \mathbb{G_{1}}\). Galbraith, Paterson and Smart [GPS08] classify bilinear groups as <strong>Type I</strong> where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{2}}\), <strong>Type II</strong> where there is an efficiently computable non-trivial homomorphism \(\Phi : \mathbb{G_{2}} \rightarrow \mathbb{G_{1}}\), and <strong>Type III</strong> where no such efficiently computable homomorphism exists in either direction between \(\mathbb{G_{1}}\) and \(\mathbb{G_{2}}\). Type III bilinear groups are the most efficient type of bilinear groups and hence the most relevant for practical applications.<br>As a notation for group elements, we write \( \lbrack a \rbrack_{1} \) for \( g^a\), \( \lbrack b \rbrack_{2}\) for \( h^b\) and \( \lbrack c \rbrack_{T}\) for \(e(g,h)^{c} \).  A vector of group elements will be represented as \( \lbrack \mathbf{a} \rbrack_{i} \).  Given two vectors of \(n\) group elements \( \lbrack \mathbf{a} \rbrack_{1} \) and \( \lbrack \mathbf{b} \rbrack_{2} \), we define their dot product as \( \lbrack \mathbf{a} \rbrack_{1} \cdot \lbrack \mathbf{b} \rbrack_{2}  &#x3D; \lbrack \mathbf{a} \cdot  \mathbf{b} \rbrack_{T} \), which can be efficiently computed using the pairing \(e\).</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li>[1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/07/cryptography/zkp/zkp-groth16/" data-id="cllb0puy6001vansj8ujy38ii" data-title="zkp groth16 paper review" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/zkp-under-the-hood" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/" class="article-date">
-  <time class="dt-published" datetime="2023-07-01T06:29:26.000Z" itemprop="datePublished">2023-07-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp how and why it works</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="The-medium-of-proof-Polynomial"><a href="#The-medium-of-proof-Polynomial" class="headerlink" title="The medium of proof: Polynomial"></a>The medium of proof: Polynomial</h2><p>If a prover claims to know some polynomial (no matter how large its degree is) that the verifier also knows, they can follow a simple protocol to verify the statement<br>• Verifier chooses a random value for x and evaluates his polynomial locally<br>• Verifier gives x to the prover and asks to evaluate the polynomial in question<br>• Prover evaluates his polynomial at x and gives the result to the verifier<br>• Verifier checks if the local result is equal to the prover’s result, and if so then the statement is proven with a high confidence</p>
-<h2 id="Non-Interactive-Zero-Knowledge-of-a-Polynomial"><a href="#Non-Interactive-Zero-Knowledge-of-a-Polynomial" class="headerlink" title="Non-Interactive Zero-Knowledge of a Polynomial"></a>Non-Interactive Zero-Knowledge of a Polynomial</h2><ol>
-<li><p>Proving Knowledge of a Polynomial<br>A polynomial can be expressed in the form (where n is the degree of the polynomial):<br>\[c_n x^n + …+ c_1 x^1 + c_0 x^0\]<br>It one claims that he know a polynomial, it is actually the knowledge of the polynomial’s coefficients.</p>
-</li>
-<li><p>Factorization<br>The Fundamental Theorem of Algebra states that any polynomial can be factored into linear po- lynomials (i.e., a degree 1 polynomials representing a line), as long it is solvable. Consequently, we can represent any valid polynomial as a product of its factors:<br>\[(x-a_0)(x-a_1)…(x-a_n) &#x3D; 0\]</p>
-</li>
+<h3 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h3><p>Theoretically, a STARK proof system is a protocol for interaction between two parties - a prover and a verifier. In practice, we convert this interactive protocol into a non-interactive proof using the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic">Fiat-Shamir Heuristic</a>. In this tutorial you will use the <code>Channel</code> class, which implements this transformation. This channel replaces the verifier in the sense that the prover (which you are writing) will send data, and receive random numbers or random <code>FieldElement</code> instances.</p>
+<h2 id="constraints"><a href="#constraints" class="headerlink" title="constraints"></a>constraints</h2><p>In this part, we are going to create a set of constraints over the trace <code>a</code>. </p>
+<h3 id="Step-1-FibonacciSq-Constraints"><a href="#Step-1-FibonacciSq-Constraints" class="headerlink" title="Step 1 - FibonacciSq Constraints"></a>Step 1 - FibonacciSq Constraints</h3><p>For <code>a</code> to be a correct trace of a FibonacciSq sequence that proves our claim:</p>
+<ol>
+<li>The first element has to be 1, namely \(a[0] &#x3D; 1\).</li>
+<li>The last element has to be 2338775057, namely \(a[1022] &#x3D; 2338775057\).</li>
+<li>The FibonacciSq rule must apply, that is - for every \(i&lt;1021\), \(a[i+2]&#x3D;a[i+1]^2+a[i]^2\).</li>
 </ol>
-<p>if the prover wants to prove that indeed his polynomial has specific roots without disclosing the polynomial itself, he needs to prove that his polynomial \(p(x)\) is the multiplication of those cofactors \(t(x) &#x3D; (x − x_0)(x − x_1)\), called target polynomial, where \(x_0, x_1\) are the specific roots. i.e.:<br>\[p(x) &#x3D; t(x) \cdot h(x)\]<br>A natural way to find \(h(x)\) is through the division \(h(x) &#x3D; \frac{p(x)}{t(x)}\)</p>
-<blockquote>
-<p>for simplicity, onwards we will use polynomial’s letter variable to denote its evaluation, e.g., \(p &#x3D; p(r)\)</p>
-</blockquote>
-<p>Using our polynomial identity check protocol we can compare polynomials \(p(x)\) and \(t(x)·h(x)\):</p>
-<ul>
-<li>Verifier samples a random value \(r\), calculates \(t &#x3D; t(r)\) (i.e., evaluates) and gives \(r\) to the prover</li>
-<li>Prover calculates \(h(x) &#x3D; \frac{p(x)}{t(x)}\) and evaluates \(p(r)\) and \(h(r)\); the resulting values \(p,h\) are<br>provided to the verifier</li>
-<li>Verifier then checks that \(p &#x3D; t \cdot h\), if so those polynomials are equal, meaning that \(p(x)\) has \(t(x)\) as a cofactor.</li>
-</ul>
-<p><strong>Remark 3.1</strong> Now we can check a polynomial for specific properties without learning the polyno- mial itself, so this already gives us some form of zero-knowledge and succinctness. Nonetheless, there are multiple issues with this construction:<br>• Prover may not know the claimed polynomial \(p(x)\) at all. He can calculate evaluation \(t &#x3D; t(r)\), select a random number \(h\) and set \(p &#x3D; t \cdot h\), which will be accepted by the verifier as valid, since equation holds.<br>• Because prover knows the random point \(x &#x3D; r\), he can construct any polynomial which has one shared point at \(r\) with \(t(r) \cdot h(r)\).<br>• In the original statement, prover claims to know a polynomial of a particular degree, in the current protocol there is no enforcement of degree. Hence prover can cheat by using a polynomial of higher degree which also satisfies the cofactors check.</p>
-<ol start="3">
-<li>Obscure Evaluation<br>Two first issues of remark 3.1 are possible because values are presented at raw, prover knows r and t(r). It would be ideal if those values would be given as a black box, so one cannot temper with the protocol, but still able to compute operations on those obscure values.<br>3.1. Homomorphic Encryption<br>There are multiple ways to achieve homomorphic properties of encryption, and we will briefly introduce a simple one. The general idea is to choose a base number \(g\) and do ecncryption of a value \(x\) by exponentiate of \(g\)<br>\[E(x) &#x3D; g^{x} \bmod p\]<br>For example, let \(E(x_1) &#x3D; g^{x_1} \bmod p\), and \(E(x_2) &#x3D; g^{x_2} \bmod p\), then<br>\[E(x_2) \cdot E(x_1) &#x3D; g^{x_1 + x_2} &#x3D; E(x_1 + x_2) \]</li>
+<h3 id="Step-2-Polynomial-Constraints"><a href="#Step-2-Polynomial-Constraints" class="headerlink" title="Step 2 - Polynomial Constraints"></a>Step 2 - Polynomial Constraints</h3><p>Recall that <code>f</code> is a polynomial over the trace domain, that evaluates exactly to <code>a</code> over \(G \setminus {g^{1023}}\) where \(G&#x3D;{g^i : 0\leq i\leq 1023}\) is the “small” group generated by \(g\).<br></p>
+<p>We now rewrite the above three constraints in a form of polynomial constraints over <code>f</code>:</p>
+<ol>
+<li>\(a[0] &#x3D; 1\) is translated to the polynomial \(f(x) - 1\), which evalutes to 0 for \(x &#x3D; g^0\) (note that \(g^0\) is \(1\)). <br></li>
+<li>\(a[1022] &#x3D; 2338775057\) is translated to the polynomial \(f(x) - 2338775057\), which evalutes to 0 for \(x &#x3D; g^{1022}\). <br></li>
+<li>\(a[i+2]&#x3D;a[i+1]^2+a[i]^2\) for every \(i&lt;1021\) is translated to the polynomial \(f(g^2 \cdot x) - (f(g \cdot x))^2 - (f(x))^2\), which evaluates to 0 for \(x \in G \backslash {g^{1021}, g^{1022}, g^{1023}}\). <br><br></li>
 </ol>
-<p>3.2. Encrypted Polynomial<br>Let us see how we can evaluate a polynomial \(p(x) &#x3D; x^3 − 3x^2 + 2x\). Because homomorphic encryption does not allows to exponentiate an encrypted value, we’ve must been given encrypted values of powers of x from 1 to 3: \(E(x),E(x2),E(x3)\) so that<br>\[ E(x^3)^1 \cdot E(x^2)^{-3} \cdot E(x)^2 &#x3D; (g^{x^3})^{1} \cdot (g^{x^2})^{-3} \cdot (g^{x})^{2} &#x3D; g^{1x^3} \cdot g^{-3x^2} \cdot g^{2x} &#x3D; g^{x^3-3x^2+2x}\]<br>Hence, we have an encrypted evaluation of our polynomial at some unknown to us \(x\) </p>
-<p>We can now update the previous version of the protocol, for a polynomial fo degree \(d\):</p>
-<ul>
-<li>Verifier<ul>
-<li>samples a random value \(s\), i.e., secret</li>
-<li>calculates encryptions of \(s\) for all powers \(i\) in \(0,1,…,d\), i.e. : \(E(s^{i}) &#x3D; g^{s^{i}}\)</li>
-<li>evaluates unencrypted target polynomial with \(s: t(s)\)</li>
-<li>encrypted powers of \(s\) are provided to the prover: \(E(s^{0}),E(s^{1}),…,E(s^{d})\)</li>
-</ul>
-</li>
-<li>Prover<ul>
-<li>calculates polynomial \(h(x) &#x3D; \frac{p(x)}{t(x)}\)</li>
-<li>using encrypted powers \(g^{s^{0}},g^{s^{1}},…,g^{s^{d}}\) and coefficients \(c_0, c_1,…,c_n \) evaluates \(E(p(s)) &#x3D; g^{p(s)} &#x3D; (g^{s^{d}})^{c_d} \cdot \cdot \cdot (g^{s^{1}})^{c_1} \cdot (g^{s^{0}})^{c_0}\) and similarly \(E(h(s)) &#x3D; g^{h(s)}\)</li>
-<li>the resulting \(g^p\) and \(g^h\) are provided to the verifier</li>
-</ul>
-</li>
-<li>Verifier<ul>
-<li>The alst step for the verifier is to checks that \(p &#x3D; t(s) \cdot h \) in encrypted space: \(g^p &#x3D; (g^h)^{t(s)}\) &#x3D;&gt; \(g^p &#x3D; g^{t(s) \cdot h}\)</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>Note: because the prover does not know anything about s, it makes it hard to come up with non-legitimate but still matching evaluations.</p>
-</blockquote>
-<h2 id="referneces"><a href="#referneces" class="headerlink" title="referneces"></a>referneces</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1906.07221.pdf">why and how zk-SNARK works by Maksym</a></li>
+<h3 id="Step-3-Rational-Functions-That-are-in-Fact-Polynomials"><a href="#Step-3-Rational-Functions-That-are-in-Fact-Polynomials" class="headerlink" title="Step 3 - Rational Functions (That are in Fact Polynomials)"></a>Step 3 - Rational Functions (That are in Fact Polynomials)</h3><p>Each of the constraints above is represented by a polynomial \(u(x)\) that supposedly evaluates to \(0\) on certain elements of the group \(G\). That is, for some \(x_0, \ldots, x_k \in G\), we claim that</p>
+<p>\[u(x_0) &#x3D; \ldots &#x3D; u(x_k) &#x3D; 0\]</p>
+<p>(note that for the first two constaints, \(k&#x3D;0\) because they only refer to one point and for the third \(k&#x3D;1021\)).</p>
+<p>This is equivalent to saying that \(u(x)\) is divisible, as a polynomial, by all of \({(x-x_i)}_{i&#x3D;0}^k\), or, equivalently, by</p>
+<p>\[\prod_{i&#x3D;0}^k (x-x_i)\]</p>
+<p>Therefore, each of the three constraints above can be written as a rational function of the form:</p>
+<p>\[\frac{u(x)}{\prod_{i&#x3D;0}^k (x-x_i)}\]</p>
+<p>for the corresponding \(u(x)) and \({x_i}_{i&#x3D;0}^k). In this step we will construct these three rational functions and show that they are indeed polynomials.</p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/starkware-industries/stark101">https://github.com/starkware-industries/stark101</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/starkware/tagged/stark-math">startk_math</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/starkware/starkdex-deep-dive-introduction-7b4ef0dedba8">starkEx deep dive</a></li>
+<li>[coset] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Coset">https://en.wikipedia.org/wiki/Coset</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="cllb0puy2001qansj7yedgm9g" data-title="zkp how and why it works" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/03/zkp/stark-101/" data-id="cloiee53j0000ja7u4oskhbde" data-title="stark_101" class="article-share-link">Share</a>
       
       
       
@@ -290,10 +160,10 @@
 
 
   
-    <article id="post-cryptography/elliptic_curve/elliptic-curve-pairing" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" class="article-date">
-  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
+    <a href="/2023/11/01/cryptography/montgomery-multiplication/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T11:10:13.000Z" itemprop="datePublished">2023-11-01</time>
 </a>
     
   </div>
@@ -304,7 +174,92 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
+      <a class="p-name article-title" href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>montgomery multiplciation</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/montgomery-multiplication/" data-id="clogjcl5i0001bn7u5bol23vk" data-title="montgomery_multiplication" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/bls12-381" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/01/cryptography/bls12-381/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T11:09:11.000Z" itemprop="datePublished">2023-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="bls12-381"><a href="#bls12-381" class="headerlink" title="bls12_381"></a>bls12_381</h1><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/bls12-381/" data-id="clogjcl5g0000bn7uayq5agz8" data-title="bls12_381" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-zkp/understanding-plonk" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/01/zkp/understanding-plonk/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T09:19:04.000Z" itemprop="datePublished">2023-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
     </h1>
   
 
@@ -317,53 +272,15 @@
   type="text/javascript">
 </script>
 
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Pairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can check whether or not \(p * q &#x3D; r\), having just P, Q and R as inputs. This might seem like the fundamental security guarantees of elliptic curves are being broken, as information about p is leaking from just knowing P, but it turns out that the leakage is highly contained — specifically, the <em><strong>decisional Diffie Hellman problem</strong></em> is easy, but the computational Diffie Hellman problem (knowing P and Q in the above example, computing R &#x3D; G * p * q) and the discrete logarithm problem (recovering p from P) remain computationally infeasible.</p>
-<p> whereas traditional elliptic curve math lets you check linear constraints on the numbers (eg. if P &#x3D; G * p, Q &#x3D; G * q and R &#x3D; G * r, checking 5 * P + 7 * Q &#x3D; 11 * R is really checking that 5 * p + 7 * q &#x3D; 11 * r), pairings let you check quadratic constraints (eg. checking e(P, Q) * e(G, G * 5) &#x3D; 1 is really checking that p * q + 5 &#x3D; 0).</p>
-<p> Now, what is this funny e(P, Q) operator that we introduced above? This is the pairing. Mathematicians also sometimes call it a bilinear map; the word “bilinear” here basically means that it satisfies the constraints:</p>
-<p>\[ e(P, Q + R) &#x3D; e(P, Q) * e(P, R) \]<br>\[ e(P + S, Q) &#x3D; e(P, Q) * e(S, Q) \]<br>Note that + and * can be arbitrary operators; when you’re creating fancy new kinds of mathematical objects, abstract algebra doesn’t care how + and * are defined, as long as they are consistent in the usual ways.</p>
-<p>If P, Q, R and S were simple numbers, then making a simple pairing is easy: we can do e(x, y) &#x3D; 2^xy. Then, we can see:<br>\[e(3, 4+ 5) &#x3D; 2^(3 * 9) &#x3D; 2^{27}\]<br>\[e(3, 4) * e(3, 5) &#x3D; 2^(3 * 4) * 2^(3 * 5) &#x3D; 2^{12} * 2^{15} &#x3D; 2^{27} \]<br>However, such simple pairings are not suitable for cryptography because the objects that they work on are simple integers and are too easy to analyze;</p>
-<p>It turns out that it is possible to make a bilinear map over elliptic curve points — that is, come up with a function e(P, Q) where the inputs P and Q are elliptic curve points, and where the output is what’s called an \(F_{p^¹²}\) (extension field) element</p>
-<p>An elliptic curve pairing is a map G2 x G1 -&gt; Gt, where:</p>
-<ul>
-<li>G1 is an elliptic curve, where points satisfy an equation of the form y² &#x3D; x³ + b, and where both coordinates are elements of F_p (ie. they are simple numbers, except arithmetic is all done modulo some prime number)</li>
-<li>G2 is an elliptic curve, where points satisfy the same equation as G1, except where the coordinates are elements of \(F_{p^¹²}\). we define a new “magic number” w, which is defined by a 12th degree polynomial like w^12 - 18 * w^6 + 82 &#x3D; 0</li>
-<li>Gt is the type of object that the result of the elliptic curve goes into. In the curves that we look at, Gt is \(F_{p^¹²}\)<br>The main property that it must satisfy is bilinearity, which in presented above</li>
-</ul>
-<p>There are two other important criteria:</p>
-<ul>
-<li><strong>Efficient computability</strong> (eg. we can make an easy pairing by simply taking the discrete logarithms of all points and multiplying them together, but this is as computationally hard as breaking elliptic curve cryptography in the first place, so it doesn’t count)</li>
-<li><strong>Non-degeneracy</strong> (sure, you could just define e(P, Q) &#x3D; 1, but that’s not a particularly useful pairing)</li>
-</ul>
-<h2 id="math-intuition-behind-paring"><a href="#math-intuition-behind-paring" class="headerlink" title="math intuition behind paring"></a>math intuition behind paring</h2><p>The math behind why pairing functions work is quite tricky and involves quite a bit of advanced algebra going even beyond what we’ve seen so far, but I’ll provide an outline. First of all, we need to define the concept of a divisor, basically an alternative way of representing functions on elliptic curve points. A <strong>divisor</strong> of a function basically counts the zeroes and the infinities of the function. To see what this means, let’s go through a few examples. Let us fix some point P &#x3D; (P_x, P_y), and consider the following function:<br>\[f(x, y) &#x3D; x - P_x\]</p>
-<p>The divisor is [P] + [-P] - 2 * [O] (the square brackets are used to represent the fact that we are referring to the presence of the point P in the set of zeroes and infinities of the function, not the point P itself; [P] + [Q] is not the same thing as [P + Q]). The reasoning is as follows:</p>
-<ul>
-<li>The function is equal to zero at P, since x is P_x, so x - P_x &#x3D; 0</li>
-<li>The function is equal to zero at -P, since -P and P share the same x coordinate</li>
-<li>The function goes to infinity as x goes to infinity, so we say the function is equal to infinity at O. There’s a technical reason why this infinity needs to be counted twice, so O gets added with a “multiplicity” of -2 (negative because it’s an infinity and not a zero, two because of this double counting).<br>The technical reason is roughly this: because the equation of the curve is x³ &#x3D; y² + b, y goes to infinity “1.5 times faster” than x does in order for y² to keep up with x³; hence, if a linear function includes only x then it is represented as an infinity of multiplicity 2, but if it includes y then it is represented as an infinity of multiplicity 3.</li>
-</ul>
-<p>Where a, b and c are carefully chosen so that the line passes through points P and Q. Because of how elliptic curve addition works (see the diagram at the top), this also means that it passes through -P-Q. And it goes up to infinity dependent on both x and y, so the divisor becomes [P]+ [Q] + [-P-Q] - 3 * [O]. (multiplicity of 3 because it involves y)<br><img src="/images/cryptography/elliptic_curve/paring_ec.png" alt="ec_pariling"><br>We know that every “rational function” (ie. a function defined only using a finite number of +, -, * and &#x2F; operations on the coordinates of the point) uniquely corresponds to some divisor, up to multiplication by a constant (ie. if two functions F and G have the same divisor, then F &#x3D; G * k for some constant k).<br>For any two functions F and G, the divisor of F * G is equal to the divisor of F plus the divisor of G (in math textbooks, you’ll see (F * G) &#x3D; (F) + (G)), so for example if f(x, y) &#x3D; P_x - x, then (f³) &#x3D; 3 * [P] + 3 * [-P] - 6 * [O]; P and -P are “triple-counted” to account for the fact that f³ approaches 0 at those points “three times as quickly” in a certain mathematical sense.</p>
-<p>Note that there is a theorem that states that if you “remove the square brackets” from a divisor of a function, the points must add up to O ([P] + [Q] + [-P-Q] - 3 * [O] clearly fits, as P + Q - P - Q - 3 * O &#x3D; O), and any divisor that has this property is the divisor of a function.</p>
-<h2 id="Tate-pairings"><a href="#Tate-pairings" class="headerlink" title="Tate pairings"></a>Tate pairings</h2><p>Consider the following functions, defined via their divisors:</p>
-<ul>
-<li>(F_P) &#x3D; n * [P] - n * [O], where n is the order of G1, ie. n * P &#x3D; O for any P</li>
-<li>(F_Q) &#x3D; n * [Q] - n * [O]</li>
-<li>(g) &#x3D; [P + Q] - [P] - [Q] + [O]<br>Now, let’s look at the product F_P * F_Q * g^n. The divisor is:</li>
-</ul>
-<p>n * [P] - n * [O] + n * [Q] - n * [O] + n * [P + Q] - n * [P] - n * [Q] + n * [O]</p>
-<p>Which simplifies neatly to:</p>
-<p>n * [P + Q] - n * [O]<br>Notice that this divisor is of exactly the same format as the divisor for F_P and F_Q above. Hence, F_P * F_Q * g^n &#x3D; F_(P + Q).</p>
-<p>Now, we introduce a procedure called the “final exponentiation” step, where we take the result of our functions above (F_P, F_Q, etc.) and raise it to the power z &#x3D; (p¹² - 1) &#x2F; n, where p¹² - 1 is the order of the multiplicative group in F_p¹² (ie. for any x ϵ F_p¹², x^(p¹² - 1) &#x3D; 1). Notice that if you apply this exponentiation to any result that has already been raised to the power of n, you get an exponentiation to the power of p¹² - 1, so the result turns into 1. Hence, after final exponentiation, g^n cancels out and we get F_P^z * F_Q^z &#x3D; F_(P + Q)^z. There’s some bilinearity for you.<br>Now, if you want to make a function that’s bilinear in both arguments, you need to go into spookier math, where instead of taking F_P of a value directly, you take F_P of a divisor, and that’s where the full “Tate pairing” comes from. To prove some more results you have to deal with notions like “linear equivalence” and “Weil reciprocity”, and the rabbit hole goes on from there. You can find more reading material on all of this [2] and he[3].<br>Every elliptic curve has a value called an embedding degree; essentially, the smallest k such that p^k - 1 is a multiple of n (where p is the prime used for the field and n is the curve order). In the fields above, k &#x3D; 12, and in the fields used for traditional ECC (ie. where we don’t care about pairings), the embedding degree is often extremely large, to the point that pairings are computationally infeasible to compute; however, if we are not careful then we can generate fields where k &#x3D; 4 or even 1.</p>
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li>[1] <a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/exploring-elliptic-curve-pairings-c73c1864e627">vitalik’s blog on paring</a></li>
-<li>[2] <a target="_blank" rel="noopener" href="https://www.math.ru.nl/~bosma/Students/MScThesis_DennisMeffert.pdf">bilinear pairings in cryptography by Dennis Meffert</a></li>
-<li>[3] <a target="_blank" rel="noopener" href="https://people.cs.nctu.edu.tw/~rjchen/ECC2012S/Elliptic%20Curves%20Number%20Theory%20And%20Cryptography%202n.pdf">Elliptic Curves number theory and cryptography by Kenneth H. Rosen</a></li>
-<li>[4] <a target="_blank" rel="noopener" href="https://crypto.stanford.edu/pbc/notes/ep/miller.html">Miller’s Algorithm</a></li>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@learn-zkp/note-plonk-family">https://hackmd.io/@learn-zkp/note-plonk-family</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="cllb0puxy001hansjbjx20agn" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clogjcl5j0003bn7u5agmhf4r" data-title="understanding_plonk" class="article-share-link">Share</a>
       
       
       
@@ -377,10 +294,10 @@
 
 
   
-    <article id="post-cryptography/zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" class="article-date">
-  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
+    <a href="/2023/06/20/zkp/zkp-a-brief-understanding/" class="article-date">
+  <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
 </a>
     
   </div>
@@ -391,7 +308,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding (1)</a>
+      <a class="p-name article-title" href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
     </h1>
   
 
@@ -405,58 +322,15 @@
 </script>
 
 <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>zk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “quadratic arithmetic program” (QAP), and transforming the code of a function into one of these is itself highly nontrivial.</p>
-<p>The example that we will choose is a simple one: proving that you know the solution to a cubic equation: \(x^3 + x + 5 &#x3D;&#x3D; 35\)</p>
-<p>Note that modulo (%) and comparison operators (&lt;, &gt;, ≤, ≥) are NOT supported, as there is no efficient way to do modulo or comparison directly in finite cyclic group arithmetic (be thankful for this; if there was a way to do either one, then elliptic curve cryptography would be broken faster)</p>
-<p>You can extend the language to modulo and comparisons by providing bit decompositions (eg. \(13 &#x3D; 2^3 + 2^2 + 1\)) as auxiliary inputs, proving correctness of those decompositions and doing the math in binary circuits; in finite field arithmetic, doing equality <code>(==)</code> checks is also doable and in fact a bit easier, but these are both details we won’t get into right now. We can extend the language to support conditionals (eg. <code>if x &lt; 5: y = 7; else: y = 9</code>) by converting them to an arithmetic form: <code>y = 7 * (x &lt; 5) + 9 * (x &gt;= 5)</code>;though note that both “paths” of the conditional would need to be executed.</p>
-<h2 id="Flattening"><a href="#Flattening" class="headerlink" title="Flattening"></a>Flattening</h2><p>The first step is a “flattening” procedure, where we convert the original code into a sequence of statements that are of two forms</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sym1 = x * x</span><br><span class="line">y = sym1 * x</span><br><span class="line">sym2 = y + x</span><br><span class="line">~out = sym2 + 5</span><br></pre></td></tr></table></figure>
-
-<h2 id="Gates-to-R1CS"><a href="#Gates-to-R1CS" class="headerlink" title="Gates to R1CS"></a>Gates to R1CS</h2><p>Now, we convert this into something called a rank-1 constraint system (R1CS). An R1CS is a sequence of groups of three vectors <code>(a, b, c)</code>, and the solution to an R1CS is a vector s, where s must satisfy the equation <code>s . a * s . b - s . c = 0</code>, where <code>.</code> represents the dot product. For example, this is a satisfied R1CS:<br><img src="/images/cryptography/zkp/r1cs.png" alt="r1cs"><br>\[s \cdot a &#x3D; (1,3,35,9,27,30) \cdot (5,0,0,0,0,1) &#x3D; 35\]<br>\[s \cdot b &#x3D; (1,3,35,9,27,30) \cdot (1,0,0,0,0,0) &#x3D; 1\]<br>\[s \cdot c &#x3D; (1,3,35,9,27,30) \cdot (0,0,1,0,0,0) &#x3D; 35\]<br>Hence<br>\[ s \cdot a * s \cdot b - s \cdot c &#x3D; 35 * 1 - 35 &#x3D; 0\]</p>
-<p>But instead of having just one constraint, we are going to have many constraints: one for each logic gate. There is a standard way of converting a logic gate into a <code>(a, b, c)</code> triple depending on what the operation is <code>(+, -, * or /)</code> and whether the arguments are variables or numbers. The length of each vector is equal to the total number of variables in the system, including a dummy variable <code>~one</code> at the first index representing the number 1, the input variables <code>x</code>, a dummy variable <code>~out</code> representing the output, and then all of the intermediate variables (<code>sym1</code> and <code>sym2</code> above);<br>First, we’ll provide the variable mapping that we’ll use:<br><code>&#39;~one&#39;, &#39;x&#39;, &#39;~out&#39;, &#39;sym1&#39;, &#39;y&#39;, &#39;sym2&#39;</code></p>
-<p>Now, we’ll give the (a, b, c) triple for the first gate:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 1, 0, 0, 0, 0]</span><br><span class="line">b = [0, 1, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 1, 0, 0]</span><br></pre></td></tr></table></figure>
-<p>which is \(x*x -sym1 &#x3D; 0\)</p>
-<p>Now, let’s go on to the second gate:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 0, 0, 1, 0, 0]</span><br><span class="line">b = [0, 1, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 0, 1, 0]</span><br></pre></td></tr></table></figure>
-<p>which is \(sym1 * x &#x3D; y\)<br>Now, the third gate:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 1, 0, 0, 1, 0]</span><br><span class="line">b = [1, 0, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 0, 0, 1]</span><br></pre></td></tr></table></figure>
-<p>which is \( (x+y) *  \sim one &#x3D; sym2\)</p>
-<p>Finally, the fourth gate:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [5, 0, 0, 0, 0, 1]</span><br><span class="line">b = [1, 0, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 1, 0, 0, 0]</span><br></pre></td></tr></table></figure>
-<p>which is \((5 + sym2) * \sim one &#x3D; \sim out\)<br>And there we have our R1CS with four constraints. The witness is simply the assignment to all the variables, including input, output and internal variables:<br><code>[1, 3, 35, 9, 27, 30]</code></p>
-<p>The complete R1CS put together is:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">A</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[0, 0, 0, 1, 0, 0]</span><br><span class="line">[0, 1, 0, 0, 1, 0]</span><br><span class="line">[5, 0, 0, 0, 0, 1]</span><br><span class="line">B</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[1, 0, 0, 0, 0, 0]</span><br><span class="line">[1, 0, 0, 0, 0, 0]</span><br><span class="line">C</span><br><span class="line">[0, 0, 0, 1, 0, 0]</span><br><span class="line">[0, 0, 0, 0, 1, 0]</span><br><span class="line">[0, 0, 0, 0, 0, 1]</span><br><span class="line">[0, 0, 1, 0, 0, 0]</span><br></pre></td></tr></table></figure>
-
-<h2 id="R1CS-to-QAP"><a href="#R1CS-to-QAP" class="headerlink" title="R1CS to QAP"></a>R1CS to QAP</h2><p>The next step is taking this R1CS and converting it into QAP form, which implements the exact same logic except using polynomials instead of dot products. We do this as follows. We go from four groups of three vectors of length six to six groups of three degree-3 polynomials, where evaluating the polynomials at each x coordinate represents one of the constraints. That is, if we evaluate the polynomials at x&#x3D;1, then we get our first set of vectors, if we evaluate the polynomials at x&#x3D;2, then we get our second set of vectors, and so on.</p>
-<p>We can make this transformation using something called a <strong>Lagrange interpolation</strong>.<br><img src="/images/cryptography/zkp/lagrange_interpolating.png" alt="lagrange interpolating"></p>
-<p>Now, let’s use Lagrange interpolation to transform our R1CS. What we are going to do is take the first value out of every a vector, use Lagrange interpolation to make a polynomial out of that (where evaluating the polynomial at i gets you the first value of the ith a vector), repeat the process for the first value of every b and c vector, and then repeat that process for the second values, the third, values, and so on. For convenience I’ll provide the answers right now:</p>
-<blockquote>
-<p>Note: the intuition here is to think the R1CS A,B,C matrix vertically (column). For example, for the first column of A, the polynomial should pass (1,0), (2,0), (3,0), (4,5); the second polynomial shoudd pass (1,1), (2,0), (3,1), (4,)</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">A polynomials</span><br><span class="line">[-5.0, 9.166, -5.0, 0.833]</span><br><span class="line">[8.0, -11.333, 5.0, -0.666]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[-6.0, 9.5, -4.0, 0.5]</span><br><span class="line">[4.0, -7.0, 3.5, -0.5]</span><br><span class="line">[-1.0, 1.833, -1.0, 0.166]</span><br><span class="line">B polynomials</span><br><span class="line">[3.0, -5.166, 2.5, -0.333]</span><br><span class="line">[-2.0, 5.166, -2.5, 0.333]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">C polynomials</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[-1.0, 1.833, -1.0, 0.166]</span><br><span class="line">[4.0, -4.333, 1.5, -0.166]</span><br><span class="line">[-6.0, 9.5, -4.0, 0.5]</span><br><span class="line">[4.0, -7.0, 3.5, -0.5]</span><br></pre></td></tr></table></figure>
-<p>Coefficients are in ascending order, so the first polynomial above is actually \(0.833 x^3 — 5 x^2 + 9.166 x - 5\)<br>Let’s try evaluating all of these polynomials at x&#x3D;1. </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">A results at x=1</span><br><span class="line">0 = 0.833 * 1^3 - 5 * 1^2 + 9.166 * 1^1 -5 * 1^0 = 0.833 -5 + 9.166 -5 = 0</span><br><span class="line">1 = -0.666 * 1^3 - 5.0 * 1^2 + -11.333 * 1^1 + 8.0 * 1^0 = -0.666 + 5.0 -11.333 +8.0 = 1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">B results at x=1</span><br><span class="line">0 = -0.333 * 1^3 +2.5 * 1^2 -5.166 * 1^1 +3.0 * 1^0 = -0.333 +2.5 -5.166 +3.0 = 0</span><br><span class="line">1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">C results at x=1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">1</span><br><span class="line">0</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
-
-<h2 id="Checking-the-QAP"><a href="#Checking-the-QAP" class="headerlink" title="Checking the QAP"></a>Checking the QAP</h2><p>Now what’s the point of this crazy transformation? The answer is that instead of checking the constraints in the R1CS individually, we can now check all of the constraints at the same time by doing the dot product check on the polynomials.<br><img src="/images/cryptography/zkp/checking_qap.png" alt="checking qap"><br>Because in this case the dot product check is a series of additions and multiplications of polynomials, the result is itself going to be a polynomial. If the resulting polynomial, evaluated at every x coordinate that we used above to represent a logic gate, is equal to zero, then that means that all of the checks pass; if the resulting polynomial evaluated at at least one of the x coordinate representing a logic gate gives a nonzero value, then that means that the values going into and out of that logic gate are inconsistent</p>
-<p>To check correctness, we don’t actually evaluate the polynomial <code>t = A . s * B . s - C . s</code> at every point corresponding to a gate; instead, we divide <code>t</code> by another polynomial, <code>Z</code>, and check that <code>Z</code> evenly divides <code>t</code> - that is, <strong>the division <code>t / Z</code> leaves no remainder</strong>.</p>
-<p><code>Z</code> is defined as <code>(x - 1) * (x - 2) * (x - 3) ...</code> - the simplest polynomial that is equal to zero at all points that correspond to logic gates. It is an elementary fact of algebra that any polynomial that is equal to zero at all of these points has to be a multiple of this minimal polynomial, and if a polynomial is a multiple of <code>Z</code> then its evaluation at any of those points will be zero;</p>
-<p>Note that the above is a simplification; “in the real world”, the addition, multiplication, subtraction and division will happen not with regular numbers, but rather with finite field elements — a spooky kind of arithmetic which is self-consistent, so all the algebraic laws we know and love still hold true, but where all answers are elements of some finite-sized set</p>
-<h2 id="KEA-Knowledge-of-Exponent-Assumption"><a href="#KEA-Knowledge-of-Exponent-Assumption" class="headerlink" title="KEA (Knowledge of Exponent Assumption)"></a>KEA (Knowledge of Exponent Assumption)</h2><p>Let \(q\) be a prime such that \(2q+1\) is also prime, and let \(g\) be a generator<br>of the order \(q\) subgroup of \(Z_{2q+1}^{\ast}\). Suppose we are given input \(q, g, g^a\) and want to output a pair \((C, Y )\) such that \(Y &#x3D; C^a\). One way to do this is to pick some \(c \in Z_{q}\), let \(C &#x3D; g^c\), and let \(Y &#x3D; (g^a)^c\). Intuitively, &#96;KEA1&#96;&#96; can be viewed as saying that this is the ‘only’ way to produce such a pair. The assumption captures this by saying that any adversary outputting such a pair must “know” an exponent \(c\) such that \(g^c &#x3D; C\). The formalization asks that there be an “extractor” that can return \(c\). Roughly:</p>
-<hr>
-<p><strong>KEA1</strong><br>For any adversary \(A\) that takes input \(q, g,g^a\) and returns \((C,Y)\) with \(Y &#x3D; C^a\), there exists an ‘extractor’ \(\bar{A}\), which given the same inputs as \(A\) returns \(c\) such that \(g^c &#x3D; C\)</p>
-<hr>
+<p>The example that we will choose is a simple one: proving that you know the solution to a cubic equation: <code>x**3 + x + 5 == 35</code></p>
 <h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649">vitalik’s blog: qap zero to hero</a></li>
-<li><a target="_blank" rel="noopener" href="https://mathworld.wolfram.com/LagrangeInterpolatingPolynomial.html">lagrange interpolating</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell">zkSNARKs in a nutshell</a></li>
-<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2013/279.pdf">Pinocchio protocol by Parno, Gentry, Howell</a></li>
-<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2004/008.pdf">KEA</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="cllb0puy90025ansjekdjh727" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/20/zkp/zkp-a-brief-understanding/" data-id="clk1e4wpw001l6hsjedcxczok" data-title="zkp a brief understanding" class="article-share-link">Share</a>
       
       
       
@@ -470,149 +344,9 @@
 
 
   
-    <article id="post-cryptography/cryptography-04-digital-signature" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/cryptography-03-rsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" class="article-date">
-  <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="Elgamal-Digital-Signature-Scheme"><a href="#Elgamal-Digital-Signature-Scheme" class="headerlink" title="Elgamal Digital Signature Scheme"></a>Elgamal Digital Signature Scheme</h2><p>The Elgammal signature scheme is based on the difficulty of computing discrete logarithms. Unlike RSA, where encryption and digital signature are almoste identical operations, the Elgamal digital signature is quite different from the encryption scheme with teh same name.</p>
-<h3 id="key-generation"><a href="#key-generation" class="headerlink" title="key generation"></a>key generation</h3><hr>
-<ol>
-<li>Choose a large prime \(p\).</li>
-<li>Choose a primitive element \(\alpha\) of \(Z_{p}^{\ast}\), or a subgroup of \(Z_{p}^{\ast}\).</li>
-<li>Choose a random integer \(d \in {2,3,…,p-2}\)</li>
-<li>Compute \(\beta &#x3D; \alpha^{d} \bmod p\)</li>
-</ol>
-<hr>
-<p>The public key is now formed by \(k_{pub} &#x3D; (p, \alpha, \beta)\), and the private key by \(k_{pr}&#x3D;d\)<br>\(Z_{p}^{\ast}\) is the set of integers who are smaller than \(p\) and coprime to \(p\)</p>
-<h3 id="signature-and-verification"><a href="#signature-and-verification" class="headerlink" title="signature and verification"></a>signature and verification</h3><p>Usign the private ey and parameters of the public key, the signature<br>\[sig_{k_{pr}}(x, k_{E}) &#x3D; (r,s)\]<br>\(x\) is the message. \(k_{E}\) is a random value, which forms an ephemeral private key</p>
-<hr>
-<p><strong>Elgamal Signature Generation</strong></p>
-<ol>
-<li>choose a random ephemeral key \(k_{E} \in {0,1,2,..,p-2}\) such that \(gcd(k_{E}, p-1) &#x3D; 1\)</li>
-<li>compute the signatue parameters:<br>\[r \equiv \alpha^{k_{E}} \bmod p\]<br>\[s \equiv (x - d \cdot r)k_{E}^{-1} \bmod p-1\]</li>
-</ol>
-<hr>
-<p>on the receiving side, the signature is verified as \(ver_{k_{pub}}(x,(r,s))\) using the public key, the signature and the message.</p>
-<hr>
-<p><strong>Elgamal Signature Verification</strong></p>
-<ol>
-<li>comput the value<br>\[t \equiv \beta^{r} \cdot r^s \bmod p\]</li>
-<li>the verification follows form<br>\begin{equation}<br>t &#x3D;<br>\begin{cases}<br>\equiv \alpha^{x} \bmod p &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv \alpha^{x} \bmod p  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
-</ol>
-<hr>
-<h2 id="Digital-Signature-Algorithm-DSA"><a href="#Digital-Signature-Algorithm-DSA" class="headerlink" title="Digital Signature Algorithm (DSA)"></a>Digital Signature Algorithm (DSA)</h2><p>The native Elgamal signature algorithm described above is rarely used in practice. Instead, a much more popular variant is used, known as the Digital Signature Algorithm (DSA). It is a federal US government standard for digital signatures and was proposed by NIST (National Institute of Standards and Technology). Its main advantages over the Elgamal signature scheme are that the signature is only 320-bit long and that some of the attacks<br> that can threaten the Elgamal scheme are not applicable.</p>
-<h3 id="key-generation-1"><a href="#key-generation-1" class="headerlink" title="key generation"></a>key generation</h3><hr>
-<p><strong>key Generation for DSA</strong></p>
-<ol>
-<li>Generate a prime \(p\) with \(2^1023 &lt; p &lt; 2^1024\)</li>
-<li>find a prime divisor \(q\) of \(p-1\) \(2^159 &lt; q &lt; 2^160\)</li>
-<li>Find an element \(\alpha\) with \( ord(\alpha) &#x3D; q\), i.e., \alpha genertes the subgroup with \(q\) elements.</li>
-<li>choose a random integer \(d\) with \(0 &lt; d &lt; q\).</li>
-<li>compute \(\beta \equiv \alpha^{d} \bmod p\).<br>the keys are now:<br>\(k_{pub} &#x3D; (p, q, \alpha, \beta)\)<br>\(k_{pr}&#x3D; (d)\)</li>
-</ol>
-<hr>
-<p>The central idea of DSA is that there are two cyclic groups involved. One is the large cyclic group \(Z_{p}*{\ast}\), the order of which has bit length of 1024 bit. The second one is in the 160-bit subgroup of \(Z_{p}^{\ast}\). this set-up yields shorter signature.</p>
-<h3 id="Signature-and-Verification"><a href="#Signature-and-Verification" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><p>As in the Elgamal signatue scheme, the DSA signature consists of a pair of integers \((r,s)\). Since each of the two parameters is only 160-bit long, the total signature length is 320 bit. </p>
-<hr>
-<p><strong>DSA signature generation</strong></p>
-<ol>
-<li>choose an integer as random ephemeral key \(k_{E}\) with \(0 &lt; k_{E} &lt; q\).</li>
-<li>compute \(r \equiv (\alpha^{k_{E}} \bmod p) \bmod q\)</li>
-<li>compute \(s \equiv (SHA(x) + d \cdot r)k_{E}^{-1} \bmod q \)</li>
-</ol>
-<hr>
-<p>The signature verification process is as follows:</p>
-<hr>
-<p><strong>DSA signature verification</strong></p>
-<ol>
-<li>compute auxilary value \(w \equiv s^{-1} \bmod q\).</li>
-<li>compute auxilary value \(u_{1} \equiv w \cdot SHA(x) \bmod q\).</li>
-<li>compute auxilary value \(u_{2} \equiv w \cdot r \bmod q\).</li>
-<li>compute \(v \equiv (\alpha^{u_1} \cdot \beta^{u_2} \bmod p) \bmod q\).</li>
-<li>the verification \(ver_{k_{pub}}(x, (r,s))\) folows from<br>\begin{equation}<br>v &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
-</ol>
-<hr>
-<h2 id="Elliptic-Curve-Digital-Signature-Algorithm-ECDSA"><a href="#Elliptic-Curve-Digital-Signature-Algorithm-ECDSA" class="headerlink" title="Elliptic Curve Digital Signature Algorithm (ECDSA)"></a>Elliptic Curve Digital Signature Algorithm (ECDSA)</h2><p>Elliptic curves have several advantages over RSA and over DL schemes like Elgamal or DSA. In particular, in abscence of strong attacks against elliptic curve cryptosystems (ECC), bit lengths in the range of 160-256 bit can be chosen which provide security equivalent to 1024-3072 bit RSA and DL scheme. The shorter bit length of ECC often results in shorter processing time and in shorter signatures.<br>The ECDSA standard is defined for elliptic curves over prime fields \(Z_{p}\) adn Galois fields \(GF(2^m)\). the former is often preferred in practice, and we only introduce this one in what follows</p>
-<h3 id="key-generation-2"><a href="#key-generation-2" class="headerlink" title="key generation"></a>key generation</h3><hr>
-<p><strong>Key Generation for ECDSA</strong></p>
-<ol>
-<li>Use and elliptic curve E with</li>
-</ol>
-<ul>
-<li>modulus p</li>
-<li>coefficients a and b</li>
-<li>a point A which generates a cyclic group of prime order q.</li>
-</ul>
-<ol start="2">
-<li>choose a random integer d with \(0 &lt; d &lt; q\)</li>
-<li>compute \(B &#x3D; dA\).<br>The keys are now<br>\(k_{pub} &#x3D; (p,a,b,q,A,B)\)<br>\(k_{pr} &#x3D; (d)\)</li>
-</ol>
-<hr>
-<h3 id="Signature-and-Verification-1"><a href="#Signature-and-Verification-1" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><hr>
-<p><strong>ECDSA Signature Generation</strong></p>
-<ol>
-<li>choose an integer as random ephemeral key \(k_{E}\) with \( 0 &lt; k_{E} &lt; q\).</li>
-<li>compute \(R &#x3D; k_{E}A\)</li>
-<li>Let \(r &#x3D; x_{R}\)</li>
-<li>compute \(s \equiv (h(x) + d \cdot r)k_{E}^{-1} \bmod q\)</li>
-</ol>
-<hr>
-<p>the signature verification process is as follows</p>
-<hr>
-<p><strong>ECDSA Signature Verification</strong></p>
-<ol>
-<li>Compute auxiliary value \(w \equiv s^{-1} \bmod q\)</li>
-<li>compute auxilary value \(u_1 \equiv w \cdot h(x) \bmod q\)</li>
-<li>compute auxiliary value \(u_2 &#x3D; w \cdot r \bmod q\)</li>
-<li>compute \(P &#x3D; u_1 A + u_2 B\).</li>
-<li>the verification \(ver{k_{pub}}(x, (r,s))\) follows from<br>\begin{equation}<br>x_{P} &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
-</ol>
-<hr>
-<p>The point multiplication, which is in most cases by the far the most arithmetic intensive operation, can be precomputed by choosing the ephemeral key ahead of time.</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="cllb0puxf000cansj9diw98pw" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/cryptography-03-elliptic-curve" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/" class="article-date">
+    <a href="/2023/06/17/cryptography/cryptography-03-rsa/" class="article-date">
   <time class="dt-published" datetime="2023-06-17T06:29:26.000Z" itemprop="datePublished">2023-06-17</time>
 </a>
     
@@ -624,72 +358,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/">cryptography (3) elliptic curve</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-<h2 id="elliptic-curve-definition"><a href="#elliptic-curve-definition" class="headerlink" title="elliptic curve definition"></a>elliptic curve definition</h2><p>for cryptographic use, we need to conside the curve not over the real numbers but over a finite field. the most popular fields <code>GF(p)</code>, where all arithmetic is performed modulo a prime p.</p>
-<hr>
-<p>the elliptic curve over \( Z_{p}, p&gt;3 \), is the set of all pairs \( (x,y) \in Z_{p} \) which fulfill<br> \[ y^2 \equiv x^3 + a \cdot x + b \bmod p \]<br>together with an imaginary point of infinity \( \mathcal{O} \), where<br> \[ a,b \in Z_{p} \]<br> and the condition \( 4 \cdot a^3 + 27 \cdot b^2 \neq 0 \bmod p \)</p>
-<hr>
-<p>the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \( -16(4a^3) + 27b^2 \) is nonzero.</p>
-<h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/cryptography/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
-<hr>
-<p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
-<hr>
-<p>note that the parameter s is the slope of the line through P and Q in the case of point addition, or the slope of the tangent through P in the case of point doubling.<br>Furthmore, we define an abstract point at infinity as the neutral element \( \mathcal{O} \).<br>\[ P + \mathcal{O} &#x3D; P\]<br>according the group definition, we can now also define the inverse <code>-P</code> of any group element P as<br>\[ P + (-P) &#x3D; \mathcal{O}\]<br>Therefore, the inverse of \( P &#x3D; (x_p, y_p) \) is just \( P &#x3D; (x_p, -y_p)\). since  \( -y_p \equiv p - y_p\), hence<br>\[ -P &#x3D; (x_p, p-y_p) \]</p>
-<h2 id="DLP-discrete-log-problem-with-Elliptic-curve"><a href="#DLP-discrete-log-problem-with-Elliptic-curve" class="headerlink" title="DLP(discrete log problem) with Elliptic curve"></a>DLP(discrete log problem) with Elliptic curve</h2><p>to set up DL cryptosystems it is important to know the order of the group.<br>Hasse’s theorem</p>
-<hr>
-<p>given an elliptic curve E modulo p, the number of points on the curve is denoted by #E and is bounded by:<br>\[ p+1-2\sqrt{p} \leq \#E \leq p+1+2\sqrt{p} \]</p>
-<hr>
-<p>Elliptic Curved Discrete Logarithm Problem (ECDLP)</p>
-<hr>
-<p>Given an elliptic curve E. We consider a primitive elemnt P and another element T. The DL problem is finding the integer d, where \( 1 \leq d \leq \#E \), such that:<br>\[ P + P + ….+ P &#x3D; dP &#x3D; T \]</p>
-<hr>
-<p>In cryptosystems, d is the private key which is an integer, while the public key T is a point on the curve with coordinates \( T &#x3D; (x_T, y_T)\)<br>Usually a <strong>square-and-multiply</strong> algorithm is used to calculate point multiplication (the algorithm detail is not coverred in this post). </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="cllb0puxd0008ansjfwdjat5n" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/cryptography-02-rsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/10/cryptography/cryptography-02-rsa/" class="article-date">
-  <time class="dt-published" datetime="2023-06-10T06:29:26.000Z" itemprop="datePublished">2023-06-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
+      <a class="p-name article-title" href="/2023/06/17/cryptography/cryptography-03-rsa/">cryptography (3) RSA cryptosystem</a>
     </h1>
   
 
@@ -704,11 +373,8 @@
 
 
 <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>the security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1].</p>
-<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>the gcd of two positive integers \(r_0\) and \(r_1\) is denoted by<br>\[gcd(r_0, r_1)\]<br>the Eucliedean algorithm is used to calculate gcd, based on as simple observation that<br>\[gcd(r_0, r_1) &#x3D; gcd(r_0-r_1, r_1)\]<br>where we assume \(r_0 &gt; r_1\)<br>This property can easily be proven: Let \(gcd(r_0, r_1) &#x3D; g\), since \(g\) divides both  \(r_0\) and \(r_1\), we can write \(r_0 &#x3D; g \cdot x\) and \(r_1 &#x3D; g \cdot y\), where \(x&gt;y\) and \(x\) and \(y\) are coprime integers, i.e., they do not have common factors. Moreover, it is easy to show that \((x-y)\) and \(y\) are also coprime. it follows from here that<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(g \cdot (x-y), g\cdot y) &#x3D; g\]</p>
-<p>it also follow immediately that we can apply the process iteratively:<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(r_0 - mr_1, r_1) \]<br>as long as \((r_0 - mr_1) &gt;0\). the algorithm use the fewest number of steps if we choose maximum value of \(m\). this is the case if we compute:<br>\[gcd(r_0, r_1) &#x3D; gcd( r_1, r_0 \bmod r_1) \]<br>this process can be applied recursively until we obtain finally \[gcd(r_l, 0) &#x3D; r_l \]<br>the euclidean algorithm is very efficient, even with the very long numbers. the number of iterations is close to the number of digits of the input operands. that means, for instance, that the number of iterations of a gcd involving 1024-bit nubmers is 1024 times a constant.</p>
-<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>an extension of the Euclidean algorithm allows us to compute <em><strong>modular inverse</strong></em>. in addition to computing the gcd, the <em><strong>extended Euclidean algorithm</strong></em> computes a linear combination of the form<br>\[gcd(r_0, r_1) &#x3D; s \cdot r_0 + t\cdot r_1 \]<br>where s and t are integer coefficients. this equation is ofthen referred to as <em><strong>Diophantine equation</strong></em></p>
-<p>the detail of the algorithm can be foud in section 6.3.2 of the book understanding cryptography by Christof Paar. Here presents the general idea by using an example.<br>let \(r_0 &#x3D;973 , r_1 &#x3D; 301\). during the steps of Euclidean Algorithm, we obtain \(973 &#x3D; 3\cdot301 + 70\)<br>which is \[r_0 &#x3D; q_1 \cdot r_1 + r_2\]<br>rearrange:<br>\[r_2 &#x3D;  r_0 + (-q_1) \cdot r_1\]<br>replacing (r_0, r_1) and iteratively by (r_1, r_2), … (r_{i-1}, r_{i}), util \(r_{i+1} &#x3D; 0\)<br>then \(r_{i}\) is \(gcd(r_0,r_1)\), and can have a representation of<br>\[gcd(r_0, r_1) &#x3D; s\cdot r_0 + t\cdot r_1 \].<br>since the inverse only exists if \(gcd(r_0, r_1)&#x3D;1\). we obtain<br>\[ s\cdot r_0 + t\cdot r_1 &#x3D; 1\]<br>taking this equation modulo \(r_0\) we obtain<br>\[ s\cdot 0 + t\cdot r_1 \equiv 1 \bmod r_0\]<br>\[  t\cdot r_1 \equiv 1 \bmod r_0\]<br>t is the definition of the inverse of \(r_1\)</p>
-<p>Thus, if we need to compute an inverse \(a^{-1} \bmod m\), we apply EEA with the input parameters \(m\) and \(a\)</p>
+<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>todo!()</p>
+<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>todo!()</p>
 <h2 id="Euler’s-Phi-Function"><a href="#Euler’s-Phi-Function" class="headerlink" title="Euler’s Phi Function"></a>Euler’s Phi Function</h2><p>we consider the ring \( Z_m\) i.e., the set of integers \({0,1,…,m-1}\). we are interested in teh problem of knowing how many numbers in this set are relatively prime to m. this quantity is given by Euler’s phi function, which is \(\Phi(m)\)</p>
 <hr>
 <p>let m have the following canonical factorization<br>\[ m &#x3D; p_{1}^{e_1} \cdot p_{2}^{e_2} \cdot … \cdot p_{n}^{e_n}\]<br>where the \(p_i\) are distinct prime numbers and \( e_i\) are positive integers, then</p>
@@ -732,13 +398,7 @@
 </ol>
 <hr>
 <p>the condition that \( gcd(e,\Phi(n)) &#x3D; 1\) ensures that the inverse of \(e\) exists modulo \(\Phi(n)\), so that there is always a private key \(d\).<br>the computation of key keys \(d\) and \(e\) canb e doen at once using the extended Euclidean algorith. </p>
-<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><hr>
-<p><strong>RSA Encryption</strong> Given the privaate key \( k_{pub} &#x3D; (n,e) \) and the plaintext \(x\), the encryption is:<br>\[ y &#x3D; e_{k_{pub}}(x) \equiv x^{e} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
-<hr>
-<hr>
-<p><strong>RSA Decryption</strong> Given the public key \d &#x3D; k_{pr} \) and the plaintext \(y\), the decryption is:<br>\[ x &#x3D; d_{k_{pr}}(y) \equiv y^{d} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
-<hr>
-<h2 id="Digital-signature"><a href="#Digital-signature" class="headerlink" title="Digital signature"></a>Digital signature</h2><p>the message \(x\) that is being signed is in the range \(1,2,…,n-1\)<br><img src="/images/cryptography/rsa/rsa_signature.png" alt="rsa digital signature"></p>
+<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><p>todo!()</p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] <a target="_blank" rel="noopener" href="https://web.williams.edu/Mathematics/lg5/302/RSA.pdf">A Method for Obtaining Digital<br>Signatures and Public-Key Cryptosystems</a></li>
 </ul>
@@ -746,7 +406,72 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="cllb0puxb0005ansjhx3vfcsm" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-rsa/" data-id="clk1e4wpw001j6hsj9vpw0y0r" data-title="cryptography (3) RSA cryptosystem" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/cryptography-02-elliptic-curve" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/" class="article-date">
+  <time class="dt-published" datetime="2023-06-10T06:29:26.000Z" itemprop="datePublished">2023-06-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/10/cryptography/cryptography-02-elliptic-curve/">cryptography (2) elliptic curve</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+
+<h2 id="elliptic-curve-definition"><a href="#elliptic-curve-definition" class="headerlink" title="elliptic curve definition"></a>elliptic curve definition</h2><p>for cryptographic use, we need to conside the curve not over the real numbers but over a finite field. the most popular fields <code>GF(p)</code>, where all arithmetic is performed modulo a prime p.</p>
+<hr>
+<p>the elliptic curve over \( Z_{p}, p&gt;3 \), is the set of all pairs \( (x,y) \in Z_{p} \) which fulfill<br> \[ y^2 \equiv x^3 + a \cdot x + b \bmod p \]<br>together with an imaginary point of infinity \( \mathcal{O} \), where<br> \[ a,b \in Z_{p} \]<br> and the condition \( 4 \cdot a^3 + 27 \cdot b^2 \neq 0 \bmod p \)</p>
+<hr>
+<p>the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \( -16(4a^3) + 27b^2 \) is nonzero.</p>
+<h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
+<hr>
+<p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
+<hr>
+<p>note that the parameter s is the slope of the line through P and Q in the case of point addition, or the slope of the tangent through P in the case of point doubling.<br>Furthmore, we define an abstract point at infinity as the neutral element \( \mathcal{O} \).<br>\[ P + \mathcal{O} &#x3D; P\]<br>according the group definition, we can now also define the inverse <code>-P</code> of any group element P as<br>\[ P + (-P) &#x3D; \mathcal{O}\]<br>Therefore, the inverse of \( P &#x3D; (x_p, y_p) \) is just \( P &#x3D; (x_p, -y_p)\). since  \( -y_p \equiv p - y_p\), hence<br>\[ -P &#x3D; (x_p, p-y_p) \]</p>
+<h2 id="DLP-discrete-log-problem-with-Elliptic-curve"><a href="#DLP-discrete-log-problem-with-Elliptic-curve" class="headerlink" title="DLP(discrete log problem) with Elliptic curve"></a>DLP(discrete log problem) with Elliptic curve</h2><p>to set up DL cryptosystems it is important to know the order of the group.<br>Hasse’s theorem</p>
+<hr>
+<p>given an elliptic curve E modulo p, the number of points on the curve is denoted by #E and is bounded by:<br>\[ p+1-2\sqrt{p} \leq \#E \leq p+1+2\sqrt{p} \]</p>
+<hr>
+<p>Elliptic Curved Discrete Logarithm Problem (ECDLP)</p>
+<hr>
+<p>Given an elliptic curve E. We consider a primitive elemnt P and another element T. The DL problem is finding the integer d, where \( 1 \leq d \leq \#E \), such that:<br>\[ P + P + ….+ P &#x3D; dP &#x3D; T \]</p>
+<hr>
+<p>In cryptosystems, d is the private key which is an integer, while the public key T is a point on the curve with coordinates \( T &#x3D; (x_T, y_T)\)<br>Usually a <strong>square-and-multiply</strong> algorithm is used to calculate point multiplication (the algorithm detail is not coverred in this post). </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-elliptic-curve/" data-id="clk1e4wpw001e6hsj1lfmhvaa" data-title="cryptography (2) elliptic curve" class="article-share-link">Share</a>
       
       
       
@@ -852,7 +577,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="cllb0puyd002kansj010jf1g8" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clk1e4wq2002h6hsjd2u10w1i" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -925,11 +650,85 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="cllb0puy90027ansjdexod170" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clk1e4wq1002b6hsj2xfef22t" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/cryptography-01-primitive-group-and-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" class="article-date">
+  <time class="dt-published" datetime="2023-06-03T06:29:26.000Z" itemprop="datePublished">2023-06-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/">cryptography (1) group &amp; field</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+
+
+<h2 id="Group"><a href="#Group" class="headerlink" title="Group"></a>Group</h2><p>a group is a set of elements \( G \) together with an operation \( \circ \). a group has the following properties</p>
+<ol>
+<li>the group operation \( \circ \) is closed. that is, for all \( a,b, \in G  \), it holds that \( a \circ b &#x3D; c \in G \)</li>
+<li>the group operation is associative. That is, \( a \circ (b \circ c) &#x3D; (a \circ b) \circ c \) for all \( a,b,c \in G \)</li>
+<li>there is an element \( 1 \in G \), called the neutral element (or identity element), such that \( a \circ \ &#x3D; 1 \circ a\) for all \( a \in G \)</li>
+<li>For each \( a \in G \) there exists an element \( a^{-1} \in G\), called the inverse of a, such that \( a \circ a^{-1} &#x3D; 1 \).</li>
+<li>a group G is abelian (or commutative) if, furthermore, \( a \circ b &#x3D; b \circ a \) for all \( a, b \in G \)</li>
+</ol>
+<h3 id="Example-of-Group"><a href="#Example-of-Group" class="headerlink" title="Example of Group"></a>Example of Group</h3><p>the set of integers \( Z_{m} &#x3D; 0,1,…,m-1 \) and the operation addition modulo \( m \) forma group with the neutral element 0. every element \( a \) has an inverse \(  -a \). note that this set does not form a group with the operation multiplication gecause mose eleents \(  a \) do not have an inverse such that \(  a a^{-1} &#x3D; 1 \bmod m\).</p>
+<p>In order to have all four basic arithmetic operations (i.e. addition, subtraction, multiplication, division) in one structure, we need a set which contains an additive and a multiplicative group. this is what we call a field.</p>
+<h2 id="Field"><a href="#Field" class="headerlink" title="Field"></a>Field</h2><p>A field is a set of elements with the following properties</p>
+<ul>
+<li>all elements of \( F\) form an additive group with the group operation \( + \) and the neutral element \( 0 \)</li>
+<li>all element of \( F \) except \( 0 \) form a multiplicative group with the gorup operation \( x \) and the neutral element \( 1 \) .</li>
+<li>when the two group operations are mixed, the distributivety law holds, i.e., for all \( a,b,c \in F: a(b+c) &#x3D; (ab) + (ac) \)</li>
+</ul>
+<h3 id="Example-of-Field"><a href="#Example-of-Field" class="headerlink" title="Example of Field"></a>Example of Field</h3><p>the set \( R \) of real numbers is a field with the neutral element 0 for the additive group and the neutral element 1 for the multiplicative group. every real number \( a \) has an additive inverse, namely \( -a \), and every nonzero element \( a \) has a multiplicative inverse \( 1 \div a \)</p>
+<h2 id="Galois-Field"><a href="#Galois-Field" class="headerlink" title="Galois Field"></a>Galois Field</h2><p>In cryptography, we are almose always interested in fields with a <strong>finite</strong> number of elements, which we call finite fields or <code>Galois field</code>. the number of elements in the field is called the <code>order</code> or <code>cardinality</code> of the field. Of fundamental importance is the following theorem</p>
+<hr>
+<p>a field with order <code>m</code> only exists if <code>m</code> is a prime power, i.e, \( m &#x3D; p^{n} \), for some positive integer <code>n</code> and prime integer <code>p</code>. <code>p</code> is called the characteristic of the finite field</p>
+<hr>
+<p>the theorem implies that there are, for instance, finite fields with 11 elements (\( 11^{1} \)), or with 81 elements \( 81 &#x3D; 3^{4} \) or with 256 elements (\( 256 &#x3D; 2^{8} \)). </p>
+<h2 id="Prime-Field"><a href="#Prime-Field" class="headerlink" title="Prime Field"></a>Prime Field</h2><p>the most intuitive examples of finite fields are fields of prime order, i.e., fields with \( n &#x3D;1 \). elements of the field \( GF(p) \) can be represented by integers \( 0,1,…, p-1 \).</p>
+<h2 id="Extension-Field-GF-2-m"><a href="#Extension-Field-GF-2-m" class="headerlink" title="Extension Field GF(2^m)"></a>Extension Field <code>GF(2^m)</code></h2><p>In AES the finite field contains 256 elements and is denoted as \( GF(2^8) \).<br>However, if the order  of a finite field is not prime, and \( 2^8 \) is clearly not a prime, the addition and multiplication operation cannot be represented by addition and multiplication of integers modulo \( 2^8 \). such fields with \( m &gt;1 \) are called <code>extension field</code>. in order to deal with extension fields we need (1) a different notation for field elements and (2) different rules for performing arithmetic with the elements. elements of extension fields can be represented as <code>polynomials</code>, and computation in the extension field is achieved by performing a certain type of <code>polynomial arithmetic</code>.</p>
+<p>In the field \( GF(2^8) \), which is used in AES, each element \( A \in GF(2^8) \) is thus represented as:<br>\[ A(x) &#x3D; a_{7}x^7 + …+a_{1}x+a_{0}, a_{i} \in GF(2) &#x3D; {0,1} \]<br>It is also important to observe that every polynomial can simply be stored in digital form as an 8-bit vector<br>\[ A &#x3D; (a_7,a_6,a_5,a_4,a_3,a_2,a_1,a_0) \]</p>
+<h3 id="addition-and-subtraction-in-GF-2-m"><a href="#addition-and-subtraction-in-GF-2-m" class="headerlink" title="addition and subtraction in GF(2^m)"></a>addition and subtraction in <code>GF(2^m)</code></h3><p>addition and subtraction are simply achieved by performing polynomial addition and subtraction. note that we perform modulo 2 addition (or subtraction) with the coefficients.<br>\[ A(x) &#x3D; x^7 + x^6 + x^4 + 1 \]<br>\[ B(x) &#x3D; x^4 + x^2+ 1 \]<br>\[ A(x) + B(x) &#x3D; x^7 + x^6+ x^2 \]</p>
+<h3 id="multiplication-in-GF-2-m"><a href="#multiplication-in-GF-2-m" class="headerlink" title="multiplication in GF(2^m)"></a>multiplication in <code>GF(2^m)</code></h3><p>firstly, two elements (represented by their polynomials) of a finite field <code>GF(2^m)</code> are multiplied usig the standard polynomial multiplication rule \[ A(x) \dot B(x) &#x3D; C(x) \]. In general, the product polynomial \[ C(x) \] will have a degree higher than <code>m-1</code> and has to be reduced. to do that, the product of the multiplication is divided by a certain polyhomial, and we consider only the remainder after the polynomial division. we need <strong>irreducible</strong> polynomials for the module reduction. irreducible polynomials are roughly comparable to prime numbers. their only factors are 1 and polynomial itself.<br>Thus, every field <code>GF(2^m)</code> requires an irreducible polynomial <code>P(x)</code> of degree <code>m</code>.<br>For AES, the irreducible polynomial is<br>\[ P(x) &#x3D; x^8 + x^4+ x^3 +x + 1 \]<br>the main algorithm for computing multiplicative inverse is the extended Euclidean algorithm, which is introduced in other posts.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clk1e4wpv001c6hsjfftj9tr6" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
 
     </footer>
   </div>
@@ -957,7 +756,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -967,7 +766,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 15px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 12.86px;">zkp</a>
     </div>
   </div>
 
@@ -976,7 +775,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -989,23 +788,23 @@
       <ul>
         
           <li>
-            <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
+            <a href="/2023/11/03/zkp/stark-101/">stark_101</a>
           </li>
         
           <li>
-            <a href="/2023/07/07/cryptography/zkp/zkp-groth16/">zkp groth16 paper review</a>
+            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
           </li>
         
           <li>
-            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp how and why it works</a>
+            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
           </li>
         
           <li>
-            <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
+            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
           </li>
         
           <li>
-            <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding (1)</a>
+            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
           </li>
         
       </ul>
