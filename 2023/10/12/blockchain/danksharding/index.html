@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>danksharding | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="introductionDanksharding is central to Ethereum’s rollup-centric roadmap. The idea is to provide space for large blobs of data, which are verifiable and available, without attempting to interpret t">
+<meta property="og:type" content="article">
+<meta property="og:title" content="danksharding">
+<meta property="og:url" content="https://cliff0412.github.io/2023/10/12/blockchain/danksharding/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="introductionDanksharding is central to Ethereum’s rollup-centric roadmap. The idea is to provide space for large blobs of data, which are verifiable and available, without attempting to interpret t">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-10-12T06:36:58.000Z">
+<meta property="article:modified_time" content="2023-11-05T04:21:17.033Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="blockchain">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-blockchain/danksharding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/10/12/blockchain/danksharding/" class="article-date">
+  <time class="dt-published" datetime="2023-10-12T06:36:58.000Z" itemprop="datePublished">2023-10-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      danksharding
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Danksharding is central to Ethereum’s rollup-centric roadmap. The idea is to provide space for large blobs of data, which are verifiable and available, without attempting to interpret them.</p>
+<h2 id="Preliminaries"><a href="#Preliminaries" class="headerlink" title="Preliminaries"></a>Preliminaries</h2><p>All references to EC, in this report, refer to BLS12_381 [1]. We are mainly concerned with the EC Abelian-group \(\mathbb{G_{1}}\) and the EC scalar-field \(F_r\). Both are of size \(r &lt; 2256\). Note that \(2^{32}\) divides the size of the multiplicative-group in \(F_r\)</p>
+<h2 id="Data-organization"><a href="#Data-organization" class="headerlink" title="Data organization"></a>Data organization</h2><p>The input data consists of n &#x3D; 256 shard-blobs. Each shard-blob is a vector of m &#x3D; 4096 field-elements referred-to as symbols. The data symbols are organized in an n × m input<br>matrix<br>\[<br>    \tag{1}<br>    D_{n x m}^{in} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    d(0,0)   &amp; d(0,1)  &amp; \dots  &amp; d(0,m-1)\\<br>    d(1,0)   &amp; d(1,1)  &amp; \dots  &amp; d(1,m-1)\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    d(n-1,0)   &amp; d(n-1,1)  &amp; \dots  &amp; d(n-1,m-1)<br>}<br>\end{bmatrix}<br>\]<br>where each row is one of the shard-blob vectors [2]<br>In order to enable interpolation and polynomial-commitment to the data, we will pro-<br>ceed to treat the data symbols as polynomial evaluations.</p>
+<p>Let us thus associate each domain location in the input matrix with a field-element pair \(u_{\mu}, \omega_{\eta}\), where \(\mu \in [0, n−1], \eta \in [0, m−1]\) correspond to the row and column indexes, respectively.The row field-element is defined as \( u_{\mu} \equiv u^{rbo(\mu)}\), where u is a 2n’th root-of-unity such that \(u^{2n} &#x3D; 1\). The column field-element is defined as \( \omega_{\eta} \equiv \omega^{rbo(\eta)}\), where \(\omega\) is a 2m’th root-of-unity such that \(\omega^{2m} &#x3D; 1\). <span style="color:red"><em>Using reverse-bit-order ordering rather than natural-ordering allows accessing cosets in block (consecutive) rather than interleaved manner</em></span></p>
+<h2 id="coefficients-extraction"><a href="#coefficients-extraction" class="headerlink" title="coefficients extraction"></a>coefficients extraction</h2><p>Taking the data symbols to be evaluations of a 2D-polynomial or 1D-product-polynomials with row degree n−1 and column degree m−1 uniquely defines the polynomials’ coefficients.</p>
+<h3 id="2D-coeficients-extraction"><a href="#2D-coeficients-extraction" class="headerlink" title="2D coeficients extraction"></a>2D coeficients extraction</h3><p>The 2D-polynomial representing the input data can be expressed as<br>\[\tag{2} d(x,y) \equiv \sum_{i&#x3D;0}^{n-1}\sum_{j&#x3D;0}^{m-1} \hat{c}[i,j] x^{i}y^{j}\]<br>Plugging an evaluation from (1) into (2) results in the following:</p>
+<p>\[\tag{3} d(u_{\mu},\omega_{\eta}) \equiv \sum_{i&#x3D;0}^{n-1}\sum_{j&#x3D;0}^{m-1} \hat{c}[i,j] {u_{\mu}}^{i}{\omega_{\eta}}^{j}\]</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p>[1] Ben Edgington. Bls12-381 for the rest of us. <a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a>.<br>[2] Dankrad Feist. Data availability encoding. <a target="_blank" rel="noopener" href="https://notes.ethereum.org/@dankrad/danksharding_encoding">https://notes.ethereum.org/@dankrad/danksharding_encoding</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/10/12/blockchain/danksharding/" data-id="clokyy8dm0005qwsja95zaawe" data-title="danksharding" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/10/16/cryptography/kzg-commitment/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          kzg_commitment
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/10/12/math/fourier-series/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">fourier_series</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 16.67px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
+          </li>
+        
+          <li>
+            <a href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

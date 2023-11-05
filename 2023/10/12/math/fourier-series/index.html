@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>fourier_series | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Fourier Seriesinnter product of two functions\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]\(\bar{g}\) is the congugate of g on complex number system Fourier series definitionlet \(f">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fourier_series">
+<meta property="og:url" content="https://cliff0412.github.io/2023/10/12/math/fourier-series/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="Fourier Seriesinnter product of two functions\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]\(\bar{g}\) is the congugate of g on complex number system Fourier series definitionlet \(f">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cliff0412.github.io/images/math/fourier_series/f_x.png">
+<meta property="article:published_time" content="2023-10-12T03:13:17.000Z">
+<meta property="article:modified_time" content="2023-11-05T04:21:17.035Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="math">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/math/fourier_series/f_x.png">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-math/fourier-series" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/10/12/math/fourier-series/" class="article-date">
+  <time class="dt-published" datetime="2023-10-12T03:13:17.000Z" itemprop="datePublished">2023-10-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      fourier_series
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="Fourier-Series"><a href="#Fourier-Series" class="headerlink" title="Fourier Series"></a>Fourier Series</h2><h3 id="innter-product-of-two-functions"><a href="#innter-product-of-two-functions" class="headerlink" title="innter product of two functions"></a>innter product of two functions</h3><p>\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]<br>\(\bar{g}\) is the congugate of g on complex number system</p>
+<h3 id="Fourier-series-definition"><a href="#Fourier-series-definition" class="headerlink" title="Fourier series definition"></a>Fourier series definition</h3><p>let \(f(x)\) be a periodic function over a period of \([-\pi, +\pi]\)<br><img src="/images/math/fourier_series/f_x.png" alt="f(x)"></p>
+<p>\( f(x) \) can be transformed into below<br>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(kx) + B_{k}sin(kx)\],<br>where<br>\[ A_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)cos(kx)dx &#x3D; \frac{1}{||cos(kx)||^2}&lt;f(x),cos(kx)&gt; \]<br>\[ B_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)sin(kx)dx &#x3D; \frac{1}{||sin(kx)||^2}&lt;f(x),sin(kx)&gt; \]<br>where \(A_{k}, B_{k}\) is the projection of \(f(x)\) over \(sin(kx)\), or \(cos(kx)\)</p>
+<h3 id="if-period-is-L"><a href="#if-period-is-L" class="headerlink" title="if period is L"></a>if period is L</h3><p>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(\frac{2\pi kx}{L}) + B_{k}sin(\frac{2\pi kx}{L})\],<br>where<br>\[ A_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)cos(\frac{2\pi kx}{L})dx\]<br>\[ B_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)sin(\frac{2\pi kx}{L})dx\]</p>
+<h2 id="Complex-Fourier-Series"><a href="#Complex-Fourier-Series" class="headerlink" title="Complex Fourier Series"></a>Complex Fourier Series</h2><p>todo!()</p>
+<h2 id="Discrete-Fourier-Transform-DFT"><a href="#Discrete-Fourier-Transform-DFT" class="headerlink" title="Discrete Fourier Transform (DFT)"></a>Discrete Fourier Transform (DFT)</h2><p>The discrete Fourier transform transforms a sequence of N complex numbers<br>\[\lbrace x_{n} \rbrace :&#x3D; x_0, x_1,…, x_{N-1} \] into another sequence of complex numbers,<br>\[\lbrace X_{k} \rbrace :&#x3D; X_0, X_1,…, X_{N-1} \] which is defined by<br>\[X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot e^{-\frac{i2\pi}{N}kn}\]</p>
+<h3 id="inverse-DFT"><a href="#inverse-DFT" class="headerlink" title="inverse DFT"></a>inverse DFT</h3><p>The inverse transform is given by<br>\[x_{n} &#x3D; \frac{1}{N}\sum_{k&#x3D;0}^{N-1} X_{k} \cdot e^{\frac{i2\pi}{N}kn}\]</p>
+<h3 id="the-unitary-DFT"><a href="#the-unitary-DFT" class="headerlink" title="the unitary DFT"></a>the unitary DFT</h3><p>Another way of looking at the DFT is to note that the DFT can be expressed as the DFT matrix, a Vandermonde matrix, introduced by Sylvester in 1867.<br>\[<br>    \boldsymbol{F} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]<br>where \( \omega_{N} &#x3D; e^{-\frac{i2\pi}{N}}\) is a primitive Nth root of unity. (any complex number that yields 1 when raised to some positive integer power n)</p>
+<p>\[  \tag{1.1} X &#x3D; F \cdot x^{T}\]</p>
+<h2 id="Fast-Fourier-Transform-FFT"><a href="#Fast-Fourier-Transform-FFT" class="headerlink" title="Fast Fourier Transform (FFT)"></a>Fast Fourier Transform (FFT)</h2><p>FFT is an algorithm to compute DFT ,E.q(1.1). The original DFT contains \(N^2\) multiplications. However, FFT reduce it to \(N\cdot log(N)\)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/10/12/math/fourier-series/" data-id="clokyy8dv0021qwsjhghcad7b" data-title="fourier_series" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/10/12/blockchain/danksharding/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          danksharding
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/10/01/tools/markdown_and_latex/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">markdown &amp; latex</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 16.67px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
+          </li>
+        
+          <li>
+            <a href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
