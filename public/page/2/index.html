@@ -71,6 +71,484 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cryptography/zkp/zkp-under-the-hood" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/" class="article-date">
+  <time class="dt-published" datetime="2023-07-01T06:29:26.000Z" itemprop="datePublished">2023-07-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp how and why it works</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="The-medium-of-proof-Polynomial"><a href="#The-medium-of-proof-Polynomial" class="headerlink" title="The medium of proof: Polynomial"></a>The medium of proof: Polynomial</h2><p>If a prover claims to know some polynomial (no matter how large its degree is) that the verifier also knows, they can follow a simple protocol to verify the statement<br>• Verifier chooses a random value for x and evaluates his polynomial locally<br>• Verifier gives x to the prover and asks to evaluate the polynomial in question<br>• Prover evaluates his polynomial at x and gives the result to the verifier<br>• Verifier checks if the local result is equal to the prover’s result, and if so then the statement is proven with a high confidence</p>
+<h2 id="Non-Interactive-Zero-Knowledge-of-a-Polynomial"><a href="#Non-Interactive-Zero-Knowledge-of-a-Polynomial" class="headerlink" title="Non-Interactive Zero-Knowledge of a Polynomial"></a>Non-Interactive Zero-Knowledge of a Polynomial</h2><ol>
+<li><p>Proving Knowledge of a Polynomial<br>A polynomial can be expressed in the form (where n is the degree of the polynomial):<br>\[c_n x^n + …+ c_1 x^1 + c_0 x^0\]<br>It one claims that he know a polynomial, it is actually the knowledge of the polynomial’s coefficients.</p>
+</li>
+<li><p>Factorization<br>The Fundamental Theorem of Algebra states that any polynomial can be factored into linear po- lynomials (i.e., a degree 1 polynomials representing a line), as long it is solvable. Consequently, we can represent any valid polynomial as a product of its factors:<br>\[(x-a_0)(x-a_1)…(x-a_n) &#x3D; 0\]</p>
+</li>
+</ol>
+<p>if the prover wants to prove that indeed his polynomial has specific roots without disclosing the polynomial itself, he needs to prove that his polynomial \(p(x)\) is the multiplication of those cofactors \(t(x) &#x3D; (x − x_0)(x − x_1)\), called target polynomial, where \(x_0, x_1\) are the specific roots. i.e.:<br>\[p(x) &#x3D; t(x) \cdot h(x)\]<br>A natural way to find \(h(x)\) is through the division \(h(x) &#x3D; \frac{p(x)}{t(x)}\)</p>
+<blockquote>
+<p>for simplicity, onwards we will use polynomial’s letter variable to denote its evaluation, e.g., \(p &#x3D; p(r)\)</p>
+</blockquote>
+<p>Using our polynomial identity check protocol we can compare polynomials \(p(x)\) and \(t(x)·h(x)\):</p>
+<ul>
+<li>Verifier samples a random value \(r\), calculates \(t &#x3D; t(r)\) (i.e., evaluates) and gives \(r\) to the prover</li>
+<li>Prover calculates \(h(x) &#x3D; \frac{p(x)}{t(x)}\) and evaluates \(p(r)\) and \(h(r)\); the resulting values \(p,h\) are<br>provided to the verifier</li>
+<li>Verifier then checks that \(p &#x3D; t \cdot h\), if so those polynomials are equal, meaning that \(p(x)\) has \(t(x)\) as a cofactor.</li>
+</ul>
+<p><strong>Remark 3.1</strong> Now we can check a polynomial for specific properties without learning the polyno- mial itself, so this already gives us some form of zero-knowledge and succinctness. Nonetheless, there are multiple issues with this construction:<br>• Prover may not know the claimed polynomial \(p(x)\) at all. He can calculate evaluation \(t &#x3D; t(r)\), select a random number \(h\) and set \(p &#x3D; t \cdot h\), which will be accepted by the verifier as valid, since equation holds.<br>• Because prover knows the random point \(x &#x3D; r\), he can construct any polynomial which has one shared point at \(r\) with \(t(r) \cdot h(r)\).<br>• In the original statement, prover claims to know a polynomial of a particular degree, in the current protocol there is no enforcement of degree. Hence prover can cheat by using a polynomial of higher degree which also satisfies the cofactors check.</p>
+<ol start="3">
+<li>Obscure Evaluation<br>Two first issues of remark 3.1 are possible because values are presented at raw, prover knows r and t(r). It would be ideal if those values would be given as a black box, so one cannot temper with the protocol, but still able to compute operations on those obscure values.<br>3.1. Homomorphic Encryption<br>There are multiple ways to achieve homomorphic properties of encryption, and we will briefly introduce a simple one. The general idea is to choose a base number \(g\) and do ecncryption of a value \(x\) by exponentiate of \(g\)<br>\[E(x) &#x3D; g^{x} \bmod p\]<br>For example, let \(E(x_1) &#x3D; g^{x_1} \bmod p\), and \(E(x_2) &#x3D; g^{x_2} \bmod p\), then<br>\[E(x_2) \cdot E(x_1) &#x3D; g^{x_1 + x_2} &#x3D; E(x_1 + x_2) \]</li>
+</ol>
+<p>3.2. Encrypted Polynomial<br>Let us see how we can evaluate a polynomial \(p(x) &#x3D; x^3 − 3x^2 + 2x\). Because homomorphic encryption does not allows to exponentiate an encrypted value, we’ve must been given encrypted values of powers of x from 1 to 3: \(E(x),E(x2),E(x3)\) so that<br>\[ E(x^3)^1 \cdot E(x^2)^{-3} \cdot E(x)^2 &#x3D; (g^{x^3})^{1} \cdot (g^{x^2})^{-3} \cdot (g^{x})^{2} &#x3D; g^{1x^3} \cdot g^{-3x^2} \cdot g^{2x} &#x3D; g^{x^3-3x^2+2x}\]<br>Hence, we have an encrypted evaluation of our polynomial at some unknown to us \(x\) </p>
+<p>We can now update the previous version of the protocol, for a polynomial fo degree \(d\):</p>
+<ul>
+<li>Verifier<ul>
+<li>samples a random value \(s\), i.e., secret</li>
+<li>calculates encryptions of \(s\) for all powers \(i\) in \(0,1,…,d\), i.e. : \(E(s^{i}) &#x3D; g^{s^{i}}\)</li>
+<li>evaluates unencrypted target polynomial with \(s: t(s)\)</li>
+<li>encrypted powers of \(s\) are provided to the prover: \(E(s^{0}),E(s^{1}),…,E(s^{d})\)</li>
+</ul>
+</li>
+<li>Prover<ul>
+<li>calculates polynomial \(h(x) &#x3D; \frac{p(x)}{t(x)}\)</li>
+<li>using encrypted powers \(g^{s^{0}},g^{s^{1}},…,g^{s^{d}}\) and coefficients \(c_0, c_1,…,c_n \) evaluates \(E(p(s)) &#x3D; g^{p(s)} &#x3D; (g^{s^{d}})^{c_d} \cdot \cdot \cdot (g^{s^{1}})^{c_1} \cdot (g^{s^{0}})^{c_0}\) and similarly \(E(h(s)) &#x3D; g^{h(s)}\)</li>
+<li>the resulting \(g^p\) and \(g^h\) are provided to the verifier</li>
+</ul>
+</li>
+<li>Verifier<ul>
+<li>The alst step for the verifier is to checks that \(p &#x3D; t(s) \cdot h \) in encrypted space: \(g^p &#x3D; (g^h)^{t(s)}\) &#x3D;&gt; \(g^p &#x3D; g^{t(s) \cdot h}\)</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Note: because the prover does not know anything about s, it makes it hard to come up with non-legitimate but still matching evaluations.</p>
+</blockquote>
+<h2 id="referneces"><a href="#referneces" class="headerlink" title="referneces"></a>referneces</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1906.07221.pdf">why and how zk-SNARK works by Maksym</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/07/01/cryptography/zkp/zkp-under-the-hood/" data-id="clokyy0zf002opjsj0aoth7bv" data-title="zkp how and why it works" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/elliptic_curve/elliptic-curve-pairing" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" class="article-date">
+  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Pairings allow you to check certain kinds of more complicated equations on elliptic curve points — for example, if \(P &#x3D; G * p\), \(Q &#x3D; G * q\) and \(R &#x3D; G * r\), you can check whether or not \(p * q &#x3D; r\), having just P, Q and R as inputs. This might seem like the fundamental security guarantees of elliptic curves are being broken, as information about p is leaking from just knowing P, but it turns out that the leakage is highly contained — specifically, the <em><strong>decisional Diffie Hellman problem</strong></em> is easy, but the computational Diffie Hellman problem (knowing P and Q in the above example, computing R &#x3D; G * p * q) and the discrete logarithm problem (recovering p from P) remain computationally infeasible.</p>
+<p> whereas traditional elliptic curve math lets you check linear constraints on the numbers (eg. if P &#x3D; G * p, Q &#x3D; G * q and R &#x3D; G * r, checking 5 * P + 7 * Q &#x3D; 11 * R is really checking that 5 * p + 7 * q &#x3D; 11 * r), pairings let you check quadratic constraints (eg. checking e(P, Q) * e(G, G * 5) &#x3D; 1 is really checking that p * q + 5 &#x3D; 0).</p>
+<p> Now, what is this funny e(P, Q) operator that we introduced above? This is the pairing. Mathematicians also sometimes call it a bilinear map; the word “bilinear” here basically means that it satisfies the constraints:</p>
+<p>\[ e(P, Q + R) &#x3D; e(P, Q) * e(P, R) \]<br>\[ e(P + S, Q) &#x3D; e(P, Q) * e(S, Q) \]<br>Note that + and * can be arbitrary operators; when you’re creating fancy new kinds of mathematical objects, abstract algebra doesn’t care how + and * are defined, as long as they are consistent in the usual ways.</p>
+<p>If P, Q, R and S were simple numbers, then making a simple pairing is easy: we can do e(x, y) &#x3D; 2^xy. Then, we can see:<br>\[e(3, 4+ 5) &#x3D; 2^(3 * 9) &#x3D; 2^{27}\]<br>\[e(3, 4) * e(3, 5) &#x3D; 2^(3 * 4) * 2^(3 * 5) &#x3D; 2^{12} * 2^{15} &#x3D; 2^{27} \]<br>However, such simple pairings are not suitable for cryptography because the objects that they work on are simple integers and are too easy to analyze;</p>
+<p>It turns out that it is possible to make a bilinear map over elliptic curve points — that is, come up with a function e(P, Q) where the inputs P and Q are elliptic curve points, and where the output is what’s called an \(F_{p^¹²}\) (extension field) element</p>
+<p>An elliptic curve pairing is a map G2 x G1 -&gt; Gt, where:</p>
+<ul>
+<li>G1 is an elliptic curve, where points satisfy an equation of the form y² &#x3D; x³ + b, and where both coordinates are elements of F_p (ie. they are simple numbers, except arithmetic is all done modulo some prime number)</li>
+<li>G2 is an elliptic curve, where points satisfy the same equation as G1, except where the coordinates are elements of \(F_{p^¹²}\). we define a new “magic number” w, which is defined by a 12th degree polynomial like w^12 - 18 * w^6 + 82 &#x3D; 0</li>
+<li>Gt is the type of object that the result of the elliptic curve goes into. In the curves that we look at, Gt is \(F_{p^¹²}\)<br>The main property that it must satisfy is bilinearity, which in presented above</li>
+</ul>
+<p>There are two other important criteria:</p>
+<ul>
+<li><strong>Efficient computability</strong> (eg. we can make an easy pairing by simply taking the discrete logarithms of all points and multiplying them together, but this is as computationally hard as breaking elliptic curve cryptography in the first place, so it doesn’t count)</li>
+<li><strong>Non-degeneracy</strong> (sure, you could just define e(P, Q) &#x3D; 1, but that’s not a particularly useful pairing)</li>
+</ul>
+<h2 id="math-intuition-behind-paring"><a href="#math-intuition-behind-paring" class="headerlink" title="math intuition behind paring"></a>math intuition behind paring</h2><p>The math behind why pairing functions work is quite tricky and involves quite a bit of advanced algebra going even beyond what we’ve seen so far, but I’ll provide an outline. First of all, we need to define the concept of a divisor, basically an alternative way of representing functions on elliptic curve points. A <strong>divisor</strong> of a function basically counts the zeroes and the infinities of the function. To see what this means, let’s go through a few examples. Let us fix some point P &#x3D; (P_x, P_y), and consider the following function:<br>\[f(x, y) &#x3D; x - P_x\]</p>
+<p>The divisor is [P] + [-P] - 2 * [O] (the square brackets are used to represent the fact that we are referring to the presence of the point P in the set of zeroes and infinities of the function, not the point P itself; [P] + [Q] is not the same thing as [P + Q]). The reasoning is as follows:</p>
+<ul>
+<li>The function is equal to zero at P, since x is P_x, so x - P_x &#x3D; 0</li>
+<li>The function is equal to zero at -P, since -P and P share the same x coordinate</li>
+<li>The function goes to infinity as x goes to infinity, so we say the function is equal to infinity at O. There’s a technical reason why this infinity needs to be counted twice, so O gets added with a “multiplicity” of -2 (negative because it’s an infinity and not a zero, two because of this double counting).<br>The technical reason is roughly this: because the equation of the curve is x³ &#x3D; y² + b, y goes to infinity “1.5 times faster” than x does in order for y² to keep up with x³; hence, if a linear function includes only x then it is represented as an infinity of multiplicity 2, but if it includes y then it is represented as an infinity of multiplicity 3.</li>
+</ul>
+<p>Where a, b and c are carefully chosen so that the line passes through points P and Q. Because of how elliptic curve addition works (see the diagram at the top), this also means that it passes through -P-Q. And it goes up to infinity dependent on both x and y, so the divisor becomes [P]+ [Q] + [-P-Q] - 3 * [O]. (multiplicity of 3 because it involves y)<br><img src="/images/cryptography/elliptic_curve/paring_ec.png" alt="ec_pariling"><br>We know that every “rational function” (ie. a function defined only using a finite number of +, -, * and &#x2F; operations on the coordinates of the point) uniquely corresponds to some divisor, up to multiplication by a constant (ie. if two functions F and G have the same divisor, then F &#x3D; G * k for some constant k).<br>For any two functions F and G, the divisor of F * G is equal to the divisor of F plus the divisor of G (in math textbooks, you’ll see (F * G) &#x3D; (F) + (G)), so for example if f(x, y) &#x3D; P_x - x, then (f³) &#x3D; 3 * [P] + 3 * [-P] - 6 * [O]; P and -P are “triple-counted” to account for the fact that f³ approaches 0 at those points “three times as quickly” in a certain mathematical sense.</p>
+<p>Note that there is a theorem that states that if you “remove the square brackets” from a divisor of a function, the points must add up to O ([P] + [Q] + [-P-Q] - 3 * [O] clearly fits, as P + Q - P - Q - 3 * O &#x3D; O), and any divisor that has this property is the divisor of a function.</p>
+<h2 id="Tate-pairings"><a href="#Tate-pairings" class="headerlink" title="Tate pairings"></a>Tate pairings</h2><p>Consider the following functions, defined via their divisors:</p>
+<ul>
+<li>(F_P) &#x3D; n * [P] - n * [O], where n is the order of G1, ie. n * P &#x3D; O for any P</li>
+<li>(F_Q) &#x3D; n * [Q] - n * [O]</li>
+<li>(g) &#x3D; [P + Q] - [P] - [Q] + [O]<br>Now, let’s look at the product F_P * F_Q * g^n. The divisor is:</li>
+</ul>
+<p>n * [P] - n * [O] + n * [Q] - n * [O] + n * [P + Q] - n * [P] - n * [Q] + n * [O]</p>
+<p>Which simplifies neatly to:</p>
+<p>n * [P + Q] - n * [O]<br>Notice that this divisor is of exactly the same format as the divisor for F_P and F_Q above. Hence, F_P * F_Q * g^n &#x3D; F_(P + Q).</p>
+<p>Now, we introduce a procedure called the “final exponentiation” step, where we take the result of our functions above (F_P, F_Q, etc.) and raise it to the power z &#x3D; (p¹² - 1) &#x2F; n, where p¹² - 1 is the order of the multiplicative group in F_p¹² (ie. for any x ϵ F_p¹², x^(p¹² - 1) &#x3D; 1). Notice that if you apply this exponentiation to any result that has already been raised to the power of n, you get an exponentiation to the power of p¹² - 1, so the result turns into 1. Hence, after final exponentiation, g^n cancels out and we get F_P^z * F_Q^z &#x3D; F_(P + Q)^z. There’s some bilinearity for you.<br>Now, if you want to make a function that’s bilinear in both arguments, you need to go into spookier math, where instead of taking F_P of a value directly, you take F_P of a divisor, and that’s where the full “Tate pairing” comes from. To prove some more results you have to deal with notions like “linear equivalence” and “Weil reciprocity”, and the rabbit hole goes on from there. You can find more reading material on all of this [2] and he[3].<br>Every elliptic curve has a value called an embedding degree; essentially, the smallest k such that p^k - 1 is a multiple of n (where p is the prime used for the field and n is the curve order). In the fields above, k &#x3D; 12, and in the fields used for traditional ECC (ie. where we don’t care about pairings), the embedding degree is often extremely large, to the point that pairings are computationally infeasible to compute; however, if we are not careful then we can generate fields where k &#x3D; 4 or even 1.</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] <a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/exploring-elliptic-curve-pairings-c73c1864e627">vitalik’s blog on paring</a></li>
+<li>[2] <a target="_blank" rel="noopener" href="https://www.math.ru.nl/~bosma/Students/MScThesis_DennisMeffert.pdf">bilinear pairings in cryptography by Dennis Meffert</a></li>
+<li>[3] <a target="_blank" rel="noopener" href="https://people.cs.nctu.edu.tw/~rjchen/ECC2012S/Elliptic%20Curves%20Number%20Theory%20And%20Cryptography%202n.pdf">Elliptic Curves number theory and cryptography by Kenneth H. Rosen</a></li>
+<li>[4] <a target="_blank" rel="noopener" href="https://crypto.stanford.edu/pbc/notes/ep/miller.html">Miller’s Algorithm</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" data-id="clokyy0zb001zpjsj4hnjh6w2" data-title="elliptic curve paring" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" class="article-date">
+  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/">zkp a brief understanding (1)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>zk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “quadratic arithmetic program” (QAP), and transforming the code of a function into one of these is itself highly nontrivial.</p>
+<p>The example that we will choose is a simple one: proving that you know the solution to a cubic equation: \(x^3 + x + 5 &#x3D;&#x3D; 35\)</p>
+<p>Note that modulo (%) and comparison operators (&lt;, &gt;, ≤, ≥) are NOT supported, as there is no efficient way to do modulo or comparison directly in finite cyclic group arithmetic (be thankful for this; if there was a way to do either one, then elliptic curve cryptography would be broken faster)</p>
+<p>You can extend the language to modulo and comparisons by providing bit decompositions (eg. \(13 &#x3D; 2^3 + 2^2 + 1\)) as auxiliary inputs, proving correctness of those decompositions and doing the math in binary circuits; in finite field arithmetic, doing equality <code>(==)</code> checks is also doable and in fact a bit easier, but these are both details we won’t get into right now. We can extend the language to support conditionals (eg. <code>if x &lt; 5: y = 7; else: y = 9</code>) by converting them to an arithmetic form: <code>y = 7 * (x &lt; 5) + 9 * (x &gt;= 5)</code>;though note that both “paths” of the conditional would need to be executed.</p>
+<h2 id="Flattening"><a href="#Flattening" class="headerlink" title="Flattening"></a>Flattening</h2><p>The first step is a “flattening” procedure, where we convert the original code into a sequence of statements that are of two forms</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sym1 = x * x</span><br><span class="line">y = sym1 * x</span><br><span class="line">sym2 = y + x</span><br><span class="line">~out = sym2 + 5</span><br></pre></td></tr></table></figure>
+
+<h2 id="Gates-to-R1CS"><a href="#Gates-to-R1CS" class="headerlink" title="Gates to R1CS"></a>Gates to R1CS</h2><p>Now, we convert this into something called a rank-1 constraint system (R1CS). An R1CS is a sequence of groups of three vectors <code>(a, b, c)</code>, and the solution to an R1CS is a vector s, where s must satisfy the equation <code>s . a * s . b - s . c = 0</code>, where <code>.</code> represents the dot product. For example, this is a satisfied R1CS:<br><img src="/images/cryptography/zkp/r1cs.png" alt="r1cs"><br>\[s \cdot a &#x3D; (1,3,35,9,27,30) \cdot (5,0,0,0,0,1) &#x3D; 35\]<br>\[s \cdot b &#x3D; (1,3,35,9,27,30) \cdot (1,0,0,0,0,0) &#x3D; 1\]<br>\[s \cdot c &#x3D; (1,3,35,9,27,30) \cdot (0,0,1,0,0,0) &#x3D; 35\]<br>Hence<br>\[ s \cdot a * s \cdot b - s \cdot c &#x3D; 35 * 1 - 35 &#x3D; 0\]</p>
+<p>But instead of having just one constraint, we are going to have many constraints: one for each logic gate. There is a standard way of converting a logic gate into a <code>(a, b, c)</code> triple depending on what the operation is <code>(+, -, * or /)</code> and whether the arguments are variables or numbers. The length of each vector is equal to the total number of variables in the system, including a dummy variable <code>~one</code> at the first index representing the number 1, the input variables <code>x</code>, a dummy variable <code>~out</code> representing the output, and then all of the intermediate variables (<code>sym1</code> and <code>sym2</code> above);<br>First, we’ll provide the variable mapping that we’ll use:<br><code>&#39;~one&#39;, &#39;x&#39;, &#39;~out&#39;, &#39;sym1&#39;, &#39;y&#39;, &#39;sym2&#39;</code></p>
+<p>Now, we’ll give the (a, b, c) triple for the first gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 1, 0, 0, 0, 0]</span><br><span class="line">b = [0, 1, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 1, 0, 0]</span><br></pre></td></tr></table></figure>
+<p>which is \(x*x -sym1 &#x3D; 0\)</p>
+<p>Now, let’s go on to the second gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 0, 0, 1, 0, 0]</span><br><span class="line">b = [0, 1, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 0, 1, 0]</span><br></pre></td></tr></table></figure>
+<p>which is \(sym1 * x &#x3D; y\)<br>Now, the third gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 1, 0, 0, 1, 0]</span><br><span class="line">b = [1, 0, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 0, 0, 1]</span><br></pre></td></tr></table></figure>
+<p>which is \( (x+y) *  \sim one &#x3D; sym2\)</p>
+<p>Finally, the fourth gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [5, 0, 0, 0, 0, 1]</span><br><span class="line">b = [1, 0, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 1, 0, 0, 0]</span><br></pre></td></tr></table></figure>
+<p>which is \((5 + sym2) * \sim one &#x3D; \sim out\)<br>And there we have our R1CS with four constraints. The witness is simply the assignment to all the variables, including input, output and internal variables:<br><code>[1, 3, 35, 9, 27, 30]</code></p>
+<p>The complete R1CS put together is:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">A</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[0, 0, 0, 1, 0, 0]</span><br><span class="line">[0, 1, 0, 0, 1, 0]</span><br><span class="line">[5, 0, 0, 0, 0, 1]</span><br><span class="line">B</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[1, 0, 0, 0, 0, 0]</span><br><span class="line">[1, 0, 0, 0, 0, 0]</span><br><span class="line">C</span><br><span class="line">[0, 0, 0, 1, 0, 0]</span><br><span class="line">[0, 0, 0, 0, 1, 0]</span><br><span class="line">[0, 0, 0, 0, 0, 1]</span><br><span class="line">[0, 0, 1, 0, 0, 0]</span><br></pre></td></tr></table></figure>
+
+<h2 id="R1CS-to-QAP"><a href="#R1CS-to-QAP" class="headerlink" title="R1CS to QAP"></a>R1CS to QAP</h2><p>The next step is taking this R1CS and converting it into QAP form, which implements the exact same logic except using polynomials instead of dot products. We do this as follows. We go from four groups of three vectors of length six to six groups of three degree-3 polynomials, where evaluating the polynomials at each x coordinate represents one of the constraints. That is, if we evaluate the polynomials at x&#x3D;1, then we get our first set of vectors, if we evaluate the polynomials at x&#x3D;2, then we get our second set of vectors, and so on.</p>
+<p>We can make this transformation using something called a <strong>Lagrange interpolation</strong>.<br><img src="/images/cryptography/zkp/lagrange_interpolating.png" alt="lagrange interpolating"></p>
+<p>Now, let’s use Lagrange interpolation to transform our R1CS. What we are going to do is take the first value out of every a vector, use Lagrange interpolation to make a polynomial out of that (where evaluating the polynomial at i gets you the first value of the ith a vector), repeat the process for the first value of every b and c vector, and then repeat that process for the second values, the third, values, and so on. For convenience I’ll provide the answers right now:</p>
+<blockquote>
+<p>Note: the intuition here is to think the R1CS A,B,C matrix vertically (column). For example, for the first column of A, the polynomial should pass (1,0), (2,0), (3,0), (4,5); the second polynomial shoudd pass (1,1), (2,0), (3,1), (4,)</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">A polynomials</span><br><span class="line">[-5.0, 9.166, -5.0, 0.833]</span><br><span class="line">[8.0, -11.333, 5.0, -0.666]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[-6.0, 9.5, -4.0, 0.5]</span><br><span class="line">[4.0, -7.0, 3.5, -0.5]</span><br><span class="line">[-1.0, 1.833, -1.0, 0.166]</span><br><span class="line">B polynomials</span><br><span class="line">[3.0, -5.166, 2.5, -0.333]</span><br><span class="line">[-2.0, 5.166, -2.5, 0.333]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">C polynomials</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[-1.0, 1.833, -1.0, 0.166]</span><br><span class="line">[4.0, -4.333, 1.5, -0.166]</span><br><span class="line">[-6.0, 9.5, -4.0, 0.5]</span><br><span class="line">[4.0, -7.0, 3.5, -0.5]</span><br></pre></td></tr></table></figure>
+<p>Coefficients are in ascending order, so the first polynomial above is actually \(0.833 x^3 — 5 x^2 + 9.166 x - 5\)<br>Let’s try evaluating all of these polynomials at x&#x3D;1. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">A results at x=1</span><br><span class="line">0 = 0.833 * 1^3 - 5 * 1^2 + 9.166 * 1^1 -5 * 1^0 = 0.833 -5 + 9.166 -5 = 0</span><br><span class="line">1 = -0.666 * 1^3 - 5.0 * 1^2 + -11.333 * 1^1 + 8.0 * 1^0 = -0.666 + 5.0 -11.333 +8.0 = 1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">B results at x=1</span><br><span class="line">0 = -0.333 * 1^3 +2.5 * 1^2 -5.166 * 1^1 +3.0 * 1^0 = -0.333 +2.5 -5.166 +3.0 = 0</span><br><span class="line">1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">C results at x=1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">1</span><br><span class="line">0</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+
+<h2 id="Checking-the-QAP"><a href="#Checking-the-QAP" class="headerlink" title="Checking the QAP"></a>Checking the QAP</h2><p>Now what’s the point of this crazy transformation? The answer is that instead of checking the constraints in the R1CS individually, we can now check all of the constraints at the same time by doing the dot product check on the polynomials.<br><img src="/images/cryptography/zkp/checking_qap.png" alt="checking qap"><br>Because in this case the dot product check is a series of additions and multiplications of polynomials, the result is itself going to be a polynomial. If the resulting polynomial, evaluated at every x coordinate that we used above to represent a logic gate, is equal to zero, then that means that all of the checks pass; if the resulting polynomial evaluated at at least one of the x coordinate representing a logic gate gives a nonzero value, then that means that the values going into and out of that logic gate are inconsistent</p>
+<p>To check correctness, we don’t actually evaluate the polynomial <code>t = A . s * B . s - C . s</code> at every point corresponding to a gate; instead, we divide <code>t</code> by another polynomial, <code>Z</code>, and check that <code>Z</code> evenly divides <code>t</code> - that is, <strong>the division <code>t / Z</code> leaves no remainder</strong>.</p>
+<p><code>Z</code> is defined as <code>(x - 1) * (x - 2) * (x - 3) ...</code> - the simplest polynomial that is equal to zero at all points that correspond to logic gates. It is an elementary fact of algebra that any polynomial that is equal to zero at all of these points has to be a multiple of this minimal polynomial, and if a polynomial is a multiple of <code>Z</code> then its evaluation at any of those points will be zero;</p>
+<p>Note that the above is a simplification; “in the real world”, the addition, multiplication, subtraction and division will happen not with regular numbers, but rather with finite field elements — a spooky kind of arithmetic which is self-consistent, so all the algebraic laws we know and love still hold true, but where all answers are elements of some finite-sized set</p>
+<h2 id="KEA-Knowledge-of-Exponent-Assumption"><a href="#KEA-Knowledge-of-Exponent-Assumption" class="headerlink" title="KEA (Knowledge of Exponent Assumption)"></a>KEA (Knowledge of Exponent Assumption)</h2><p>Let \(q\) be a prime such that \(2q+1\) is also prime, and let \(g\) be a generator<br>of the order \(q\) subgroup of \(Z_{2q+1}^{\ast}\). Suppose we are given input \(q, g, g^a\) and want to output a pair \((C, Y )\) such that \(Y &#x3D; C^a\). One way to do this is to pick some \(c \in Z_{q}\), let \(C &#x3D; g^c\), and let \(Y &#x3D; (g^a)^c\). Intuitively, &#96;KEA1&#96;&#96; can be viewed as saying that this is the ‘only’ way to produce such a pair. The assumption captures this by saying that any adversary outputting such a pair must “know” an exponent \(c\) such that \(g^c &#x3D; C\). The formalization asks that there be an “extractor” that can return \(c\). Roughly:</p>
+<hr>
+<p><strong>KEA1</strong><br>For any adversary \(A\) that takes input \(q, g,g^a\) and returns \((C,Y)\) with \(Y &#x3D; C^a\), there exists an ‘extractor’ \(\bar{A}\), which given the same inputs as \(A\) returns \(c\) such that \(g^c &#x3D; C\)</p>
+<hr>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649">vitalik’s blog: qap zero to hero</a></li>
+<li><a target="_blank" rel="noopener" href="https://mathworld.wolfram.com/LagrangeInterpolatingPolynomial.html">lagrange interpolating</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell">zkSNARKs in a nutshell</a></li>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2013/279.pdf">Pinocchio protocol by Parno, Gentry, Howell</a></li>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2004/008.pdf">KEA</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="clokyy0zd002hpjsj68ugf9tg" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/cryptography-04-digital-signature" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" class="article-date">
+  <time class="dt-published" datetime="2023-06-20T06:29:26.000Z" itemprop="datePublished">2023-06-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/20/cryptography/cryptography-04-digital-signature/">cryptography (4) digital signature</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="Elgamal-Digital-Signature-Scheme"><a href="#Elgamal-Digital-Signature-Scheme" class="headerlink" title="Elgamal Digital Signature Scheme"></a>Elgamal Digital Signature Scheme</h2><p>The Elgammal signature scheme is based on the difficulty of computing discrete logarithms. Unlike RSA, where encryption and digital signature are almoste identical operations, the Elgamal digital signature is quite different from the encryption scheme with teh same name.</p>
+<h3 id="key-generation"><a href="#key-generation" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<ol>
+<li>Choose a large prime \(p\).</li>
+<li>Choose a primitive element \(\alpha\) of \(Z_{p}^{\ast}\), or a subgroup of \(Z_{p}^{\ast}\).</li>
+<li>Choose a random integer \(d \in {2,3,…,p-2}\)</li>
+<li>Compute \(\beta &#x3D; \alpha^{d} \bmod p\)</li>
+</ol>
+<hr>
+<p>The public key is now formed by \(k_{pub} &#x3D; (p, \alpha, \beta)\), and the private key by \(k_{pr}&#x3D;d\)<br>\(Z_{p}^{\ast}\) is the set of integers who are smaller than \(p\) and coprime to \(p\)</p>
+<h3 id="signature-and-verification"><a href="#signature-and-verification" class="headerlink" title="signature and verification"></a>signature and verification</h3><p>Usign the private ey and parameters of the public key, the signature<br>\[sig_{k_{pr}}(x, k_{E}) &#x3D; (r,s)\]<br>\(x\) is the message. \(k_{E}\) is a random value, which forms an ephemeral private key</p>
+<hr>
+<p><strong>Elgamal Signature Generation</strong></p>
+<ol>
+<li>choose a random ephemeral key \(k_{E} \in {0,1,2,..,p-2}\) such that \(gcd(k_{E}, p-1) &#x3D; 1\)</li>
+<li>compute the signatue parameters:<br>\[r \equiv \alpha^{k_{E}} \bmod p\]<br>\[s \equiv (x - d \cdot r)k_{E}^{-1} \bmod p-1\]</li>
+</ol>
+<hr>
+<p>on the receiving side, the signature is verified as \(ver_{k_{pub}}(x,(r,s))\) using the public key, the signature and the message.</p>
+<hr>
+<p><strong>Elgamal Signature Verification</strong></p>
+<ol>
+<li>comput the value<br>\[t \equiv \beta^{r} \cdot r^s \bmod p\]</li>
+<li>the verification follows form<br>\begin{equation}<br>t &#x3D;<br>\begin{cases}<br>\equiv \alpha^{x} \bmod p &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv \alpha^{x} \bmod p  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<h2 id="Digital-Signature-Algorithm-DSA"><a href="#Digital-Signature-Algorithm-DSA" class="headerlink" title="Digital Signature Algorithm (DSA)"></a>Digital Signature Algorithm (DSA)</h2><p>The native Elgamal signature algorithm described above is rarely used in practice. Instead, a much more popular variant is used, known as the Digital Signature Algorithm (DSA). It is a federal US government standard for digital signatures and was proposed by NIST (National Institute of Standards and Technology). Its main advantages over the Elgamal signature scheme are that the signature is only 320-bit long and that some of the attacks<br> that can threaten the Elgamal scheme are not applicable.</p>
+<h3 id="key-generation-1"><a href="#key-generation-1" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<p><strong>key Generation for DSA</strong></p>
+<ol>
+<li>Generate a prime \(p\) with \(2^1023 &lt; p &lt; 2^1024\)</li>
+<li>find a prime divisor \(q\) of \(p-1\) \(2^159 &lt; q &lt; 2^160\)</li>
+<li>Find an element \(\alpha\) with \( ord(\alpha) &#x3D; q\), i.e., \alpha genertes the subgroup with \(q\) elements.</li>
+<li>choose a random integer \(d\) with \(0 &lt; d &lt; q\).</li>
+<li>compute \(\beta \equiv \alpha^{d} \bmod p\).<br>the keys are now:<br>\(k_{pub} &#x3D; (p, q, \alpha, \beta)\)<br>\(k_{pr}&#x3D; (d)\)</li>
+</ol>
+<hr>
+<p>The central idea of DSA is that there are two cyclic groups involved. One is the large cyclic group \(Z_{p}*{\ast}\), the order of which has bit length of 1024 bit. The second one is in the 160-bit subgroup of \(Z_{p}^{\ast}\). this set-up yields shorter signature.</p>
+<h3 id="Signature-and-Verification"><a href="#Signature-and-Verification" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><p>As in the Elgamal signatue scheme, the DSA signature consists of a pair of integers \((r,s)\). Since each of the two parameters is only 160-bit long, the total signature length is 320 bit. </p>
+<hr>
+<p><strong>DSA signature generation</strong></p>
+<ol>
+<li>choose an integer as random ephemeral key \(k_{E}\) with \(0 &lt; k_{E} &lt; q\).</li>
+<li>compute \(r \equiv (\alpha^{k_{E}} \bmod p) \bmod q\)</li>
+<li>compute \(s \equiv (SHA(x) + d \cdot r)k_{E}^{-1} \bmod q \)</li>
+</ol>
+<hr>
+<p>The signature verification process is as follows:</p>
+<hr>
+<p><strong>DSA signature verification</strong></p>
+<ol>
+<li>compute auxilary value \(w \equiv s^{-1} \bmod q\).</li>
+<li>compute auxilary value \(u_{1} \equiv w \cdot SHA(x) \bmod q\).</li>
+<li>compute auxilary value \(u_{2} \equiv w \cdot r \bmod q\).</li>
+<li>compute \(v \equiv (\alpha^{u_1} \cdot \beta^{u_2} \bmod p) \bmod q\).</li>
+<li>the verification \(ver_{k_{pub}}(x, (r,s))\) folows from<br>\begin{equation}<br>v &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<h2 id="Elliptic-Curve-Digital-Signature-Algorithm-ECDSA"><a href="#Elliptic-Curve-Digital-Signature-Algorithm-ECDSA" class="headerlink" title="Elliptic Curve Digital Signature Algorithm (ECDSA)"></a>Elliptic Curve Digital Signature Algorithm (ECDSA)</h2><p>Elliptic curves have several advantages over RSA and over DL schemes like Elgamal or DSA. In particular, in abscence of strong attacks against elliptic curve cryptosystems (ECC), bit lengths in the range of 160-256 bit can be chosen which provide security equivalent to 1024-3072 bit RSA and DL scheme. The shorter bit length of ECC often results in shorter processing time and in shorter signatures.<br>The ECDSA standard is defined for elliptic curves over prime fields \(Z_{p}\) adn Galois fields \(GF(2^m)\). the former is often preferred in practice, and we only introduce this one in what follows</p>
+<h3 id="key-generation-2"><a href="#key-generation-2" class="headerlink" title="key generation"></a>key generation</h3><hr>
+<p><strong>Key Generation for ECDSA</strong></p>
+<ol>
+<li>Use and elliptic curve E with</li>
+</ol>
+<ul>
+<li>modulus p</li>
+<li>coefficients a and b</li>
+<li>a point A which generates a cyclic group of prime order q.</li>
+</ul>
+<ol start="2">
+<li>choose a random integer d with \(0 &lt; d &lt; q\)</li>
+<li>compute \(B &#x3D; dA\).<br>The keys are now<br>\(k_{pub} &#x3D; (p,a,b,q,A,B)\)<br>\(k_{pr} &#x3D; (d)\)</li>
+</ol>
+<hr>
+<h3 id="Signature-and-Verification-1"><a href="#Signature-and-Verification-1" class="headerlink" title="Signature and Verification"></a>Signature and Verification</h3><hr>
+<p><strong>ECDSA Signature Generation</strong></p>
+<ol>
+<li>choose an integer as random ephemeral key \(k_{E}\) with \( 0 &lt; k_{E} &lt; q\).</li>
+<li>compute \(R &#x3D; k_{E}A\)</li>
+<li>Let \(r &#x3D; x_{R}\)</li>
+<li>compute \(s \equiv (h(x) + d \cdot r)k_{E}^{-1} \bmod q\)</li>
+</ol>
+<hr>
+<p>the signature verification process is as follows</p>
+<hr>
+<p><strong>ECDSA Signature Verification</strong></p>
+<ol>
+<li>Compute auxiliary value \(w \equiv s^{-1} \bmod q\)</li>
+<li>compute auxilary value \(u_1 \equiv w \cdot h(x) \bmod q\)</li>
+<li>compute auxiliary value \(u_2 &#x3D; w \cdot r \bmod q\)</li>
+<li>compute \(P &#x3D; u_1 A + u_2 B\).</li>
+<li>the verification \(ver{k_{pub}}(x, (r,s))\) follows from<br>\begin{equation}<br>x_{P} &#x3D;<br>\begin{cases}<br>\equiv r \bmod q &amp; &#x3D;&gt; \text{valid signature} \cr<br>\not\equiv r \bmod q  &amp; &#x3D;&gt; \text{invalid signature}<br>\end{cases}<br>\end{equation}</li>
+</ol>
+<hr>
+<p>The point multiplication, which is in most cases by the far the most arithmetic intensive operation, can be precomputed by choosing the ephemeral key ahead of time.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/20/cryptography/cryptography-04-digital-signature/" data-id="clokyy0z0000gpjsj7ppuce9k" data-title="cryptography (4) digital signature" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/cryptography-03-elliptic-curve" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/" class="article-date">
+  <time class="dt-published" datetime="2023-06-17T06:29:26.000Z" itemprop="datePublished">2023-06-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/17/cryptography/cryptography-03-elliptic-curve/">cryptography (3) elliptic curve</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+
+<h2 id="elliptic-curve-definition"><a href="#elliptic-curve-definition" class="headerlink" title="elliptic curve definition"></a>elliptic curve definition</h2><p>for cryptographic use, we need to conside the curve not over the real numbers but over a finite field. the most popular fields <code>GF(p)</code>, where all arithmetic is performed modulo a prime p.</p>
+<hr>
+<p>the elliptic curve over \( Z_{p}, p&gt;3 \), is the set of all pairs \( (x,y) \in Z_{p} \) which fulfill<br> \[ y^2 \equiv x^3 + a \cdot x + b \bmod p \]<br>together with an imaginary point of infinity \( \mathcal{O} \), where<br> \[ a,b \in Z_{p} \]<br> and the condition \( 4 \cdot a^3 + 27 \cdot b^2 \neq 0 \bmod p \)</p>
+<hr>
+<p>the definition of elliptic curve requires that the curve is nonsingular. Geometrically speaking, this means that the plot has no self-intersections or vertices, which is achieved if the discriminant of the curve \( -16(4a^3) + 27b^2 \) is nonzero.</p>
+<h2 id="operations-on-elliptic-curve"><a href="#operations-on-elliptic-curve" class="headerlink" title="operations on elliptic curve"></a>operations on elliptic curve</h2><p><img src="/images/cryptography/elliptic_curve/point_addition.webp" alt="point addition"><br>let’s denote the group operation with the addition symbol <code>+</code>. “addition” means that given two points and their coordinates, say \( P &#x3D; (x_1, y_1) \) and \( Q &#x3D; (x_2, y_2) \), we have to compute the coordidnate of a third point \( R (x_3, y_3) \). the construction works as follows: draw a line through P and Q and obtain a third point of intersection between the elliptic curve and the line (-R). Mirror this third intersection point along the x-axis. this mirored point is, by definition, the point R. point doubling <code>(P+P = 2P)</code> is a tangent line through the point P, and the rest is same.<br>the fomulae for Point Addition (P+Q) and Point Doubling (2P) is as below </p>
+<hr>
+<p> \[ x_3 &#x3D; s^2 - x_1 -x_2 \bmod p \]<br> \[ y_3 &#x3D; s(x_1 - x_3) - y_1 \bmod p\]<br> where<br>\begin{equation}<br>s &#x3D;<br>\begin{cases}<br>\frac{y_2-y_1}{x_2-x_1} \bmod p &amp; if P \neq Q (\text{point addition}) \cr<br>\frac{3x_{1}^{2} + a}{2y_1} \bmod p  &amp; if P &#x3D;Q (\text{point doubling})<br>\end{cases}<br>\end{equation}</p>
+<hr>
+<p>note that the parameter s is the slope of the line through P and Q in the case of point addition, or the slope of the tangent through P in the case of point doubling.<br>Furthmore, we define an abstract point at infinity as the neutral element \( \mathcal{O} \).<br>\[ P + \mathcal{O} &#x3D; P\]<br>according the group definition, we can now also define the inverse <code>-P</code> of any group element P as<br>\[ P + (-P) &#x3D; \mathcal{O}\]<br>Therefore, the inverse of \( P &#x3D; (x_p, y_p) \) is just \( P &#x3D; (x_p, -y_p)\). since  \( -y_p \equiv p - y_p\), hence<br>\[ -P &#x3D; (x_p, p-y_p) \]</p>
+<h2 id="DLP-discrete-log-problem-with-Elliptic-curve"><a href="#DLP-discrete-log-problem-with-Elliptic-curve" class="headerlink" title="DLP(discrete log problem) with Elliptic curve"></a>DLP(discrete log problem) with Elliptic curve</h2><p>to set up DL cryptosystems it is important to know the order of the group.<br>Hasse’s theorem</p>
+<hr>
+<p>given an elliptic curve E modulo p, the number of points on the curve is denoted by #E and is bounded by:<br>\[ p+1-2\sqrt{p} \leq \#E \leq p+1+2\sqrt{p} \]</p>
+<hr>
+<p>Elliptic Curved Discrete Logarithm Problem (ECDLP)</p>
+<hr>
+<p>Given an elliptic curve E. We consider a primitive elemnt P and another element T. The DL problem is finding the integer d, where \( 1 \leq d \leq \#E \), such that:<br>\[ P + P + ….+ P &#x3D; dP &#x3D; T \]</p>
+<hr>
+<p>In cryptosystems, d is the private key which is an integer, while the public key T is a point on the curve with coordinates \( T &#x3D; (x_T, y_T)\)<br>Usually a <strong>square-and-multiply</strong> algorithm is used to calculate point multiplication (the algorithm detail is not coverred in this post). </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/17/cryptography/cryptography-03-elliptic-curve/" data-id="clokyy0yz000dpjsja6xyfono" data-title="cryptography (3) elliptic curve" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cryptography/cryptography-02-rsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/06/10/cryptography/cryptography-02-rsa/" class="article-date">
@@ -142,7 +620,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="cllb0puxb0005ansjhx3vfcsm" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="clokyy0yy000bpjsjc3tebkzg" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
       
       
       
@@ -248,7 +726,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="cllb0puyd002kansj010jf1g8" data-title="rust std sync" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clokyy0zp0033pjsj875xhbs1" data-title="rust std sync" class="article-share-link">Share</a>
       
       
       
@@ -321,7 +799,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="cllb0puy90027ansjdexod170" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clokyy0zo002wpjsj2qeffnaa" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
       
       
       
@@ -395,7 +873,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="cllb0puxc0007ansjd319f9t3" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clokyy0yx0009pjsjeels1x7b" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
       
       
       
@@ -450,337 +928,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="cllb0puxu0011ansjhrmib2at" data-title="rust concurrency" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/06/01/rust/rust-10-concurrency/" data-id="clokyy0z8001mpjsj8tnqgou4" data-title="rust concurrency" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust_std/rust-std-data-structure-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/" class="article-date">
-  <time class="dt-published" datetime="2023-05-02T14:04:38.000Z" itemprop="datePublished">2023-05-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/">rust std data structure (2D)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="collections"><a href="#collections" class="headerlink" title="collections"></a>collections</h2><h3 id="BTreeMap"><a href="#BTreeMap" class="headerlink" title="BTreeMap"></a>BTreeMap</h3><ul>
-<li><code>clear(&amp;mut self)</code> Clears the map, removing all elements.</li>
-<li><code>get(&amp;self, key: &amp;Q)</code> Returns a reference to the value corresponding to the key.</li>
-<li><code>get_key_value(&amp;self, k: &amp;Q)</code></li>
-<li><code>first_key_value(&amp;self)</code> eturns the first key-value pair in the map.</li>
-<li><code>first_entry(&amp;mut self)</code> Returns the first entry in the map for in-place manipulation</li>
-<li><code>pop_first(&amp;mut self)</code> </li>
-<li><code>last_key_value(&amp;self)</code></li>
-<li><code>last_entry(&amp;mut self)</code></li>
-<li><code>pop_last(&amp;mut self)</code></li>
-<li><code>contains_key(&amp;self, key: &amp;Q)</code></li>
-<li><code>get_mut(&amp;mut self, key: &amp;Q)</code> Returns a mutable reference to the value corresponding to the key</li>
-<li><code>insert(&amp;mut self, key: K, value: V)</code></li>
-<li><code>try_insert(&amp;mut self, key: K, value: V)</code> If the map already had this key present, nothing is updated, and an error containing the occupied entry and the value is returned.</li>
-<li><code>remove(&amp;mut self, key: &amp;Q)</code></li>
-<li><code>remove_entry(&amp;mut self, key: &amp;Q)</code></li>
-<li><code>retain&lt;F&gt;(&amp;mut self, mut f: F)</code> Retains only the elements specified by the predicate.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span>: BTreeMap&lt;<span class="type">i32</span>, <span class="type">i32</span>&gt; = (<span class="number">0</span>..<span class="number">8</span>).<span class="title function_ invoke__">map</span>(|x| (x, x*<span class="number">10</span>)).<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="comment">// Keep only the elements with even-numbered keys.</span></span><br><span class="line">map.<span class="title function_ invoke__">retain</span>(|&amp;k, _| k % <span class="number">2</span> == <span class="number">0</span>);</span><br><span class="line"><span class="built_in">assert!</span>(map.<span class="title function_ invoke__">into_iter</span>().<span class="title function_ invoke__">eq</span>(<span class="built_in">vec!</span>[(<span class="number">0</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">20</span>), (<span class="number">4</span>, <span class="number">40</span>), (<span class="number">6</span>, <span class="number">60</span>)]));</span><br></pre></td></tr></table></figure></li>
-<li><code>append(&amp;mut self, other: &amp;mut Self)</code> Moves all elements from <code>other</code> into <code>self</code>, leaving <code>other</code> empty.</li>
-<li><code>range&lt;T: ?Sized, R&gt;(&amp;self, range: R) -&gt; Range&lt;&#39;_, K, V&gt;</code> Constructs a double-ended iterator over a sub-range of elements in the map.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">use</span> std::ops::Bound::Included;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span> = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">3</span>, <span class="string">&quot;a&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">5</span>, <span class="string">&quot;b&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">8</span>, <span class="string">&quot;c&quot;</span>);</span><br><span class="line"><span class="title function_ invoke__">for</span> (&amp;key, &amp;value) <span class="keyword">in</span> map.<span class="title function_ invoke__">range</span>((<span class="title function_ invoke__">Included</span>(&amp;<span class="number">4</span>), <span class="title function_ invoke__">Included</span>(&amp;<span class="number">8</span>))) &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;key&#125;: &#123;value&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>((&amp;<span class="number">5</span>, &amp;<span class="string">&quot;b&quot;</span>)), map.<span class="title function_ invoke__">range</span>(<span class="number">4</span>..).<span class="title function_ invoke__">next</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>range_mut&lt;T: ?Sized, R&gt;(&amp;mut self, range: R) -&gt; RangeMut&lt;&#39;_, K, V&gt;</code> </li>
-<li><code>entry(&amp;mut self, key: K)</code> Gets the given key’s corresponding entry in the map for in-place manipulation.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">count</span>: BTreeMap&lt;&amp;<span class="type">str</span>, <span class="type">usize</span>&gt; = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line"><span class="comment">// count the number of occurrences of letters in the vec</span></span><br><span class="line"><span class="keyword">for</span> <span class="variable">x</span> <span class="keyword">in</span> [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>] &#123;</span><br><span class="line">    count.<span class="title function_ invoke__">entry</span>(x).<span class="title function_ invoke__">and_modify</span>(|curr| *curr += <span class="number">1</span>).<span class="title function_ invoke__">or_insert</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;a&quot;</span>], <span class="number">3</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;b&quot;</span>], <span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;c&quot;</span>], <span class="number">1</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>split_off&lt;Q: ?Sized + Ord&gt;(&amp;mut self, key: &amp;Q)</code> Splits the collection into two at the given key. Returns everything after the given key,</li>
-<li><code>drain_filter&lt;F&gt;(&amp;mut self, pred: F)</code> Creates an iterator that visits all elements (key-value pairs) in ascending key order and uses a closure to determine if an element should be removed. If the closure returns <code>true</code>, the element is removed from the map and yielded. If the closure returns <code>false</code>, or panics, the element remains in the map and will not be yielded</li>
-<li><code>into_keys(self)</code> Creates a consuming iterator visiting all the keys, in sorted order. The map cannot be used after calling this</li>
-<li><code>into_values(self)</code></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="cllb0puyc002fansjeqbody8q" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust_std/rust-std-data-structure-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/" class="article-date">
-  <time class="dt-published" datetime="2023-05-01T14:04:38.000Z" itemprop="datePublished">2023-05-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/">rust std data structure (1D)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="array"><a href="#array" class="headerlink" title="array"></a>array</h2><p>A <strong>fixed-size</strong> array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N.</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">todo!()</span><br></pre></td></tr></table></figure>
-
-<h2 id="slice"><a href="#slice" class="headerlink" title="slice"></a>slice</h2><p>A <strong>dynamically-sized view</strong> into a contiguous sequence, [T].</p>
-<ul>
-<li><code>len()</code>: Returns the number of elements in the slice</li>
-<li><code>is_empty()</code></li>
-<li><code>first()</code> Returns the first element of the slice, or <code>None</code> if it is empty.</li>
-<li><code>first_mut()</code> Returns a mutable <strong>pointer</strong> to the first element of the slice, or <code>None</code> if it is empty</li>
-<li><code>split_first()</code> Returns the first and all the rest of the elements of the slice, or <code>None</code> if it is empty.</li>
-<li><code>split_first_mut()</code> </li>
-<li><code>split_last()</code></li>
-<li><code>split_last_mut()</code></li>
-<li><code>last()</code></li>
-<li><code>last_mut()</code></li>
-<li><code>get&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice depending on the type of index.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;<span class="number">40</span>), v.<span class="title function_ invoke__">get</span>(<span class="number">1</span>));</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>][..]), v.<span class="title function_ invoke__">get</span>(<span class="number">0</span>..<span class="number">2</span>));</span><br></pre></td></tr></table></figure></li>
-<li><code>get_mut&lt;I&gt;(index: I)</code></li>
-<li><code>get_unchecked&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice, without doing bounds checking</li>
-<li><code>get_unchecked_mut&lt;I&gt;(index: I)</code></li>
-<li><code>as_ptr(&amp;self) -&gt; *const T</code> Returns a raw pointer to the slice’s buffer<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        <span class="built_in">assert_eq!</span>(x.<span class="title function_ invoke__">get_unchecked</span>(i), &amp;*x_ptr.<span class="title function_ invoke__">add</span>(i));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><code>as_mut_ptr(&amp;mut self) -&gt; *mut T</code> <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_mut_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        *x_ptr.<span class="title function_ invoke__">add</span>(i) += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(x, &amp;[<span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>as_ptr_range(&amp;self) -&gt; Range&lt;*const T&gt;</code> Returns the two raw pointers spanning the slice.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">const</span> <span class="keyword">fn</span> <span class="title function_">as_ptr_range</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> Range&lt;*<span class="keyword">const</span> T&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">start</span> = <span class="keyword">self</span>.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">end</span> = <span class="keyword">unsafe</span> &#123; start.<span class="title function_ invoke__">add</span>(<span class="keyword">self</span>.<span class="title function_ invoke__">len</span>()) &#125;;</span><br><span class="line">    start..end</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><code>as_mut_ptr_range(&amp;mut self) -&gt; Range&lt;*mut T&gt;</code></li>
-<li><code>swap(&amp;mut self, a: usize, b: usize)</code> Swaps two elements in the slice.</li>
-<li><code>reverse(&amp;mut self)</code> Reverses the order of elements in the slice, in place.</li>
-<li><code>windows(&amp;self, size: usize)</code> Returns an iterator over all contiguous windows of length <code>size</code>. The windows overlap. If the slice is shorter than <code>size</code>, the iterator returns no values.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">windows</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>chunks(&amp;self, chunk_size: usize)</code> Returns an iterator over <code>chunk_size</code> elements of the slice at a time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
-<li><code>chunks_mut()</code></li>
-<li><code>chunks_exact(&amp;self, chunk_size: usize)</code><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks_exact</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">remainder</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>as_chunks_unchecked&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, assuming that there’s no remainder</li>
-<li><code>as_chunks&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, starting at the beginning of the slice, and a remainder slice with length strictly less than <code>N</code></li>
-<li><code>as_rchunks&lt;const N: usize&gt;(&amp;self)</code> r means reverse</li>
-<li><code>group_by&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over the slice producing non-overlapping runs of elements using the predicate to separate them. The predicate is called on two elements following themselves, it means the predicate is called on <code>slice[0]</code> and <code>slice[1]</code> then on <code>slice[1]</code> and <code>slice[2]</code> and so on<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(slice_group_by)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = &amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">group_by</span>(|a, b| a &lt;= b);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>split_at(&amp;self, mid: usize)</code> Divides one slice into two at an index.</li>
-<li><code>split&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over subslices separated by elements that match <code>pred</code>. The matched element is not contained in the subslices.</li>
-<li><code>splitn&lt;F&gt;(&amp;self, n: usize, pred: F)</code> </li>
-<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the slice contains an element with the given value.</li>
-<li><code>starts_with(&amp;self, needle: &amp;[T])</code> eturns <code>true</code> if <code>needle</code> is a prefix of the slice<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(!v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">50</span>]));</span><br></pre></td></tr></table></figure></li>
-<li><code>ends_with(&amp;self, needle: &amp;[T])</code> </li>
-<li><code>strip_prefix</code> Returns a subslice with the prefix removed.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;[<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">10</span>]), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">40</span>, <span class="number">30</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">50</span>]), <span class="literal">None</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">prefix</span> : &amp;<span class="type">str</span> = <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="string">b&quot;hello&quot;</span>.<span class="title function_ invoke__">strip_prefix</span>(prefix.<span class="title function_ invoke__">as_bytes</span>()),</span><br><span class="line">           <span class="title function_ invoke__">Some</span>(<span class="string">b&quot;llo&quot;</span>.<span class="title function_ invoke__">as_ref</span>()));</span><br></pre></td></tr></table></figure></li>
-<li><code>strip_suffix</code></li>
-<li><code>binary_search(&amp;self, x: &amp;T)</code>  Binary searches this slice for a given element.</li>
-<li><code>sort_unstable(&amp;mut self)</code> Sorts the slice, but might not preserve the order of equal elements.</li>
-<li><code>rotate_left(&amp;mut self, mid: usize)</code> Rotates the slice in-place such that the first <code>mid</code> elements of the slice move to the end while the last <code>self.len() - mid</code> elements move to the front.</li>
-<li><code>fill(&amp;mut self, value: T)</code> Fills <code>self</code> with elements by cloning <code>value</code>.</li>
-<li><code>clone_from_slice(&amp;mut self, src: &amp;[T])</code> Copies the elements from <code>src</code> into <code>self</code>.</li>
-<li><code>copy_from_slice(&amp;mut self, src: &amp;[T])</code> </li>
-<li><code>is_sorted(&amp;self)</code> </li>
-<li><code>take&lt;&#39;a, R: OneSidedRange&lt;usize&gt;&gt;(self: &amp;mut &amp;&#39;a Self, range: R)</code> Removes the subslice corresponding to the given range</li>
-<li><code>get_many_mut&lt;const N: usize&gt;</code> Returns mutable references to many indices at once.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(get_many_mut)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Ok</span>([a, b]) = v.<span class="title function_ invoke__">get_many_mut</span>([<span class="number">0</span>, <span class="number">2</span>]) &#123;</span><br><span class="line">    *a = <span class="number">413</span>;</span><br><span class="line">    *b = <span class="number">612</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(v, &amp;[<span class="number">413</span>, <span class="number">2</span>, <span class="number">612</span>]);</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="alloc-vec-Vec"><a href="#alloc-vec-Vec" class="headerlink" title="alloc::vec::Vec"></a>alloc::vec::Vec</h2><ul>
-<li><code>fn truncate(&amp;mut self, len: usize)</code> Shortens the vector, keeping the first <code>len</code> elements and dropping the rest</li>
-</ul>
-<h2 id="std-collections-VecDeque"><a href="#std-collections-VecDeque" class="headerlink" title="std::collections::VecDeque"></a>std::collections::VecDeque</h2><p>A double-ended queue (deque) implemented with a growable ring buffer.<br>Since VecDeque is a ring buffer, its elements are not necessarily contiguous in memory. If you want to access the elements as a single slice, such as for efficient sorting, you can use make_contiguous. It rotates the VecDeque so that its elements do not wrap, and returns a mutable slice to the now-contiguous element sequence.</p>
-<ul>
-<li><code>swap(&amp;mut self, i: usize, j: usize)</code></li>
-<li><code>reserve_exact(&amp;mut self, additional: usize)</code> Reserves the minimum capacity for at least <code>additional</code> more elements to be inserted in the given deque. Does nothing if the capacity is already sufficient.</li>
-<li><code>reserve(&amp;mut self, additional: usize)</code></li>
-<li><code>shrink_to_fit(&amp;mut self)</code> Shrinks the capacity of the deque as much as possible.</li>
-<li><code>truncate(&amp;mut self, len: usize)</code> Shortens the deque, keeping the first <code>len</code> elements and dropping the rest.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">buf</span> = VecDeque::<span class="title function_ invoke__">new</span>();</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">5</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">10</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">15</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>]);</span><br><span class="line">buf.<span class="title function_ invoke__">truncate</span>(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>]);</span><br></pre></td></tr></table></figure></li>
-<li><code>iter(&amp;self)</code></li>
-<li><code>as_slices(&amp;self)</code></li>
-<li><code>slice_ranges&lt;R&gt;(&amp;self, range: R)</code> Given a range into the logical buffer of the deque, this function return two ranges into the physical buffer that correspond to the given range</li>
-<li><code>range&lt;R&gt;(&amp;self, range: R)</code> Creates an iterator that covers the specified range in the deque.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">deque</span>: VecDeque&lt;_&gt; = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].<span class="title function_ invoke__">into</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">range</span> = deque.<span class="title function_ invoke__">range</span>(<span class="number">2</span>..).<span class="title function_ invoke__">copied</span>().collect::&lt;VecDeque&lt;_&gt;&gt;();</span><br><span class="line"><span class="built_in">assert_eq!</span>(range, [<span class="number">3</span>]);</span><br><span class="line"><span class="comment">// A full range covers all contents</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">all</span> = deque.<span class="title function_ invoke__">range</span>(..);</span><br><span class="line"><span class="built_in">assert_eq!</span>(all.<span class="title function_ invoke__">len</span>(), <span class="number">3</span>);</span><br></pre></td></tr></table></figure></li>
-<li><code>drain&lt;R&gt;(&amp;mut self, range: R)</code> Removes the specified range from the deque in bulk, returning all removed elements as an iterator.</li>
-<li><code>clear(&amp;mut self)</code></li>
-<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the deque contains an element equal to the given value</li>
-<li><code>front(&amp;self)</code> Provides a reference to the front element</li>
-<li><code>front_mut(&amp;mut self)</code></li>
-<li><code>back(&amp;self)</code></li>
-<li><code>back_mut(&amp;mut self)</code></li>
-<li><code>pop_front(&amp;mut self)</code></li>
-<li><code>pop_back(&amp;mut self)</code></li>
-<li><code>push_front(&amp;mut self, value: T)</code></li>
-<li><code>push_back(&amp;mut self, value: T)</code></li>
-</ul>
-<h2 id="std-collections-LinkedList"><a href="#std-collections-LinkedList" class="headerlink" title="std::collections::LinkedList"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/collections/struct.LinkedList.html">std::collections::LinkedList</a></h2>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="cllb0puya002aansj4zr2epgk" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-09-functional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/04/11/rust/rust-09-functional/" class="article-date">
-  <time class="dt-published" datetime="2023-04-11T14:04:38.000Z" itemprop="datePublished">2023-04-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/04/11/rust/rust-09-functional/">rust functional programming</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="iterator"><a href="#iterator" class="headerlink" title="iterator"></a>iterator</h2><ul>
-<li><code>iter()</code> Returns an iterator over the <strong>slice</strong></li>
-<li><code>into_iter()</code> Creates a consuming iterator, that is, one that moves each value out of the vector</li>
-<li><code>iter_mut()</code> Returns an iterator that allows modifying each value.</li>
-</ul>
-<h2 id="flat-map"><a href="#flat-map" class="headerlink" title="flat_map"></a>flat_map</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Creates an iterator that works like map, but flattens nested structure.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// The [`map`] adapter is very useful, but only when the closure</span></span><br><span class="line"><span class="comment">/// argument produces values. If it produces an iterator instead, there&#x27;s</span></span><br><span class="line"><span class="comment">/// an extra layer of indirection. `flat_map()` will remove this extra layer</span></span><br><span class="line"><span class="comment">/// on its own.</span></span><br></pre></td></tr></table></figure>
-<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">words</span> = [<span class="string">&quot;alpha&quot;</span>, <span class="string">&quot;beta&quot;</span>, <span class="string">&quot;gamma&quot;</span>];</span><br><span class="line"><span class="comment">// chars() returns an iterator</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">merged</span>: <span class="type">String</span> = words.<span class="title function_ invoke__">iter</span>()</span><br><span class="line">                          .<span class="title function_ invoke__">flat_map</span>(|s| s.<span class="title function_ invoke__">chars</span>())</span><br><span class="line">                          .<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="built_in">assert_eq!</span>(merged, <span class="string">&quot;alphabetagamma&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="cllb0puxs000xansjb6lzgt73" data-title="rust functional programming" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/crates/rust-serde" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/04/01/rust/crates/rust-serde/" class="article-date">
-  <time class="dt-published" datetime="2023-04-01T14:04:38.000Z" itemprop="datePublished">2023-04-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/04/01/rust/crates/rust-serde/">rust crate serde</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[serde(tag = <span class="string">&quot;filterType&quot;</span>)]</span></span><br><span class="line"><span class="meta">#[serde(untagged)]</span></span><br><span class="line"><span class="meta">#[serde(rename = <span class="string">&quot;PRICE_FILTER&quot;</span>)]</span></span><br><span class="line"><span class="meta">#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#[serde(with = <span class="string">&quot;string_or_float&quot;</span>)]</span></span><br><span class="line"><span class="keyword">pub</span> stop_price: <span class="type">f64</span>,</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/04/01/rust/crates/rust-serde/" data-id="cllb0puy7001xansjhtxafm38" data-title="rust crate serde" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-geth/tech_docs/geth.prune" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/03/25/geth/tech_docs/geth.prune/" class="article-date">
-  <time class="dt-published" datetime="2023-03-25T11:29:43.000Z" itemprop="datePublished">2023-03-25</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/03/25/geth/tech_docs/geth.prune/">geth state prune</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p><strong><em>NOTE:</em></strong>  Offline pruning is only for the hash-based state scheme. In future release, geth will have a path-based state scheme which enables the pruning by default. Once the hash-based state scheme is no longer supported, offline pruning will be deprecated.</p>
-</blockquote>
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>A snap-sync’d Geth node currently requires more than 650 GB of disk space to store the historic blockchain data. With default cache size the database grows by about 14 GB&#x2F;week. Since Geth v1.10, users have been able to trigger a snapshot offline prune to bring the total storage back down to the original ~650 GB in about 4-5 hours.</p>
-<h2 id="how-pruning-works"><a href="#how-pruning-works" class="headerlink" title="how pruning works"></a>how pruning works</h2><p>Pruning uses snapshots of the state database as an indicator to determine which nodes in the state trie can be kept and which ones are stale and can be discarded. Geth identifies the target state trie based on a stored snapshot layer which has at least 128 block confirmations on top (for surviving reorgs) data that isn’t part of the target state trie or genesis state.</p>
-<p>Geth prunes the database in three stages:</p>
-<ol>
-<li>Iterating state snapshot: Geth iterates the bottom-most snapshot layer and constructs a bloom filter set for identifying the target trie nodes.</li>
-<li>Pruning state data: Geth deletes stale trie nodes from the database which are not in the bloom filter set.</li>
-<li>Compacting database: Geth tidies up the new database to reclaim free space.</li>
-</ol>
-<h2 id="Pruning-command"><a href="#Pruning-command" class="headerlink" title="Pruning command"></a>Pruning command</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">geth snapshot prune-state</span><br></pre></td></tr></table></figure>
-
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://geth.ethereum.org/docs/fundamentals/pruning">geth doc</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/25/geth/tech_docs/geth.prune/" data-id="cllb0puxz001jansj6p4idqoj" data-title="geth state prune" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
 
     </footer>
   </div>
@@ -794,7 +946,7 @@
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
+    <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -808,7 +960,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -818,7 +970,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 12.86px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 14.29px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 16.67px;">zkp</a>
     </div>
   </div>
 
@@ -827,7 +979,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -840,23 +992,23 @@
       <ul>
         
           <li>
-            <a href="/2023/10/12/blockchain/danksharding/">danksharding</a>
+            <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
           </li>
         
           <li>
-            <a href="/2023/10/12/math/fourier-series/">fourier_series</a>
+            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
           </li>
         
           <li>
-            <a href="/2023/10/01/tools/markdown_and_latex/">markdown &amp; latex</a>
+            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
           </li>
         
           <li>
-            <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
+            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
           </li>
         
           <li>
-            <a href="/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/">zkp groth16 paper review</a>
+            <a href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
           </li>
         
       </ul>
