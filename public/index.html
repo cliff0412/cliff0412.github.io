@@ -71,6 +71,56 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-blockchain/danksharding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/10/12/blockchain/danksharding/" class="article-date">
+  <time class="dt-published" datetime="2023-10-12T06:36:58.000Z" itemprop="datePublished">2023-10-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/10/12/blockchain/danksharding/">danksharding</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Danksharding is central to Ethereum’s rollup-centric roadmap. The idea is to provide space for large blobs of data, which are verifiable and available, without attempting to interpret them.</p>
+<h2 id="Preliminaries"><a href="#Preliminaries" class="headerlink" title="Preliminaries"></a>Preliminaries</h2><p>All references to EC, in this report, refer to BLS12_381 [1]. We are mainly concerned with the EC Abelian-group \(\mathbb{G_{1}}\) and the EC scalar-field \(F_r\). Both are of size \(r &lt; 2256\). Note that \(2^{32}\) divides the size of the multiplicative-group in \(F_r\)</p>
+<h2 id="Data-organization"><a href="#Data-organization" class="headerlink" title="Data organization"></a>Data organization</h2><p>The input data consists of n &#x3D; 256 shard-blobs. Each shard-blob is a vector of m &#x3D; 4096 field-elements referred-to as symbols. The data symbols are organized in an n × m input<br>matrix<br>\[<br>    D_{n x m}^{in} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    d(0,0)   &amp; d(0,1)  &amp; \dots  &amp; d(0,m-1)\\<br>    d(1,0)   &amp; d(1,1)  &amp; \dots  &amp; d(1,m-1)\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    d(n-1,0)   &amp; d(n-1,1)  &amp; \dots  &amp; d(n-1,m-1)<br>}<br>\end{bmatrix}<br>\]<br>where each row is one of the shard-blob vectors [2]<br>In order to enable interpolation and polynomial-commitment to the data, we will pro-<br>ceed to treat the data symbols as polynomial evaluations.</p>
+<p>Let us thus associate each domain location in the input matrix with a field-element pair \(u_{\mu}, \omega_{\eta}\), where \(\mu \in [0, n−1], \eta \in [0, m−1]\) correspond to the row and column indexes, respectively.The row field-element is defined as \( u_{\mu} \equiv u^{rbo(\mu)}\), where u is a 2n’th root-of-unity such that \(u^{2n} &#x3D; 1\). The column field-element is defined as \( \omega_{\eta} \equiv \omega^{rbo(\eta)}\), where \(\omega\) is a 2m’th root-of-unity such that \(\omega^{2m} &#x3D; 1\). <span style="color:red"><em>Using reverse-bit-order ordering rather than natural-ordering allows accessing cosets in block (consecutive) rather than interleaved manner</em></span></p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p>[1] Ben Edgington. Bls12-381 for the rest of us. <a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a>.<br>[2] Dankrad Feist. Data availability encoding. <a target="_blank" rel="noopener" href="https://notes.ethereum.org/@dankrad/danksharding_encoding">https://notes.ethereum.org/@dankrad/danksharding_encoding</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/10/12/blockchain/danksharding/" data-id="clnpclxwq0000quq93hbqhk1y" data-title="danksharding" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-math/fourier-series" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/10/12/math/fourier-series/" class="article-date">
@@ -116,6 +166,57 @@
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-tools/markdown_and_latex" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/10/01/tools/markdown_and_latex/" class="article-date">
+  <time class="dt-published" datetime="2023-10-01T01:22:35.000Z" itemprop="datePublished">2023-10-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/10/01/tools/markdown_and_latex/">markdown &amp; latex</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="markdown-by-example"><a href="#markdown-by-example" class="headerlink" title="markdown by example"></a>markdown by example</h2><p><em>italic</em><br><span style="color:red">color</span></p>
+<h2 id="latex-by-example"><a href="#latex-by-example" class="headerlink" title="latex by example"></a>latex by example</h2><h2 id="symbol"><a href="#symbol" class="headerlink" title="symbol"></a>symbol</h2><p>\( \mu \)<br>\( \omega \)<br>\( \sigma \)<br>\( \epsilon \)<br>\( \zeta \)<br>\( \eta \)<br>\( \theta \)<br>\( \kappa \)<br>\( \nu \)<br>\( \omicron \)<br>\( \rho \)<br>\( \delta \)<br>\( \tau \)<br>\( \upsilon \)<br>\( \phi \)<br>\( \chi \)<br>\( \psi \)</p>
+<h2 id="font"><a href="#font" class="headerlink" title="font"></a>font</h2><p>\( \mathbb{G_{1}}\)<br>\( \boldsymbol{F}\)</p>
+<h2 id="blob"><a href="#blob" class="headerlink" title="blob"></a>blob</h2><p>\[<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/10/01/tools/markdown_and_latex/" data-id="clnpensr00000utq90phd9wm7" data-title="markdown &amp; latex" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tool/" rel="tag">tool</a></li></ul>
+
     </footer>
   </div>
   
@@ -728,197 +829,6 @@
 
 
   
-    <article id="post-cryptography/cryptography-02-rsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/10/cryptography/cryptography-02-rsa/" class="article-date">
-  <time class="dt-published" datetime="2023-06-10T06:29:26.000Z" itemprop="datePublished">2023-06-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/10/cryptography/cryptography-02-rsa/">cryptography (2) RSA cryptosystem</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>the security of RSA relies on the difficulty of factoring a product of two large primes(the integer factorization problem). it is firstly presented in 1978 in [1].</p>
-<h2 id="Euclidean-Algorithm"><a href="#Euclidean-Algorithm" class="headerlink" title="Euclidean Algorithm"></a>Euclidean Algorithm</h2><p>the gcd of two positive integers \(r_0\) and \(r_1\) is denoted by<br>\[gcd(r_0, r_1)\]<br>the Eucliedean algorithm is used to calculate gcd, based on as simple observation that<br>\[gcd(r_0, r_1) &#x3D; gcd(r_0-r_1, r_1)\]<br>where we assume \(r_0 &gt; r_1\)<br>This property can easily be proven: Let \(gcd(r_0, r_1) &#x3D; g\), since \(g\) divides both  \(r_0\) and \(r_1\), we can write \(r_0 &#x3D; g \cdot x\) and \(r_1 &#x3D; g \cdot y\), where \(x&gt;y\) and \(x\) and \(y\) are coprime integers, i.e., they do not have common factors. Moreover, it is easy to show that \((x-y)\) and \(y\) are also coprime. it follows from here that<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(g \cdot (x-y), g\cdot y) &#x3D; g\]</p>
-<p>it also follow immediately that we can apply the process iteratively:<br>\[gcd(r_0 - r_1, r_1) &#x3D; gcd(r_0 - mr_1, r_1) \]<br>as long as \((r_0 - mr_1) &gt;0\). the algorithm use the fewest number of steps if we choose maximum value of \(m\). this is the case if we compute:<br>\[gcd(r_0, r_1) &#x3D; gcd( r_1, r_0 \bmod r_1) \]<br>this process can be applied recursively until we obtain finally \[gcd(r_l, 0) &#x3D; r_l \]<br>the euclidean algorithm is very efficient, even with the very long numbers. the number of iterations is close to the number of digits of the input operands. that means, for instance, that the number of iterations of a gcd involving 1024-bit nubmers is 1024 times a constant.</p>
-<h2 id="Extended-Euclidean-Algorithm"><a href="#Extended-Euclidean-Algorithm" class="headerlink" title="Extended Euclidean Algorithm"></a>Extended Euclidean Algorithm</h2><p>an extension of the Euclidean algorithm allows us to compute <em><strong>modular inverse</strong></em>. in addition to computing the gcd, the <em><strong>extended Euclidean algorithm</strong></em> computes a linear combination of the form<br>\[gcd(r_0, r_1) &#x3D; s \cdot r_0 + t\cdot r_1 \]<br>where s and t are integer coefficients. this equation is ofthen referred to as <em><strong>Diophantine equation</strong></em></p>
-<p>the detail of the algorithm can be foud in section 6.3.2 of the book understanding cryptography by Christof Paar. Here presents the general idea by using an example.<br>let \(r_0 &#x3D;973 , r_1 &#x3D; 301\). during the steps of Euclidean Algorithm, we obtain \(973 &#x3D; 3\cdot301 + 70\)<br>which is \[r_0 &#x3D; q_1 \cdot r_1 + r_2\]<br>rearrange:<br>\[r_2 &#x3D;  r_0 + (-q_1) \cdot r_1\]<br>replacing (r_0, r_1) and iteratively by (r_1, r_2), … (r_{i-1}, r_{i}), util \(r_{i+1} &#x3D; 0\)<br>then \(r_{i}\) is \(gcd(r_0,r_1)\), and can have a representation of<br>\[gcd(r_0, r_1) &#x3D; s\cdot r_0 + t\cdot r_1 \].<br>since the inverse only exists if \(gcd(r_0, r_1)&#x3D;1\). we obtain<br>\[ s\cdot r_0 + t\cdot r_1 &#x3D; 1\]<br>taking this equation modulo \(r_0\) we obtain<br>\[ s\cdot 0 + t\cdot r_1 \equiv 1 \bmod r_0\]<br>\[  t\cdot r_1 \equiv 1 \bmod r_0\]<br>t is the definition of the inverse of \(r_1\)</p>
-<p>Thus, if we need to compute an inverse \(a^{-1} \bmod m\), we apply EEA with the input parameters \(m\) and \(a\)</p>
-<h2 id="Euler’s-Phi-Function"><a href="#Euler’s-Phi-Function" class="headerlink" title="Euler’s Phi Function"></a>Euler’s Phi Function</h2><p>we consider the ring \( Z_m\) i.e., the set of integers \({0,1,…,m-1}\). we are interested in teh problem of knowing how many numbers in this set are relatively prime to m. this quantity is given by Euler’s phi function, which is \(\Phi(m)\)</p>
-<hr>
-<p>let m have the following canonical factorization<br>\[ m &#x3D; p_{1}^{e_1} \cdot p_{2}^{e_2} \cdot … \cdot p_{n}^{e_n}\]<br>where the \(p_i\) are distinct prime numbers and \( e_i\) are positive integers, then</p>
-<p>\[ \Phi(m) &#x3D; \prod_{i&#x3D;1}^{n}(p_{i}^{e_i} - p_{i}^{e_i -1} ) \]</p>
-<hr>
-<p>it is important to stress that we need to know the factoorization of m in order to calculate Euler’s phi function.</p>
-<h2 id="Fermat’s-little-theorem"><a href="#Fermat’s-little-theorem" class="headerlink" title="Fermat’s little theorem"></a>Fermat’s little theorem</h2><p>Fermat’s little theorem states that if p is a prime number, then for any integer a, the number<br>\(a^{p}-a \) is an integer multiple of p. In the notation of modular arithmetic, this is expressed as<br>\[ a^{p} \equiv a \bmod p\]<br>the theorem can be stated in the form also,<br>\[ a^{p-1} \equiv 1 \bmod p\]<br>then the inverse of an integer is,<br>\[ a^{-1} \equiv a^{p-2} \bmod p\]<br>performing the above formulate (involving exponentiation) to find inverse is usually slower than using extended Euclidean algorithm. However, there are situations where it is advantageous to use Fermat’s Little Theorem,  e.g., on smart cards or other devices which have a hardware accelerator for fast exponentiation anyway.</p>
-<p>a generatlization of Fermat’s little Theorem to any integer moduli, i.e., moduli that are not necessarily primes, is Euler’s theorem.</p>
-<hr>
-<p><strong>Euler’s Theorem</strong><br>let \(a\) and \(m\) be integers with \(gcd(a,m) &#x3D; 1\), then<br>\[ a^{\Phi(m)} \equiv 1 \bmod m\]</p>
-<hr>
-<p>since it works modulo m, it is applicable to integer rings \(Z_{m}\)</p>
-<h2 id="key-generation"><a href="#key-generation" class="headerlink" title="key generation"></a>key generation</h2><hr>
-<p><strong>Output</strong>: public key: \( k_{pub} &#x3D; (n,e) and private key: k_{pr} &#x3D; (d) \)</p>
-<ol>
-<li>choose two large primes p and q.</li>
-<li>compute \(n &#x3D; p\cdot q\)</li>
-<li>compute \( \Phi(n) &#x3D; (p-1)(q-1)\)</li>
-<li>select the public exponent \( e \in {1,2,…,\Phi(n)-1} \) such that<br>\[ gcd(e,\Phi(n)) &#x3D; 1\]</li>
-<li>compute the private key d such that<br>\[ d \cdot e \equiv 1 \bmod \Phi(n)\]</li>
-</ol>
-<hr>
-<p>the condition that \( gcd(e,\Phi(n)) &#x3D; 1\) ensures that the inverse of \(e\) exists modulo \(\Phi(n)\), so that there is always a private key \(d\).<br>the computation of key keys \(d\) and \(e\) canb e doen at once using the extended Euclidean algorith. </p>
-<h2 id="Encryption-and-Decryption"><a href="#Encryption-and-Decryption" class="headerlink" title="Encryption and Decryption"></a>Encryption and Decryption</h2><hr>
-<p><strong>RSA Encryption</strong> Given the privaate key \( k_{pub} &#x3D; (n,e) \) and the plaintext \(x\), the encryption is:<br>\[ y &#x3D; e_{k_{pub}}(x) \equiv x^{e} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
-<hr>
-<hr>
-<p><strong>RSA Decryption</strong> Given the public key \d &#x3D; k_{pr} \) and the plaintext \(y\), the decryption is:<br>\[ x &#x3D; d_{k_{pr}}(y) \equiv y^{d} \bmod n\]<br>where \(x,y \in Z_{n}\)</p>
-<hr>
-<h2 id="Digital-signature"><a href="#Digital-signature" class="headerlink" title="Digital signature"></a>Digital signature</h2><p>the message \(x\) that is being signed is in the range \(1,2,…,n-1\)<br><img src="/images/cryptography/rsa/rsa_signature.png" alt="rsa digital signature"></p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li>[1] <a target="_blank" rel="noopener" href="https://web.williams.edu/Mathematics/lg5/302/RSA.pdf">A Method for Obtaining Digital<br>Signatures and Public-Key Cryptosystems</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/10/cryptography/cryptography-02-rsa/" data-id="cllb0puxb0005ansjhx3vfcsm" data-title="cryptography (2) RSA cryptosystem" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust_std/rust-std-sync" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/08/rust/rust_std/rust-std-sync/" class="article-date">
-  <time class="dt-published" datetime="2023-06-08T14:04:38.000Z" itemprop="datePublished">2023-06-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="lock-free-amp-wait-free"><a href="#lock-free-amp-wait-free" class="headerlink" title="lock free &amp; wait free"></a><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">lock free &amp; wait free</a></h2><p>“Lock-free” and “wait-free” are two different approaches to designing concurrent algorithms and data structures. Both aim to provide efficient and non-blocking synchronization in concurrent environments.</p>
-<ul>
-<li><strong>lock-free</strong> A lock-free algorithm or data structure guarantees progress for at least one thread, regardless of the behavior or state of other threads. In a lock-free design, threads can independently perform their operations without being blocked by other threads. If one thread gets delayed or suspended, other threads can continue to make progress. Lock-free algorithms typically use low-level synchronization primitives such as atomic operations to ensure progress and prevent data races.</li>
-<li><strong>wait-free</strong> A wait-free algorithm or data structure guarantees progress for every thread, regardless of the behavior or state of other threads. In a wait-free design, every thread executing an operation completes its operation within a finite number of steps, without being delayed by other threads. Wait-free algorithms are more stringent in their requirements compared to lock-free algorithms and often require more complex synchronization mechanisms.</li>
-</ul>
-<p>It’s important to note that both lock-free and wait-free designs aim to avoid traditional locks or blocking synchronization mechanisms (such as mutexes or condition variables) that can lead to contention and thread blocking. Instead, they rely on techniques like atomic operations, compare-and-swap (CAS), or memory fences to ensure progress and prevent data races in concurrent execution.</p>
-<h2 id="atomic"><a href="#atomic" class="headerlink" title="atomic"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/index.html">atomic</a></h2><p>Rust atomics currently follow the same rules as <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/atomic">C++20 atomics</a>, specifically <code>atomic_ref</code>. Basically, creating a shared reference to one of the Rust atomic types corresponds to creating an <code>atomic_ref</code> in C++; the atomic_ref is destroyed when the lifetime of the shared reference ends.<br>Each method takes an <code>Ordering</code> which represents the strength of the memory barrier for that operation. These orderings are the same as the <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/atomic/memory_order">C++20 atomic orderings</a>. For more information see the <a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/nomicon/atomics.html">nomicon</a><br>Atomic variables are safe to share between threads (they implement Sync) but they do not themselves provide the mechanism for sharing and follow the threading model of Rust. The most common way to share an atomic variable is to put it into an Arc (an atomically-reference-counted shared pointer).</p>
-<h3 id="Compiler-Reordering"><a href="#Compiler-Reordering" class="headerlink" title="Compiler Reordering"></a>Compiler Reordering</h3><p>Compilers may change the actual order of events, or make events never occur! If we write something like</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x = <span class="number">1</span>;</span><br><span class="line">y = <span class="number">3</span>;</span><br><span class="line">x = <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-<p>The compiler may conclude that it would be best if your program did:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = <span class="number">2</span>;</span><br><span class="line">y = <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
-<p>This has inverted the order of events and completely eliminated one event. But if our program is multi-threaded, we may have been relying on x to actually be assigned to 1 before y was assigned. </p>
-<h3 id="Hardware-Reordering"><a href="#Hardware-Reordering" class="headerlink" title="Hardware Reordering"></a>Hardware Reordering</h3><p>here is indeed a global shared memory space somewhere in your hardware, but from the perspective of each CPU core it is so very far away and so very slow. Each CPU would rather work with its local cache of the data and only go through all the anguish of talking to shared memory only when it doesn’t actually have that memory in cache. The end result is that the hardware doesn’t guarantee that events that occur in some order on one thread, occur in the same order on another thread. To guarantee this, we must issue special instructions to the CPU telling it to be a bit less smart.<br>For instance, say we convince the compiler to emit this logic:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">initial state: x = 0, y = 1</span><br><span class="line"></span><br><span class="line">THREAD 1        THREAD2</span><br><span class="line">y = 3;          if x == 1 &#123;</span><br><span class="line">x = 1;              y *= 2;</span><br><span class="line">                &#125;</span><br></pre></td></tr></table></figure>
-<p>Ideally this program has 2 possible final states:</p>
-<ul>
-<li>y &#x3D; 3: (thread 2 did the check before thread 1 completed)</li>
-<li>y &#x3D; 6: (thread 2 did the check after thread 1 completed)<br>However there’s a third potential state that the hardware enables:</li>
-<li>y &#x3D; 2: (thread 2 saw x &#x3D; 1, but not y &#x3D; 3, and then overwrote y &#x3D; 3)<br>It’s worth noting that different kinds of CPU provide different guarantees. It is common to separate hardware into two categories: strongly-ordered and weakly-ordered. Most notably x86&#x2F;64 provides strong ordering guarantees, while ARM provides weak ordering guarantees.</li>
-</ul>
-<h3 id="Data-Accesses"><a href="#Data-Accesses" class="headerlink" title="Data Accesses"></a>Data Accesses</h3><p>Atomic accesses are how we tell the hardware and compiler that our program is multi-threaded. Each atomic access can be marked with an ordering that specifies what kind of relationship it establishes with other accesses.  For the compiler, this largely revolves around re-ordering of instructions. For the hardware, this largely revolves around how writes are propagated to other threads. The set of orderings Rust exposes are:</p>
-<ul>
-<li>Sequentially Consistent (SeqCst)</li>
-<li>Release</li>
-<li>Acquire</li>
-<li>Relaxed</li>
-</ul>
-<h3 id="Sequentially-Consistent"><a href="#Sequentially-Consistent" class="headerlink" title="Sequentially Consistent"></a>Sequentially Consistent</h3><p>Sequentially Consistent is the most powerful of all, implying the restrictions of all other orderings. Intuitively, a sequentially consistent operation cannot be reordered: all accesses on one thread that happen before and after a SeqCst access stay before and after it.</p>
-<h3 id="Acquire-Release"><a href="#Acquire-Release" class="headerlink" title="Acquire-Release"></a>Acquire-Release</h3><p>Acquire and Release are largely intended to be paired. they’re perfectly suited for acquiring and releasing locks.<br>Intuitively, an acquire access ensures that every access after it stays after it. However operations that occur before an acquire are free to be reordered to occur after it. Similarly, a release access ensures that every access before it stays before it. However operations that occur after a release are free to be reordered to occur before it.</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::Arc;</span><br><span class="line"><span class="keyword">use</span> std::sync::atomic::&#123;AtomicBool, Ordering&#125;;</span><br><span class="line"><span class="keyword">use</span> std::thread;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">lock</span> = Arc::<span class="title function_ invoke__">new</span>(AtomicBool::<span class="title function_ invoke__">new</span>(<span class="literal">false</span>)); <span class="comment">// value answers &quot;am I locked?&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... distribute lock to threads somehow ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Try to acquire the lock by setting it to true</span></span><br><span class="line">    <span class="keyword">while</span> lock.<span class="title function_ invoke__">compare_and_swap</span>(<span class="literal">false</span>, <span class="literal">true</span>, Ordering::Acquire) &#123; &#125;</span><br><span class="line">    <span class="comment">// broke out of the loop, so we successfully acquired the lock!</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... scary data accesses ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ok we&#x27;re done, release the lock</span></span><br><span class="line">    lock.<span class="title function_ invoke__">store</span>(<span class="literal">false</span>, Ordering::Release);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Relaxed"><a href="#Relaxed" class="headerlink" title="Relaxed"></a>Relaxed</h3><p>Relaxed accesses are the absolute weakest. They can be freely re-ordered and provide no happens-before relationship. Still, relaxed operations are still atomic. That is, they don’t count as data accesses and any read-modify-write operations done to them occur atomically. For instance, incrementing a counter can be safely done by multiple threads using a relaxed <code>fetch_add</code> if you’re not using the counter to synchronize any other accesses.</p>
-<h2 id="an-example-spinlock"><a href="#an-example-spinlock" class="headerlink" title="an example (spinlock)"></a>an example (spinlock)</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::Arc;</span><br><span class="line"><span class="keyword">use</span> std::sync::atomic::&#123;AtomicUsize, Ordering&#125;;</span><br><span class="line"><span class="keyword">use</span> std::&#123;hint, thread&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">spinlock</span> = Arc::<span class="title function_ invoke__">new</span>(AtomicUsize::<span class="title function_ invoke__">new</span>(<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">spinlock_clone</span> = Arc::<span class="title function_ invoke__">clone</span>(&amp;spinlock);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">thread</span> = thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span>|| &#123;</span><br><span class="line">        spinlock_clone.<span class="title function_ invoke__">store</span>(<span class="number">0</span>, Ordering::SeqCst);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Wait for the other thread to release the lock</span></span><br><span class="line">    <span class="keyword">while</span> spinlock.<span class="title function_ invoke__">load</span>(Ordering::SeqCst) != <span class="number">0</span> &#123;</span><br><span class="line">        hint::<span class="title function_ invoke__">spin_loop</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Err</span>(panic) = thread.<span class="title function_ invoke__">join</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Thread had an error: &#123;panic:?&#125;&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="usual-structs"><a href="#usual-structs" class="headerlink" title="usual structs"></a>usual structs</h2><ol>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicBool.html">AtomicBool</a></li>
-</ol>
-<h3 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h3><ul>
-<li><code>fn get_mut(&amp;mut self) -&gt; &amp;mut bool</code></li>
-<li><code>fn into_inner(self) -&gt; bool</code></li>
-<li><code>fn load(&amp;self, order: Ordering) -&gt; bool</code></li>
-<li><code>fn store(&amp;self, val: bool, order: Ordering)</code></li>
-<li><code>fn compare_exchange(&amp;self, current: bool,new: bool,success: Ordering,failure: Ordering) -&gt; Result&lt;bool, bool&gt;</code><br>Stores a value into the bool if the current value is the same as the current value.<br>compare_exchange takes two Ordering arguments to describe the memory ordering of this operation. success describes the required ordering for the read-modify-write operation that takes place if the comparison with current succeeds. failure describes the required ordering for the load operation that takes place when the comparison fails. </li>
-<li><code>fn fetch_and(&amp;self, val: bool, order: Ordering) -&gt; bool</code><br>Logical “and” with a boolean value.<br>Performs a logical “and” operation on the current value and the argument val, and sets the new value to the result.</li>
-<li><code>const fn as_ptr(&amp;self) -&gt; *mut bool</code><br>Returns a mutable pointer to the underlying bool.<br>Doing non-atomic reads and writes on the resulting integer can be a data race. This method is mostly useful for FFI, where the function signature may use *mut bool instead of &amp;AtomicBool.</li>
-</ul>
-<ol start="2">
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicUsize.html">AtomicUsize</a></li>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicPtr.html">AtomicPtr</a><br>A raw pointer type which can be safely shared between threads.<br>This type has the same in-memory representation as a *mut T</li>
-</ol>
-<h2 id="Higher-level-synchronization-objects"><a href="#Higher-level-synchronization-objects" class="headerlink" title="Higher-level synchronization objects"></a>Higher-level synchronization objects</h2><p>Most of the low-level synchronization primitives are quite error-prone and inconvenient to use, which is why the standard library also exposes some higher-level synchronization objects.</p>
-<ul>
-<li><strong>Arc</strong>: Atomically Reference-Counted pointer, which can be used in multithreaded environments to prolong the lifetime of some data until all the threads have finished using it.</li>
-<li><strong>Barrier</strong>: Ensures multiple threads will wait for each other to reach a point in the program, before continuing execution all together.</li>
-<li><strong>Condvar</strong>: Condition Variable, providing the ability to block a thread while waiting for an event to occur.</li>
-<li><strong>mpsc</strong>: Multi-producer, single-consumer queues, used for message-based communication. Can provide a lightweight inter-thread synchronisation mechanism, at the cost of some extra memory.</li>
-<li><strong>Mutex</strong>: Mutual Exclusion mechanism, which ensures that at most one thread at a time is able to access some data.</li>
-<li><strong>Once</strong>: Used for a thread-safe, one-time global initialization routine</li>
-<li><strong>OnceLock</strong>: Used for thread-safe, one-time initialization of a global variable.</li>
-<li><strong>RwLock</strong>: Provides a mutual exclusion mechanism which allows multiple readers at the same time, while allowing only one writer at a time. In some cases, this can be more efficient than a mutex.</li>
-</ul>
-<h2 id="mpsc"><a href="#mpsc" class="headerlink" title="mpsc"></a>mpsc</h2><p>This module provides message-based communication over channels, concretely defined among three types:</p>
-<ul>
-<li>Sender</li>
-<li>SyncSender</li>
-<li>Receiver</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="cllb0puyd002kansj010jf1g8" data-title="rust std sync" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -937,7 +847,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -947,7 +857,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 15px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 12.86px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 14.29px;">zkp</a>
     </div>
   </div>
 
@@ -969,7 +879,15 @@
       <ul>
         
           <li>
+            <a href="/2023/10/12/blockchain/danksharding/">danksharding</a>
+          </li>
+        
+          <li>
             <a href="/2023/10/12/math/fourier-series/">fourier_series</a>
+          </li>
+        
+          <li>
+            <a href="/2023/10/01/tools/markdown_and_latex/">markdown &amp; latex</a>
           </li>
         
           <li>
@@ -978,14 +896,6 @@
         
           <li>
             <a href="/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/">zkp groth16 paper review</a>
-          </li>
-        
-          <li>
-            <a href="/2023/07/01/cryptography/zkp/zkp-under-the-hood/">zkp how and why it works</a>
-          </li>
-        
-          <li>
-            <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/">elliptic curve paring</a>
           </li>
         
       </ul>

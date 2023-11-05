@@ -1,7 +1,7 @@
 ---
 title: fourier_series
 date: 2023-10-12 11:13:17
-tags:
+tags: [math]
 ---
 
 <script
