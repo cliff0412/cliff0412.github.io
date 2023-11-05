@@ -1,5 +1,5 @@
 ---
-title: stark_101
+title: stark 101
 date: 2023-11-03 17:07:33
 tags: [cryptography,zkp]
 ---
@@ -7,8 +7,6 @@ tags: [cryptography,zkp]
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
   type="text/javascript">
 </script>
-
-# startk 101
 
 ## trace and low degree extension
 the objective is to develop a STARK prover for the FibonacciSq sequence over a finite field. The FibonacciSq sequence is defined by the recurrence relation
@@ -92,10 +90,128 @@ Therefore, each of the three constraints above can be written as a rational func
 
 \\[\frac{u(x)}{\prod_{i=0}^k (x-x_i)}\\]
 
-for the corresponding \\(u(x)) and \\(\{x_i\}_{i=0}^k). In this step we will construct these three rational functions and show that they are indeed polynomials.
+for the corresponding \\(u(x)\\) and \\(\{x_i\}_{i=0}^k\\). In this step we will construct these three rational functions and show that they are indeed polynomials.
+
+### The First Constraint:
+
+In the first constraint, \\(f(x) - 1\\) and \\(\{x_i\} = \{1\}\\).
+
+We will now construct the **polynomial** \\(p_0(x)=\frac{f(x) - 1}{x - 1}\\), making sure that \\(f(x) - 1\\) is indeed divisible by \\((x-1)\\).
+
+### The Second Constraint
+
+Construct the polynomial `p1` representing the  second constraint, \\(p_1(x)= \frac{f(x) - 2338775057}{x - g^{1022}}\\), similarly: <br>
+
+### The Third Constraint - Succinctness
+
+The last constraint's rational function is slightly more complicated: <br>
+
+
+\\[p_2(x) = \frac{f(g^2 \cdot x) - (f(g \cdot x))^2 - (f(x))^2}{\prod\limits_{i=0}^{1020} (x-g^i)}\\]
+
+whose denominator can be rewritten, so that the entire expression is easier to compute:<br>
+
+$$\frac{f(g^2 \cdot x) - (f(g \cdot x))^2 - (f(x))^2}{\frac{x^{1024} - 1}{(x-g^{1021})(x-g^{1022})(x-g^{1023})}}$$ <br>
+
+This follows from the equality
+
+$$\prod\limits_{i=0}^{1023} (x-g^i) = x^{1024} - 1$$
+
+### Step 4 - Composition Polynomial
+Recall that we're translating a problem of checking the validity of three polynomial constraints to checking that each of the rational functions \\(p_0, p_1, p_2\\) are polynomials. <br>
+
+Our protocol uses an algorithm called [FRI](https://eccc.weizmann.ac.il/report/2017/134/) to do so, which will be discussed in the next part. <br>
+In order for the proof to be succinct (short), we prefer to work with just one rational function instead of three. For that, we take a random linear combination of \\(p_0, p_1, p_2\\) called the **compostion polynomial** (CP for short):
+
+$$CP(x) = \alpha_0 \cdot p_0(x) + \alpha_1 \cdot p_1(x) + \alpha_2 \cdot  p_2(x)$$ <br>
+
+where \\(\alpha_0, \alpha_1, \alpha_2 \\) are random field elements obtained from the verifier, or in our case - from the channel.
+
+Proving that (the rational function) \\(CP\\) is a polynomial guarantess, with high probability, that each of \\(p_0, p_1, p_2\\) are themselves polynomials.
+
+### Commit on the Composition Polynomial
+Lastly, we evaluate $cp$ over the evaluation domain (`eval_domain`), build a Merkle tree on top of that and send its root over the channel. This is similar to commiting on the LDE trace, as we did at the end of part 1.
+
+![trace to cp](images/zkp/stark/trace_to_CP.png)
+
+## FRI Commitments
+### FRI Folding
+
+Our goal in this part is to construct the FRI layers and commit on them. 
+<br>To obtain each layer we need:
+1. To generate a domain for the layer (from the previous layer's domain).
+2. To generate a polynomial for the layer (from the previous layer's polynomial and domain).
+3. To evaluate said polynomial on said domain - **this is the next FRI layer**.
+
+#### Domain Generation
+
+The first FRI domain is simply the `eval_domain` that you already generated in Part 1, namely a coset of a group of order 8192. Each subsequent FRI domain is obtained by taking the first half of the previous FRI domain (dropping the second half), and squaring each of its elements.<br>
+
+Formally - we got `eval_domain` by taking:<br>
+$$w, w\cdot h, w\cdot h^2, ..., w\cdot h^{8191}$$
+
+The next layer will therefore be:<br>
+$$w^2, (w\cdot h)^2, (w\cdot h^2)^2, ..., (w\cdot h^{4095})^2$$
+
+Note that taking the squares of the second half of each elements in `eval_domain` yields exactly
+the same result as taking the squares of the first half. This is true for the next layers as well.
+
+Similarly, the domain of the third layer will be:<br>
+$$w^4, (w\cdot h)^4, (w\cdot h^2)^4, ..., (w\cdot h^{2047})^4$$
+
+And so on.
+
+#### FRI Folding Operator
+The first FRI polynomial is simply the composition polynomial, i.e., `cp`.<br>
+Each subsequent FRI polynomial is obtained by:
+1. Getting a random field element \\(\beta\\) (by calling `Channel.receive_random_field_element`).
+2. Multiplying the odd coefficients of the previous polynomial by \\(\beta\\).
+3. Summing together consecutive pairs (even-odd) of coefficients.
+
+Formally, let's say that the k-th polynomial is of degree \\(< m\\) (for some \\(m\\) which is a power of 2):
+
+$$p_{k}(x) := \sum _{i=0} ^{m-1} c_i x^i$$
+
+
+Then the (k+1)-th polynomial, whose degree is \\(< \frac m 2 \\) will be:
+
+\\[ p_{k+1}(x) := \sum_{i=0} ^{  m / 2 - 1 } (c_{2i} + \beta \cdot c_{2i + 1}) x^i \\] <br>
+
+![fri](images/zkp/stark/fri.png)
+
+![fri example](images/zkp/stark/fri_example.png)
+
+### Generating FRI Commitments
+
+We have now developed the tools to write the `FriCommit` method, that contains the main FRI commitment loop.<br>
+
+It takes the following 5 arguments:
+1. The composition polynomial, that is also the first FRI polynomial, that is - `cp`.
+2. The coset of order 8192 that is also the first FRI domain, that is - `eval_domain`.
+3. The evaluation of the former over the latter, which is also the first FRI layer , that is - `cp_eval`.
+4. The first Merkle tree (we will have one for each FRI layer) constructed from these evaluations, that is - `cp_merkle`.
+5. A channel object, that is `channel`.
+
+The method accordingly returns 4 lists:
+1. The FRI polynomials.
+2. The FRI domains.
+3. The FRI layers.
+4. The FRI Merkle trees.
+
+The method contains a loop, in each iteration of which we extend these four lists, using the last element in each.
+The iteration should stop once the last FRI polynomial is of degree 0, that is - when the last FRI polynomial is just a constant. It should then send over the channel this constant (i.e. - the polynomial's free term).
+The `Channel` class only supports sending strings, so make sure you convert anything you wish to send over the channel to a string before sending.
+
+![commitment](images/zkp/stark/commitment.png)
+
+## Query Phase
+Get q random elements, provide a valdiation data for each
+
+![decommitment](images/zkp/stark/decommitment.png)
 
 # references
 - https://github.com/starkware-industries/stark101
 - [startk_math](https://medium.com/starkware/tagged/stark-math)
 - [starkEx deep dive](https://medium.com/starkware/starkdex-deep-dive-introduction-7b4ef0dedba8)
 - [coset] https://en.wikipedia.org/wiki/Coset
+- [starkware math](https://medium.com/starkware/arithmetization-ii-403c3b3f4355)

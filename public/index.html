@@ -85,7 +85,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/03/zkp/stark-101/">stark_101</a>
+      <a class="p-name article-title" href="/2023/11/03/zkp/stark-101/">stark 101</a>
     </h1>
   
 
@@ -98,7 +98,7 @@
   type="text/javascript">
 </script>
 
-<h1 id="startk-101"><a href="#startk-101" class="headerlink" title="startk 101"></a>startk 101</h1><h2 id="trace-and-low-degree-extension"><a href="#trace-and-low-degree-extension" class="headerlink" title="trace and low degree extension"></a>trace and low degree extension</h2><p>the objective is to develop a STARK prover for the FibonacciSq sequence over a finite field. The FibonacciSq sequence is defined by the recurrence relation<br>\[ a_{n+2} &#x3D; a_{n+1} ^2 + a_n ^2 \]</p>
+<h2 id="trace-and-low-degree-extension"><a href="#trace-and-low-degree-extension" class="headerlink" title="trace and low degree extension"></a>trace and low degree extension</h2><p>the objective is to develop a STARK prover for the FibonacciSq sequence over a finite field. The FibonacciSq sequence is defined by the recurrence relation<br>\[ a_{n+2} &#x3D; a_{n+1} ^2 + a_n ^2 \]</p>
 <p>the statement is: <strong>I know a FieldElement \(X\in \mathbb{F}\) such that the 1023rd element of the FibonacciSq sequence starting with \(1, X\) is \(2338775057\)</strong></p>
 <p>The underlying field of this class is \(\mathbb{F}_{3221225473}\) (\(3221225473 &#x3D; 3 \cdot 2^{30} + 1\)), so all operations are done modulo 3221225473.</p>
 <h3 id="FibonacciSq-Trace"><a href="#FibonacciSq-Trace" class="headerlink" title="FibonacciSq Trace"></a>FibonacciSq Trace</h3><p> let’s construct a list <code>a</code> of length 1023, whose first two elements will be FieldElement objects representing 1 and 3141592, respectively. The next 1021 elements will be the FibonacciSq sequence induced by these two elements. <code>a</code> is called the <strong>trace</strong> of FibonacciSq, or, when the context is clear, the trace.</p>
@@ -135,18 +135,79 @@
 <p>\[\prod_{i&#x3D;0}^k (x-x_i)\]</p>
 <p>Therefore, each of the three constraints above can be written as a rational function of the form:</p>
 <p>\[\frac{u(x)}{\prod_{i&#x3D;0}^k (x-x_i)}\]</p>
-<p>for the corresponding \(u(x)) and \({x_i}_{i&#x3D;0}^k). In this step we will construct these three rational functions and show that they are indeed polynomials.</p>
+<p>for the corresponding \(u(x)\) and \({x_i}_{i&#x3D;0}^k\). In this step we will construct these three rational functions and show that they are indeed polynomials.</p>
+<h3 id="The-First-Constraint"><a href="#The-First-Constraint" class="headerlink" title="The First Constraint:"></a>The First Constraint:</h3><p>In the first constraint, \(f(x) - 1\) and \({x_i} &#x3D; {1}\).</p>
+<p>We will now construct the <strong>polynomial</strong> \(p_0(x)&#x3D;\frac{f(x) - 1}{x - 1}\), making sure that \(f(x) - 1\) is indeed divisible by \((x-1)\).</p>
+<h3 id="The-Second-Constraint"><a href="#The-Second-Constraint" class="headerlink" title="The Second Constraint"></a>The Second Constraint</h3><p>Construct the polynomial <code>p1</code> representing the  second constraint, \(p_1(x)&#x3D; \frac{f(x) - 2338775057}{x - g^{1022}}\), similarly: <br></p>
+<h3 id="The-Third-Constraint-Succinctness"><a href="#The-Third-Constraint-Succinctness" class="headerlink" title="The Third Constraint - Succinctness"></a>The Third Constraint - Succinctness</h3><p>The last constraint’s rational function is slightly more complicated: <br></p>
+<p>\[p_2(x) &#x3D; \frac{f(g^2 \cdot x) - (f(g \cdot x))^2 - (f(x))^2}{\prod\limits_{i&#x3D;0}^{1020} (x-g^i)}\]</p>
+<p>whose denominator can be rewritten, so that the entire expression is easier to compute:<br></p>
+<p>$$\frac{f(g^2 \cdot x) - (f(g \cdot x))^2 - (f(x))^2}{\frac{x^{1024} - 1}{(x-g^{1021})(x-g^{1022})(x-g^{1023})}}$$ <br></p>
+<p>This follows from the equality</p>
+<p>$$\prod\limits_{i&#x3D;0}^{1023} (x-g^i) &#x3D; x^{1024} - 1$$</p>
+<h3 id="Step-4-Composition-Polynomial"><a href="#Step-4-Composition-Polynomial" class="headerlink" title="Step 4 - Composition Polynomial"></a>Step 4 - Composition Polynomial</h3><p>Recall that we’re translating a problem of checking the validity of three polynomial constraints to checking that each of the rational functions \(p_0, p_1, p_2\) are polynomials. <br></p>
+<p>Our protocol uses an algorithm called <a target="_blank" rel="noopener" href="https://eccc.weizmann.ac.il/report/2017/134/">FRI</a> to do so, which will be discussed in the next part. <br><br>In order for the proof to be succinct (short), we prefer to work with just one rational function instead of three. For that, we take a random linear combination of \(p_0, p_1, p_2\) called the <strong>compostion polynomial</strong> (CP for short):</p>
+<p>$$CP(x) &#x3D; \alpha_0 \cdot p_0(x) + \alpha_1 \cdot p_1(x) + \alpha_2 \cdot  p_2(x)$$ <br></p>
+<p>where \(\alpha_0, \alpha_1, \alpha_2 \) are random field elements obtained from the verifier, or in our case - from the channel.</p>
+<p>Proving that (the rational function) \(CP\) is a polynomial guarantess, with high probability, that each of \(p_0, p_1, p_2\) are themselves polynomials.</p>
+<h3 id="Commit-on-the-Composition-Polynomial"><a href="#Commit-on-the-Composition-Polynomial" class="headerlink" title="Commit on the Composition Polynomial"></a>Commit on the Composition Polynomial</h3><p>Lastly, we evaluate $cp$ over the evaluation domain (<code>eval_domain</code>), build a Merkle tree on top of that and send its root over the channel. This is similar to commiting on the LDE trace, as we did at the end of part 1.</p>
+<p><img src="/images/zkp/stark/trace_to_CP.png" alt="trace to cp"></p>
+<h2 id="FRI-Commitments"><a href="#FRI-Commitments" class="headerlink" title="FRI Commitments"></a>FRI Commitments</h2><h3 id="FRI-Folding"><a href="#FRI-Folding" class="headerlink" title="FRI Folding"></a>FRI Folding</h3><p>Our goal in this part is to construct the FRI layers and commit on them.<br><br>To obtain each layer we need:</p>
+<ol>
+<li>To generate a domain for the layer (from the previous layer’s domain).</li>
+<li>To generate a polynomial for the layer (from the previous layer’s polynomial and domain).</li>
+<li>To evaluate said polynomial on said domain - <strong>this is the next FRI layer</strong>.</li>
+</ol>
+<h4 id="Domain-Generation"><a href="#Domain-Generation" class="headerlink" title="Domain Generation"></a>Domain Generation</h4><p>The first FRI domain is simply the <code>eval_domain</code> that you already generated in Part 1, namely a coset of a group of order 8192. Each subsequent FRI domain is obtained by taking the first half of the previous FRI domain (dropping the second half), and squaring each of its elements.<br></p>
+<p>Formally - we got <code>eval_domain</code> by taking:<br><br>$$w, w\cdot h, w\cdot h^2, …, w\cdot h^{8191}$$</p>
+<p>The next layer will therefore be:<br><br>$$w^2, (w\cdot h)^2, (w\cdot h^2)^2, …, (w\cdot h^{4095})^2$$</p>
+<p>Note that taking the squares of the second half of each elements in <code>eval_domain</code> yields exactly<br>the same result as taking the squares of the first half. This is true for the next layers as well.</p>
+<p>Similarly, the domain of the third layer will be:<br><br>$$w^4, (w\cdot h)^4, (w\cdot h^2)^4, …, (w\cdot h^{2047})^4$$</p>
+<p>And so on.</p>
+<h4 id="FRI-Folding-Operator"><a href="#FRI-Folding-Operator" class="headerlink" title="FRI Folding Operator"></a>FRI Folding Operator</h4><p>The first FRI polynomial is simply the composition polynomial, i.e., <code>cp</code>.<br><br>Each subsequent FRI polynomial is obtained by:</p>
+<ol>
+<li>Getting a random field element \(\beta\) (by calling <code>Channel.receive_random_field_element</code>).</li>
+<li>Multiplying the odd coefficients of the previous polynomial by \(\beta\).</li>
+<li>Summing together consecutive pairs (even-odd) of coefficients.</li>
+</ol>
+<p>Formally, let’s say that the k-th polynomial is of degree \(&lt; m\) (for some \(m\) which is a power of 2):</p>
+<p>$$p_{k}(x) :&#x3D; \sum _{i&#x3D;0} ^{m-1} c_i x^i$$</p>
+<p>Then the (k+1)-th polynomial, whose degree is \(&lt; \frac m 2 \) will be:</p>
+<p>\[ p_{k+1}(x) :&#x3D; \sum_{i&#x3D;0} ^{  m &#x2F; 2 - 1 } (c_{2i} + \beta \cdot c_{2i + 1}) x^i \] <br></p>
+<p><img src="/images/zkp/stark/fri.png" alt="fri"></p>
+<p><img src="/images/zkp/stark/fri_example.png" alt="fri example"></p>
+<h3 id="Generating-FRI-Commitments"><a href="#Generating-FRI-Commitments" class="headerlink" title="Generating FRI Commitments"></a>Generating FRI Commitments</h3><p>We have now developed the tools to write the <code>FriCommit</code> method, that contains the main FRI commitment loop.<br></p>
+<p>It takes the following 5 arguments:</p>
+<ol>
+<li>The composition polynomial, that is also the first FRI polynomial, that is - <code>cp</code>.</li>
+<li>The coset of order 8192 that is also the first FRI domain, that is - <code>eval_domain</code>.</li>
+<li>The evaluation of the former over the latter, which is also the first FRI layer , that is - <code>cp_eval</code>.</li>
+<li>The first Merkle tree (we will have one for each FRI layer) constructed from these evaluations, that is - <code>cp_merkle</code>.</li>
+<li>A channel object, that is <code>channel</code>.</li>
+</ol>
+<p>The method accordingly returns 4 lists:</p>
+<ol>
+<li>The FRI polynomials.</li>
+<li>The FRI domains.</li>
+<li>The FRI layers.</li>
+<li>The FRI Merkle trees.</li>
+</ol>
+<p>The method contains a loop, in each iteration of which we extend these four lists, using the last element in each.<br>The iteration should stop once the last FRI polynomial is of degree 0, that is - when the last FRI polynomial is just a constant. It should then send over the channel this constant (i.e. - the polynomial’s free term).<br>The <code>Channel</code> class only supports sending strings, so make sure you convert anything you wish to send over the channel to a string before sending.</p>
+<p><img src="/images/zkp/stark/commitment.png" alt="commitment"></p>
+<h2 id="Query-Phase"><a href="#Query-Phase" class="headerlink" title="Query Phase"></a>Query Phase</h2><p>Get q random elements, provide a valdiation data for each</p>
+<p><img src="/images/zkp/stark/decommitment.png" alt="decommitment"></p>
 <h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/starkware-industries/stark101">https://github.com/starkware-industries/stark101</a></li>
 <li><a target="_blank" rel="noopener" href="https://medium.com/starkware/tagged/stark-math">startk_math</a></li>
 <li><a target="_blank" rel="noopener" href="https://medium.com/starkware/starkdex-deep-dive-introduction-7b4ef0dedba8">starkEx deep dive</a></li>
 <li>[coset] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Coset">https://en.wikipedia.org/wiki/Coset</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/starkware/arithmetization-ii-403c3b3f4355">starkware math</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/03/zkp/stark-101/" data-id="cloiee53j0000ja7u4oskhbde" data-title="stark_101" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/03/zkp/stark-101/" data-id="cloiee53j0000ja7u4oskhbde" data-title="stark 101" class="article-share-link">Share</a>
       
       
       
@@ -788,7 +849,7 @@
       <ul>
         
           <li>
-            <a href="/2023/11/03/zkp/stark-101/">stark_101</a>
+            <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
           </li>
         
           <li>
