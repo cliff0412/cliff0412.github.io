@@ -71,6 +71,627 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rust/rust_std/rust-std-data-structure-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/" class="article-date">
+  <time class="dt-published" datetime="2023-05-02T14:04:38.000Z" itemprop="datePublished">2023-05-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/05/02/rust/rust_std/rust-std-data-structure-2/">rust std data structure (2D)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="collections"><a href="#collections" class="headerlink" title="collections"></a>collections</h2><h3 id="BTreeMap"><a href="#BTreeMap" class="headerlink" title="BTreeMap"></a>BTreeMap</h3><ul>
+<li><code>clear(&amp;mut self)</code> Clears the map, removing all elements.</li>
+<li><code>get(&amp;self, key: &amp;Q)</code> Returns a reference to the value corresponding to the key.</li>
+<li><code>get_key_value(&amp;self, k: &amp;Q)</code></li>
+<li><code>first_key_value(&amp;self)</code> eturns the first key-value pair in the map.</li>
+<li><code>first_entry(&amp;mut self)</code> Returns the first entry in the map for in-place manipulation</li>
+<li><code>pop_first(&amp;mut self)</code> </li>
+<li><code>last_key_value(&amp;self)</code></li>
+<li><code>last_entry(&amp;mut self)</code></li>
+<li><code>pop_last(&amp;mut self)</code></li>
+<li><code>contains_key(&amp;self, key: &amp;Q)</code></li>
+<li><code>get_mut(&amp;mut self, key: &amp;Q)</code> Returns a mutable reference to the value corresponding to the key</li>
+<li><code>insert(&amp;mut self, key: K, value: V)</code></li>
+<li><code>try_insert(&amp;mut self, key: K, value: V)</code> If the map already had this key present, nothing is updated, and an error containing the occupied entry and the value is returned.</li>
+<li><code>remove(&amp;mut self, key: &amp;Q)</code></li>
+<li><code>remove_entry(&amp;mut self, key: &amp;Q)</code></li>
+<li><code>retain&lt;F&gt;(&amp;mut self, mut f: F)</code> Retains only the elements specified by the predicate.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span>: BTreeMap&lt;<span class="type">i32</span>, <span class="type">i32</span>&gt; = (<span class="number">0</span>..<span class="number">8</span>).<span class="title function_ invoke__">map</span>(|x| (x, x*<span class="number">10</span>)).<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="comment">// Keep only the elements with even-numbered keys.</span></span><br><span class="line">map.<span class="title function_ invoke__">retain</span>(|&amp;k, _| k % <span class="number">2</span> == <span class="number">0</span>);</span><br><span class="line"><span class="built_in">assert!</span>(map.<span class="title function_ invoke__">into_iter</span>().<span class="title function_ invoke__">eq</span>(<span class="built_in">vec!</span>[(<span class="number">0</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">20</span>), (<span class="number">4</span>, <span class="number">40</span>), (<span class="number">6</span>, <span class="number">60</span>)]));</span><br></pre></td></tr></table></figure></li>
+<li><code>append(&amp;mut self, other: &amp;mut Self)</code> Moves all elements from <code>other</code> into <code>self</code>, leaving <code>other</code> empty.</li>
+<li><code>range&lt;T: ?Sized, R&gt;(&amp;self, range: R) -&gt; Range&lt;&#39;_, K, V&gt;</code> Constructs a double-ended iterator over a sub-range of elements in the map.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">use</span> std::ops::Bound::Included;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">map</span> = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">3</span>, <span class="string">&quot;a&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">5</span>, <span class="string">&quot;b&quot;</span>);</span><br><span class="line">map.<span class="title function_ invoke__">insert</span>(<span class="number">8</span>, <span class="string">&quot;c&quot;</span>);</span><br><span class="line"><span class="title function_ invoke__">for</span> (&amp;key, &amp;value) <span class="keyword">in</span> map.<span class="title function_ invoke__">range</span>((<span class="title function_ invoke__">Included</span>(&amp;<span class="number">4</span>), <span class="title function_ invoke__">Included</span>(&amp;<span class="number">8</span>))) &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;key&#125;: &#123;value&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>((&amp;<span class="number">5</span>, &amp;<span class="string">&quot;b&quot;</span>)), map.<span class="title function_ invoke__">range</span>(<span class="number">4</span>..).<span class="title function_ invoke__">next</span>());</span><br></pre></td></tr></table></figure></li>
+<li><code>range_mut&lt;T: ?Sized, R&gt;(&amp;mut self, range: R) -&gt; RangeMut&lt;&#39;_, K, V&gt;</code> </li>
+<li><code>entry(&amp;mut self, key: K)</code> Gets the given key’s corresponding entry in the map for in-place manipulation.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::BTreeMap;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">count</span>: BTreeMap&lt;&amp;<span class="type">str</span>, <span class="type">usize</span>&gt; = BTreeMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line"><span class="comment">// count the number of occurrences of letters in the vec</span></span><br><span class="line"><span class="keyword">for</span> <span class="variable">x</span> <span class="keyword">in</span> [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>] &#123;</span><br><span class="line">    count.<span class="title function_ invoke__">entry</span>(x).<span class="title function_ invoke__">and_modify</span>(|curr| *curr += <span class="number">1</span>).<span class="title function_ invoke__">or_insert</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;a&quot;</span>], <span class="number">3</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;b&quot;</span>], <span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(count[<span class="string">&quot;c&quot;</span>], <span class="number">1</span>);</span><br></pre></td></tr></table></figure></li>
+<li><code>split_off&lt;Q: ?Sized + Ord&gt;(&amp;mut self, key: &amp;Q)</code> Splits the collection into two at the given key. Returns everything after the given key,</li>
+<li><code>drain_filter&lt;F&gt;(&amp;mut self, pred: F)</code> Creates an iterator that visits all elements (key-value pairs) in ascending key order and uses a closure to determine if an element should be removed. If the closure returns <code>true</code>, the element is removed from the map and yielded. If the closure returns <code>false</code>, or panics, the element remains in the map and will not be yielded</li>
+<li><code>into_keys(self)</code> Creates a consuming iterator visiting all the keys, in sorted order. The map cannot be used after calling this</li>
+<li><code>into_values(self)</code></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/05/02/rust/rust_std/rust-std-data-structure-2/" data-id="clokyy0zp0031pjsjh84lanza" data-title="rust std data structure (2D)" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust/rust_std/rust-std-data-structure-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/" class="article-date">
+  <time class="dt-published" datetime="2023-05-01T14:04:38.000Z" itemprop="datePublished">2023-05-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/05/01/rust/rust_std/rust-std-data-structure-1/">rust std data structure (1D)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="array"><a href="#array" class="headerlink" title="array"></a>array</h2><p>A <strong>fixed-size</strong> array, denoted [T; N], for the element type, T, and the non-negative compile-time constant size, N.</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">todo!()</span><br></pre></td></tr></table></figure>
+
+<h2 id="slice"><a href="#slice" class="headerlink" title="slice"></a>slice</h2><p>A <strong>dynamically-sized view</strong> into a contiguous sequence, [T].</p>
+<ul>
+<li><code>len()</code>: Returns the number of elements in the slice</li>
+<li><code>is_empty()</code></li>
+<li><code>first()</code> Returns the first element of the slice, or <code>None</code> if it is empty.</li>
+<li><code>first_mut()</code> Returns a mutable <strong>pointer</strong> to the first element of the slice, or <code>None</code> if it is empty</li>
+<li><code>split_first()</code> Returns the first and all the rest of the elements of the slice, or <code>None</code> if it is empty.</li>
+<li><code>split_first_mut()</code> </li>
+<li><code>split_last()</code></li>
+<li><code>split_last_mut()</code></li>
+<li><code>last()</code></li>
+<li><code>last_mut()</code></li>
+<li><code>get&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice depending on the type of index.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;<span class="number">40</span>), v.<span class="title function_ invoke__">get</span>(<span class="number">1</span>));</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="title function_ invoke__">Some</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>][..]), v.<span class="title function_ invoke__">get</span>(<span class="number">0</span>..<span class="number">2</span>));</span><br></pre></td></tr></table></figure></li>
+<li><code>get_mut&lt;I&gt;(index: I)</code></li>
+<li><code>get_unchecked&lt;I&gt;(index: I)</code> Returns a reference to an element or subslice, without doing bounds checking</li>
+<li><code>get_unchecked_mut&lt;I&gt;(index: I)</code></li>
+<li><code>as_ptr(&amp;self) -&gt; *const T</code> Returns a raw pointer to the slice’s buffer<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        <span class="built_in">assert_eq!</span>(x.<span class="title function_ invoke__">get_unchecked</span>(i), &amp;*x_ptr.<span class="title function_ invoke__">add</span>(i));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>as_mut_ptr(&amp;mut self) -&gt; *mut T</code> <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="variable">x_ptr</span> = x.<span class="title function_ invoke__">as_mut_ptr</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..x.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">        *x_ptr.<span class="title function_ invoke__">add</span>(i) += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(x, &amp;[<span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><code>as_ptr_range(&amp;self) -&gt; Range&lt;*const T&gt;</code> Returns the two raw pointers spanning the slice.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">const</span> <span class="keyword">fn</span> <span class="title function_">as_ptr_range</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> Range&lt;*<span class="keyword">const</span> T&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">start</span> = <span class="keyword">self</span>.<span class="title function_ invoke__">as_ptr</span>();</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">end</span> = <span class="keyword">unsafe</span> &#123; start.<span class="title function_ invoke__">add</span>(<span class="keyword">self</span>.<span class="title function_ invoke__">len</span>()) &#125;;</span><br><span class="line">    start..end</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>as_mut_ptr_range(&amp;mut self) -&gt; Range&lt;*mut T&gt;</code></li>
+<li><code>swap(&amp;mut self, a: usize, b: usize)</code> Swaps two elements in the slice.</li>
+<li><code>reverse(&amp;mut self)</code> Reverses the order of elements in the slice, in place.</li>
+<li><code>windows(&amp;self, size: usize)</code> Returns an iterator over all contiguous windows of length <code>size</code>. The windows overlap. If the slice is shorter than <code>size</code>, the iterator returns no values.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">windows</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;u&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;u&#x27;</span>, <span class="string">&#x27;s&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;s&#x27;</span>, <span class="string">&#x27;t&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
+<li><code>chunks(&amp;self, chunk_size: usize)</code> Returns an iterator over <code>chunk_size</code> elements of the slice at a time<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br></pre></td></tr></table></figure></li>
+<li><code>chunks_mut()</code></li>
+<li><code>chunks_exact(&amp;self, chunk_size: usize)</code><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = [<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;m&#x27;</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">chunks_exact</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;o&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">unwrap</span>(), &amp;[<span class="string">&#x27;r&#x27;</span>, <span class="string">&#x27;e&#x27;</span>]);</span><br><span class="line"><span class="built_in">assert!</span>(iter.<span class="title function_ invoke__">next</span>().<span class="title function_ invoke__">is_none</span>());</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">remainder</span>(), &amp;[<span class="string">&#x27;m&#x27;</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><code>as_chunks_unchecked&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, assuming that there’s no remainder</li>
+<li><code>as_chunks&lt;const N: usize&gt;(&amp;self)</code> Splits the slice into a slice of <code>N</code>-element arrays, starting at the beginning of the slice, and a remainder slice with length strictly less than <code>N</code></li>
+<li><code>as_rchunks&lt;const N: usize&gt;(&amp;self)</code> r means reverse</li>
+<li><code>group_by&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over the slice producing non-overlapping runs of elements using the predicate to separate them. The predicate is called on two elements following themselves, it means the predicate is called on <code>slice[0]</code> and <code>slice[1]</code> then on <code>slice[1]</code> and <code>slice[2]</code> and so on<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(slice_group_by)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">slice</span> = &amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">iter</span> = slice.<span class="title function_ invoke__">group_by</span>(|a, b| a &lt;= b);</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(iter.<span class="title function_ invoke__">next</span>(), <span class="literal">None</span>);</span><br></pre></td></tr></table></figure></li>
+<li><code>split_at(&amp;self, mid: usize)</code> Divides one slice into two at an index.</li>
+<li><code>split&lt;F&gt;(&amp;self, pred: F)</code> Returns an iterator over subslices separated by elements that match <code>pred</code>. The matched element is not contained in the subslices.</li>
+<li><code>splitn&lt;F&gt;(&amp;self, n: usize, pred: F)</code> </li>
+<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the slice contains an element with the given value.</li>
+<li><code>starts_with(&amp;self, needle: &amp;[T])</code> eturns <code>true</code> if <code>needle</code> is a prefix of the slice<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">10</span>, <span class="number">40</span>]));</span><br><span class="line"><span class="built_in">assert!</span>(!v.<span class="title function_ invoke__">starts_with</span>(&amp;[<span class="number">50</span>]));</span><br></pre></td></tr></table></figure></li>
+<li><code>ends_with(&amp;self, needle: &amp;[T])</code> </li>
+<li><code>strip_prefix</code> Returns a subslice with the prefix removed.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;[<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">10</span>]), <span class="title function_ invoke__">Some</span>(&amp;[<span class="number">40</span>, <span class="number">30</span>][..]));</span><br><span class="line"><span class="built_in">assert_eq!</span>(v.<span class="title function_ invoke__">strip_prefix</span>(&amp;[<span class="number">50</span>]), <span class="literal">None</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">prefix</span> : &amp;<span class="type">str</span> = <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="built_in">assert_eq!</span>(<span class="string">b&quot;hello&quot;</span>.<span class="title function_ invoke__">strip_prefix</span>(prefix.<span class="title function_ invoke__">as_bytes</span>()),</span><br><span class="line">           <span class="title function_ invoke__">Some</span>(<span class="string">b&quot;llo&quot;</span>.<span class="title function_ invoke__">as_ref</span>()));</span><br></pre></td></tr></table></figure></li>
+<li><code>strip_suffix</code></li>
+<li><code>binary_search(&amp;self, x: &amp;T)</code>  Binary searches this slice for a given element.</li>
+<li><code>sort_unstable(&amp;mut self)</code> Sorts the slice, but might not preserve the order of equal elements.</li>
+<li><code>rotate_left(&amp;mut self, mid: usize)</code> Rotates the slice in-place such that the first <code>mid</code> elements of the slice move to the end while the last <code>self.len() - mid</code> elements move to the front.</li>
+<li><code>fill(&amp;mut self, value: T)</code> Fills <code>self</code> with elements by cloning <code>value</code>.</li>
+<li><code>clone_from_slice(&amp;mut self, src: &amp;[T])</code> Copies the elements from <code>src</code> into <code>self</code>.</li>
+<li><code>copy_from_slice(&amp;mut self, src: &amp;[T])</code> </li>
+<li><code>is_sorted(&amp;self)</code> </li>
+<li><code>take&lt;&#39;a, R: OneSidedRange&lt;usize&gt;&gt;(self: &amp;mut &amp;&#39;a Self, range: R)</code> Removes the subslice corresponding to the given range</li>
+<li><code>get_many_mut&lt;const N: usize&gt;</code> Returns mutable references to many indices at once.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![feature(get_many_mut)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">v</span> = &amp;<span class="keyword">mut</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Ok</span>([a, b]) = v.<span class="title function_ invoke__">get_many_mut</span>([<span class="number">0</span>, <span class="number">2</span>]) &#123;</span><br><span class="line">    *a = <span class="number">413</span>;</span><br><span class="line">    *b = <span class="number">612</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">assert_eq!</span>(v, &amp;[<span class="number">413</span>, <span class="number">2</span>, <span class="number">612</span>]);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="alloc-vec-Vec"><a href="#alloc-vec-Vec" class="headerlink" title="alloc::vec::Vec"></a>alloc::vec::Vec</h2><ul>
+<li><code>fn truncate(&amp;mut self, len: usize)</code> Shortens the vector, keeping the first <code>len</code> elements and dropping the rest</li>
+</ul>
+<h2 id="std-collections-VecDeque"><a href="#std-collections-VecDeque" class="headerlink" title="std::collections::VecDeque"></a>std::collections::VecDeque</h2><p>A double-ended queue (deque) implemented with a growable ring buffer.<br>Since VecDeque is a ring buffer, its elements are not necessarily contiguous in memory. If you want to access the elements as a single slice, such as for efficient sorting, you can use make_contiguous. It rotates the VecDeque so that its elements do not wrap, and returns a mutable slice to the now-contiguous element sequence.</p>
+<ul>
+<li><code>swap(&amp;mut self, i: usize, j: usize)</code></li>
+<li><code>reserve_exact(&amp;mut self, additional: usize)</code> Reserves the minimum capacity for at least <code>additional</code> more elements to be inserted in the given deque. Does nothing if the capacity is already sufficient.</li>
+<li><code>reserve(&amp;mut self, additional: usize)</code></li>
+<li><code>shrink_to_fit(&amp;mut self)</code> Shrinks the capacity of the deque as much as possible.</li>
+<li><code>truncate(&amp;mut self, len: usize)</code> Shortens the deque, keeping the first <code>len</code> elements and dropping the rest.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">buf</span> = VecDeque::<span class="title function_ invoke__">new</span>();</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">5</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">10</span>);</span><br><span class="line">buf.<span class="title function_ invoke__">push_back</span>(<span class="number">15</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>]);</span><br><span class="line">buf.<span class="title function_ invoke__">truncate</span>(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">assert_eq!</span>(buf, [<span class="number">5</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><code>iter(&amp;self)</code></li>
+<li><code>as_slices(&amp;self)</code></li>
+<li><code>slice_ranges&lt;R&gt;(&amp;self, range: R)</code> Given a range into the logical buffer of the deque, this function return two ranges into the physical buffer that correspond to the given range</li>
+<li><code>range&lt;R&gt;(&amp;self, range: R)</code> Creates an iterator that covers the specified range in the deque.<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::collections::VecDeque;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">deque</span>: VecDeque&lt;_&gt; = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].<span class="title function_ invoke__">into</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">range</span> = deque.<span class="title function_ invoke__">range</span>(<span class="number">2</span>..).<span class="title function_ invoke__">copied</span>().collect::&lt;VecDeque&lt;_&gt;&gt;();</span><br><span class="line"><span class="built_in">assert_eq!</span>(range, [<span class="number">3</span>]);</span><br><span class="line"><span class="comment">// A full range covers all contents</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">all</span> = deque.<span class="title function_ invoke__">range</span>(..);</span><br><span class="line"><span class="built_in">assert_eq!</span>(all.<span class="title function_ invoke__">len</span>(), <span class="number">3</span>);</span><br></pre></td></tr></table></figure></li>
+<li><code>drain&lt;R&gt;(&amp;mut self, range: R)</code> Removes the specified range from the deque in bulk, returning all removed elements as an iterator.</li>
+<li><code>clear(&amp;mut self)</code></li>
+<li><code>contains(&amp;self, x: &amp;T)</code> Returns <code>true</code> if the deque contains an element equal to the given value</li>
+<li><code>front(&amp;self)</code> Provides a reference to the front element</li>
+<li><code>front_mut(&amp;mut self)</code></li>
+<li><code>back(&amp;self)</code></li>
+<li><code>back_mut(&amp;mut self)</code></li>
+<li><code>pop_front(&amp;mut self)</code></li>
+<li><code>pop_back(&amp;mut self)</code></li>
+<li><code>push_front(&amp;mut self, value: T)</code></li>
+<li><code>push_back(&amp;mut self, value: T)</code></li>
+</ul>
+<h2 id="std-collections-LinkedList"><a href="#std-collections-LinkedList" class="headerlink" title="std::collections::LinkedList"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/collections/struct.LinkedList.html">std::collections::LinkedList</a></h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/05/01/rust/rust_std/rust-std-data-structure-1/" data-id="clokyy0zo002ypjsj8zzyfd95" data-title="rust std data structure (1D)" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust/rust-09-functional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/04/11/rust/rust-09-functional/" class="article-date">
+  <time class="dt-published" datetime="2023-04-11T14:04:38.000Z" itemprop="datePublished">2023-04-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/04/11/rust/rust-09-functional/">rust functional programming</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="iterator"><a href="#iterator" class="headerlink" title="iterator"></a>iterator</h2><ul>
+<li><code>iter()</code> Returns an iterator over the <strong>slice</strong></li>
+<li><code>into_iter()</code> Creates a consuming iterator, that is, one that moves each value out of the vector</li>
+<li><code>iter_mut()</code> Returns an iterator that allows modifying each value.</li>
+</ul>
+<h2 id="flat-map"><a href="#flat-map" class="headerlink" title="flat_map"></a>flat_map</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Creates an iterator that works like map, but flattens nested structure.</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// The [`map`] adapter is very useful, but only when the closure</span></span><br><span class="line"><span class="comment">/// argument produces values. If it produces an iterator instead, there&#x27;s</span></span><br><span class="line"><span class="comment">/// an extra layer of indirection. `flat_map()` will remove this extra layer</span></span><br><span class="line"><span class="comment">/// on its own.</span></span><br></pre></td></tr></table></figure>
+<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">words</span> = [<span class="string">&quot;alpha&quot;</span>, <span class="string">&quot;beta&quot;</span>, <span class="string">&quot;gamma&quot;</span>];</span><br><span class="line"><span class="comment">// chars() returns an iterator</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">merged</span>: <span class="type">String</span> = words.<span class="title function_ invoke__">iter</span>()</span><br><span class="line">                          .<span class="title function_ invoke__">flat_map</span>(|s| s.<span class="title function_ invoke__">chars</span>())</span><br><span class="line">                          .<span class="title function_ invoke__">collect</span>();</span><br><span class="line"><span class="built_in">assert_eq!</span>(merged, <span class="string">&quot;alphabetagamma&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/04/11/rust/rust-09-functional/" data-id="clokyy0z7001kpjsjd1ip1257" data-title="rust functional programming" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust/crates/rust-serde" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/04/01/rust/crates/rust-serde/" class="article-date">
+  <time class="dt-published" datetime="2023-04-01T14:04:38.000Z" itemprop="datePublished">2023-04-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/04/01/rust/crates/rust-serde/">rust crate serde</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[serde(tag = <span class="string">&quot;filterType&quot;</span>)]</span></span><br><span class="line"><span class="meta">#[serde(untagged)]</span></span><br><span class="line"><span class="meta">#[serde(rename = <span class="string">&quot;PRICE_FILTER&quot;</span>)]</span></span><br><span class="line"><span class="meta">#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#[serde(with = <span class="string">&quot;string_or_float&quot;</span>)]</span></span><br><span class="line"><span class="keyword">pub</span> stop_price: <span class="type">f64</span>,</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/04/01/rust/crates/rust-serde/" data-id="clokyy0zn002tpjsj2skkds81" data-title="rust crate serde" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth/tech_docs/geth.prune" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/03/25/geth/tech_docs/geth.prune/" class="article-date">
+  <time class="dt-published" datetime="2023-03-25T11:29:43.000Z" itemprop="datePublished">2023-03-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/03/25/geth/tech_docs/geth.prune/">geth state prune</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p><strong><em>NOTE:</em></strong>  Offline pruning is only for the hash-based state scheme. In future release, geth will have a path-based state scheme which enables the pruning by default. Once the hash-based state scheme is no longer supported, offline pruning will be deprecated.</p>
+</blockquote>
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>A snap-sync’d Geth node currently requires more than 650 GB of disk space to store the historic blockchain data. With default cache size the database grows by about 14 GB&#x2F;week. Since Geth v1.10, users have been able to trigger a snapshot offline prune to bring the total storage back down to the original ~650 GB in about 4-5 hours.</p>
+<h2 id="how-pruning-works"><a href="#how-pruning-works" class="headerlink" title="how pruning works"></a>how pruning works</h2><p>Pruning uses snapshots of the state database as an indicator to determine which nodes in the state trie can be kept and which ones are stale and can be discarded. Geth identifies the target state trie based on a stored snapshot layer which has at least 128 block confirmations on top (for surviving reorgs) data that isn’t part of the target state trie or genesis state.</p>
+<p>Geth prunes the database in three stages:</p>
+<ol>
+<li>Iterating state snapshot: Geth iterates the bottom-most snapshot layer and constructs a bloom filter set for identifying the target trie nodes.</li>
+<li>Pruning state data: Geth deletes stale trie nodes from the database which are not in the bloom filter set.</li>
+<li>Compacting database: Geth tidies up the new database to reclaim free space.</li>
+</ol>
+<h2 id="Pruning-command"><a href="#Pruning-command" class="headerlink" title="Pruning command"></a>Pruning command</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">geth snapshot prune-state</span><br></pre></td></tr></table></figure>
+
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://geth.ethereum.org/docs/fundamentals/pruning">geth doc</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/03/25/geth/tech_docs/geth.prune/" data-id="clokyy0zb0022pjsj4on4ae3c" data-title="geth state prune" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth/tech_docs/geth.sync.mode" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/03/18/geth/tech_docs/geth.sync.mode/" class="article-date">
+  <time class="dt-published" datetime="2023-03-18T08:29:43.000Z" itemprop="datePublished">2023-03-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/03/18/geth/tech_docs/geth.sync.mode/">geth sync</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="state"><a href="#state" class="headerlink" title="state"></a>state</h2><p>Ethereum maintains two different types of state: the set of accounts; and a set of storage slots for each contract account. Naively, storing these key-value pairs as flat data would be very efficient, however, verifying their correctness becomes computationally intractable. Every time a modification would be made, we’d need to hash all that data from scratch (which is not efficient).</p>
+<p>Instead of hashing the entire dataset all the time, eth uses MPT. The original useful data would be in the leaves, and each internal node would be a hash of everything below it. This would allow us to only recalculate a logarithmic number of hashes when something is modified, inserted, deleted and verified. A tiny extra is that keys are hashed before insertion to balance the tries (secured trie).</p>
+<h2 id="state-storage"><a href="#state-storage" class="headerlink" title="state storage"></a>state storage</h2><p>MPT make every read&#x2F;write of O(lnN) complexity. the depth of the trie is continuously growing; LevelDB also organizes its data into a maximum of 7 levels, so there’s an extra multiplier from there. The net result is that a single state access is expected to amplify into <strong>25-50</strong> random disk accesses. </p>
+<p>Of course all client implementations try their best to minimize this overhead. Geth uses large memory areas for caching trie nodes; and also uses in-memory pruning to avoid writing to disk nodes that get deleted anyway after a few blocks.</p>
+<h2 id="Not-all-accesses-are-created-equal"><a href="#Not-all-accesses-are-created-equal" class="headerlink" title="Not all accesses are created equal"></a>Not all accesses are created equal</h2><p>The Merkle Patricia tree is essential for writes (matain the capability to verify data), but it’s an overhead for reads.<br>An Ethereum node accesses state in a few different places:</p>
+<ul>
+<li>When importing a new block, EVM code execution does a more-or-less balanced number of state reads and writes. </li>
+<li>When a node operator retrieves state (e.g. eth_call and family), EVM code execution only does reads (it can write too, but those get discarded at the end and are not persisted).</li>
+<li>When a node is synchronizing, it is requesting state from remote nodes that need to dig it up and serve it over the network.</li>
+</ul>
+<p>if we can short circuit reads not to hit the state trie, a slew of node operations will become significantly faster. </p>
+<h2 id="snapshot"><a href="#snapshot" class="headerlink" title="snapshot"></a>snapshot</h2><p>Geth introduced its snapshot acceleration structure (not enabled by default). A snapshot is a complete view of the Ethereum state at a given block. Abstract implementation wise, it is a dump of all accounts and storage slots, represented by a flat key-value store.<br>snapshot is maintained as an extra to MPT. The snapshot essentially reduces reads from O(log n) to O(1) at the cost of increasing writes from O(log n) to O(1 + log n). </p>
+<h2 id="devil’s-in-the-details"><a href="#devil’s-in-the-details" class="headerlink" title="devil’s in the details"></a>devil’s in the details</h2><p>to maintain a snapshot, the naitve approach is to apply changes to current snapshot upon new block. If there’s a mini reorg however (even a single block), we’re in trouble, because there’s no undo.<br>To overcome this limitation, Geth’s snapshot is composed of two entities: a persistent disk layer that is a complete snapshot of an older block (e.g. HEAD-128); and a tree of in-memory diff layers that gather the writes on top.<br>Whenever a new block is processed, we do not merge the writes directly into the disk layer, rather just create a new in-memory diff layer with the changes. If enough in-memory diff layers are piled on top, the bottom ones start getting merged together and eventually pushed to disk. Whenever a state item is to be read, we start at the topmost diff layer and keep going backwards until we find it or reach the disk.<br>Of course, there are lots and lots of gotchas and caveats.</p>
+<ul>
+<li>On shutdown, the in-memory diff layers need to be persisted into a journal and loaded back up, otherwise the snapshot will become useless on restart.</li>
+<li>Use the bottom-most diff layer as an accumulator and only flush to disk when it exceeds some memory usage.</li>
+<li>Allocate a read cache for the disk layer so that contracts accessing the same ancient slot over and over don’t cause disk hits.</li>
+<li>Use cumulative bloom filters in the in-memory diff layers to quickly detect whether there’s a chance for an item to be in the diffs, or if we can go to disk immediately.</li>
+<li>The keys are not the raw data (account address, storage key), rather the hashes of these, ensuring the snapshot has the same iteration order as the Merkle Patricia tree.</li>
+</ul>
+<p>The snapshot also enables blazing fast state iteration of the most recent blocks. This was actually the main reason for building snapshots, as it permitted the creation of the new snap <a target="_blank" rel="noopener" href="https://github.com/ethereum/devp2p/pull/145">sync algorithm</a>.</p>
+<h2 id="Consensus-layer-syncing"><a href="#Consensus-layer-syncing" class="headerlink" title="Consensus layer syncing"></a>Consensus layer syncing</h2><p>all consensus logic and block propagation is handled by consensus clients. Blocks are downloaded by the consensus client and verified by the execution client. <strong>Geth cannot sync without being connected to a consensus client.</strong><br>There are two ways for the consensus client to find a block header that Geth can use as a sync target: optimistic syncing and checkpoint syncing:</p>
+<h3 id="optimistic-sync"><a href="#optimistic-sync" class="headerlink" title="optimistic sync"></a>optimistic sync</h3><p>Optimistic sync downloads blocks before the execution client has validated them. In optimistic sync the node assumes the data it receives from its peers is correct during the downloading phase but then retroactively verifies each downloaded block.<br><a target="_blank" rel="noopener" href="https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md">more details</a></p>
+<h3 id="checkpoint-sync"><a href="#checkpoint-sync" class="headerlink" title="checkpoint sync"></a>checkpoint sync</h3><p>Alternatively, the consensus client can grab a checkpoint from a trusted source which provides a target state to sync up to, before switching to full sync and verifying each block in turn. In this mode, the node trusts that the checkpoint is correct.</p>
+<h2 id="archive-nodes"><a href="#archive-nodes" class="headerlink" title="archive nodes"></a>archive nodes</h2><p>An archive node is a node that retains all historical data right back to genesis. There is no need to regenerate any data from checkpoints because all data is directly available in the node’s own storage. </p>
+<p>It is also possible to create a partial&#x2F;recent archive node where the node was synced using snap but the state is never pruned. This creates an archive node that saves all state data from the point that the node first syncs. This is configured by starting Geth with <code>--syncmode snap --gcmode archive</code>.</p>
+<h2 id="light-nodes"><a href="#light-nodes" class="headerlink" title="light nodes"></a>light nodes</h2><p>A light node syncs very quickly and stores the bare minimum of blockchain data. Light nodes only process block headers, not entire blocks. they receive a proof from the full node and verify it against their local header chain. <strong>Light nodes are not currently working on proof-of-stake Ethereum.</strong></p>
+<h2 id="full-node"><a href="#full-node" class="headerlink" title="full node"></a>full node</h2><h3 id="full"><a href="#full" class="headerlink" title="full"></a>full</h3><p>A full block-by-block sync generates the current state by executing every block starting from the genesis block. A full sync independently verifies block provenance as well as all state transitions by re-executing the transactions in the entire historical sequence of blocks. Only the most recent 128 block states are stored in a full node - older block states are pruned periodically and represented as a series of checkpoints from which any previous state can be regenerated on request.</p>
+<h3 id="snap-sync-default"><a href="#snap-sync-default" class="headerlink" title="snap sync (default)"></a>snap sync (default)</h3><p>Snap sync starts from a relatively recent block and syncs from there to the head of the chain, keeping only the most recent 128 block states in memory.  The block header to sync up to is provided by the consensus client. Between the initial sync block and the 128 most recent blocks, the node stores occasional snapshots that can be used to rebuild any intermediate state “on-the-fly”. The difference between the snap-synced node and a full block-by-block synced node is that a snap synced node started from an initial checkpoint that was more recent than the genesis block. Snap sync is much faster than a full block-by-block sync from genesis.<br><img src="/images/geth/sync.mode.jpg" alt="sync mode"></p>
+<p>Snap sync works by first downloading the headers for a chunk of blocks. Once the headers have been verified, the block bodies and receipts for those blocks are downloaded. In parallel, Geth also begins state-sync. In state-sync, Geth first downloads the leaves of the state trie for each block without the intermediate nodes along with a range proof. The state trie is then regenerated locally.</p>
+<p>The state download is the part of the snap-sync that takes the most time to complete and the progress can be monitored using the ETA values in the log messages. <span style="color:red">However, the blockchain is also progressing at the same time and invalidating some of the regenerated state data.</span> (don’t really understand why regenrated state could be invalidated). This means it is also necessary to have a ‘healing’ phase where errors in the state are fixed. Geth regularly reports <code>Syncing, state heal in progress</code> during state healing - this informs the user that state heal has not finished.</p>
+<p>The healing has to outpace the growth of the blockchain, otherwise the node will never catch up to the current state.</p>
+<p>To summarize, snap sync progresses in the following sequence:</p>
+<ul>
+<li>download and verify headers</li>
+<li>download block bodies and receipts. In parallel, download raw state data and build state trie</li>
+<li>heal state trie to account for newly arriving data</li>
+</ul>
+<p>A node that is started using snap will switch to block-by-block sync once it has caught up to the head of the chain.</p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://geth.ethereum.org/docs/fundamentals/sync-modes">geth doc on sync mode</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2020/07/17/ask-about-geth-snapshot-acceleration">eth.org blog on snapshot acceleration</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/03/18/geth/tech_docs/geth.sync.mode/" data-id="clokyy0zc0024pjsjbhru24eb" data-title="geth sync" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth/tech_docs/geth.v1.10.0" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/03/15/geth/tech_docs/geth.v1.10.0/" class="article-date">
+  <time class="dt-published" datetime="2023-03-15T08:29:43.000Z" itemprop="datePublished">2023-03-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/03/15/geth/tech_docs/geth.v1.10.0/">geth v1.10.0 summary</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>geth v1.10.0 has been <a target="_blank" rel="noopener" href="https://github.com/ethereum/go-ethereum/releases/tag/v1.10.0">released</a> on Mar 4 2021. this is a late summary of v1.10.0.</p>
+<h2 id="snapshots"><a href="#snapshots" class="headerlink" title="snapshots"></a>snapshots</h2><p>the snapshot feature reduces the cost of accessing an account from <code>O(logN)</code> to <code>O(1)</code>. Whilst snapshots do grant us a 10x read performance, EVM execution also writes data, and these writes need to be Merkle proven. The Merkle proof requirement retains the necessity for <code>O(logN)</code> disk access on writes.<br>Problems it solves</p>
+<ul>
+<li><strong>DoS</strong> In 2016, Ethereum sustained its worse DoS attack ever - The <a target="_blank" rel="noopener" href="https://2017.edcon.io/ppt/one/Martin%20Holst%20Swende_The%20%27Shanghai%20%27Attacks_EDCON.pdf">Shanghai Attacks</a> - that lasted about 2-3 months. The attack revolved around bloating Ethereum’s state and abusing various underpriced opcodes to grind the network to a halt. After numerous client optimizations and repricing hard forks, the attack was repelled. The root cause still lingers: state access opcodes have a fixed EVM gas cost O(1), but an ever slowly increasing execution cost O(logN). Snapshots on the other hand reduce execution cost of state reads to O(1) - in line with EVM costs - thus solves the read-based DoS issues long term.</li>
+<li><strong>Call</strong> Checking a smart contract’s state in Ethereum entails a mini EVM execution. Part of that is running bytecode and part of it is reading state slots from disk. snap makes the state access faster.</li>
+<li><strong>Sync</strong> There are two major ways you can synchronize an Ethereum node. You can download the blocks and execute all the transactions within; or you can download the blocks, verify the PoWs and download the state associated a recent block. The latter is much faster, but it relies on benefactors serving you a copy of the recent state. With the current Merkle-Patricia state model, these benefactors read 16TB of data off disk to serve a syncing node. Snapshots enable serving nodes to read only <strong>96GB</strong> of data off disk to get a new node joined into the network.</li>
+</ul>
+<p>drawbacks of snapshot</p>
+<ul>
+<li>A snapshot is a redundant copy of the raw Ethereum state already contained in the leaves of the Merkle Patricia trie.<br>user can disable snapshot via <code>--snapshot=false</code></li>
+</ul>
+<h2 id="snap-sync"><a href="#snap-sync" class="headerlink" title="snap sync"></a>snap sync</h2><p>When Ethereum launched, you could choose from two different ways to synchronize the network: full sync and fast sync。 Full sync operated by downloading the entire chain and executing all transactions; vs. fast sync placed an initial trust in a recent-ish block, and directly downloaded the state associated with it (after which it switched to block execution like full sync). </p>
+<ul>
+<li><strong>full sync</strong> minimized trust, choosing to execute all transactions from genesis to head. </li>
+<li><strong>fast sync</strong> chose to rely on the security of the PoWs.it assumed that a block with 64 valid PoWs on top would be prohibitively expensive for someone to construct, as such it’s ok to download the state associated with <code>HEAD-64</code></li>
+</ul>
+<h3 id="delays-of-fast-sync"><a href="#delays-of-fast-sync" class="headerlink" title="delays of fast sync"></a>delays of fast sync</h3><ul>
+<li>network latency (download node)</li>
+<li>io latency (level db random disk access)</li>
+<li>upload latency (requst with node <code>hash</code> to remote servers)</li>
+</ul>
+<p>The core idea of <code>snap sync</code> is fairly simple: instead of downloading the trie node-by-node, snap sync downloads the contiguous chunks of useful state data, and reconstructs the Merkle trie locally:</p>
+<ul>
+<li>Without downloading intermediate Merkle trie nodes, state data can be fetched in large batches, removing the delay caused by network latency.</li>
+<li>Without downloading Merkle nodes, downstream data drops to half; and without addressing each piece of data individually, upstream data gets insignificant, removing the delay caused by bandwidth.</li>
+<li>Without requesting randomly keyed data, peers do only a couple contiguous disk reads to serve the responses, removing the delay of disk IO</li>
+</ul>
+<h2 id="offline-pruning"><a href="#offline-pruning" class="headerlink" title="offline pruning"></a>offline pruning</h2><p>When processing a new block, a node takes the current state of the network as input data and mutates it according to the transactions in the block. only state diff is kept. Pushing these new pieces of state data, block-by-block, to the database is a problem. They keep accumulating. In theory we could “just delete” state data that’s old enough to not run the risk of a reorg. it’s exceedingly costly to figure out if a node deep within an old state is still referenced by anything newer or not.<br>If you have snapshots enabled and fully generated, Geth can use those as an acceleration structure to relatively quickly determine which trie nodes should be kept and which should be deleted. Pruning trie nodes based on snapshots does have the drawback that the chain may not progress during pruning. This means, that you need to stop Geth, prune its database and then restart it. To prune your database, please run <code>geth snapshot prune-state</code>.</p>
+<h2 id="transaction-unindexing"><a href="#transaction-unindexing" class="headerlink" title="transaction unindexing"></a>transaction unindexing</h2><p>Node operators always took it for granted that they can look up an arbitrary transaction from the past, given only its hash. To make transactions searchable, we need to - at minimum - map the entire range of transaction hashes to the blocks they are in. It’s also important to note that transaction indices are not part of consensus and are not part of the network protocol. They are purely a locally generated acceleration structure.<br>Geth v1.10.0 switches on transaction unindexing by default and sets it to 2,350,000 blocks (about 1 year). The transaction unindexer will linger in the background, and every time a new block arrives, it ensures that only transactions from the most recent N blocks are indexed, deleting older ones. user can use <code>--txlookuplimit</code> to control the indexing block range</p>
+<h2 id="preimage-discarding"><a href="#preimage-discarding" class="headerlink" title="preimage discarding"></a>preimage discarding</h2><p>Ethereum stores all its data in a Merkle Patricia trie. The values in the leaves are the raw data being stored (e.g. storage slot content, account content), and the path to the leaf is the key at which the data is stored. The keys however are not the account addresses or storage addresses, rather the Keccak256 hashes of those. This helps balance the branch depths of the state tries.<br>the preimage is the actual key related to the hash. The preimages aren’t particularly heavy. If you do a full sync from genesis - reexecuting all the transactions - you’ll only end up with 5GB extra load. Still, there is no reason to keep that data around for users not using it, as it only increases the load on LevelDB compactions. As such, Geth v1.10.0 disables preimage collection by default, but there’s no mechanism to actively delete already stored preimages.<br>If you are using your Geth instance to debug transactions, you can retain the original behavior via <code>--cache.preimages</code>. </p>
+<h2 id="ETH-x2F-66-protocol"><a href="#ETH-x2F-66-protocol" class="headerlink" title="ETH&#x2F;66 protocol"></a>ETH&#x2F;66 protocol</h2><p>The eth&#x2F;66 protocol is a fairly small change, yet has quite a number of beneficial implications. In short, the protocol introduces request and reply IDs for all bidirectional packets. The goal behind these IDs is to more easily match up responses to requests, specifically, to more easily deliver a response to a subsystem that made the original request.</p>
+<h2 id="chainid-enforcement"><a href="#chainid-enforcement" class="headerlink" title="chainid enforcement"></a>chainid enforcement</h2><p>Geth v1.10.0 supports reverting to the old behavior and accepting non-EIP155 transactions via –rpc.allow-unprotected-txs. Be advised that this is a temporary mechanism that will be removed long term.</p>
+<h2 id="Database-introspection"><a href="#Database-introspection" class="headerlink" title="Database introspection"></a>Database introspection</h2><p>Every now and again we receive an issue report about a corrupted database, with no real way to debug it. Geth v1.10.0 ships a built-in database introspection tool to try and alleviate the situation a bit. It is a very low level accessor to LevelDB, but it allows arbitrary data retrievals, insertions and deletions. We are unsure how useful these will turn out to be, but they at least give a fighting chance to restore a broken node without having to resync.</p>
+<h2 id="Unclean-shutdown-tracking"><a href="#Unclean-shutdown-tracking" class="headerlink" title="Unclean shutdown tracking"></a>Unclean shutdown tracking</h2><p>Fairly often we receive bug reports that Geth started importing old blocks on startup. This phenomenon is generally caused by the node operator terminating Geth abruptly (power outage, OOM killer, too short shutdown timeout). Since Geth keeps a lot of dirty state in memory - to avoid writing to disk things that get stale a few blocks later - an abrupt shutdown can cause these to not be flushed. With recent state missing on startup, Geth has no choice but to rewind it’s local chain to the point where it last saved the progress.</p>
+<p>Geth v1.10.0 will start tracking and reporting node crashes. We’re hopeful that this will allow operatos to detect that their infra is misconfigured or has issue before those turn into irreversible data loss.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WARN [03-03|06:36:38.734] Unclean shutdown detected        booted=2021-02-03T06:47:28+0000 age=3w6d23h</span><br></pre></td></tr></table></figure>
+
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a href="">eth foundation blog</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/03/15/geth/tech_docs/geth.v1.10.0/" data-id="clokyy0zc0027pjsje4b9fw2x" data-title="geth v1.10.0 summary" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-golang/go-similar-concepts-comparison" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/03/05/golang/go-similar-concepts-comparison/" class="article-date">
+  <time class="dt-published" datetime="2023-03-05T02:44:50.000Z" itemprop="datePublished">2023-03-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/03/05/golang/go-similar-concepts-comparison/">go similar concepts comparison</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="struct-amp-struct"><a href="#struct-amp-struct" class="headerlink" title="struct{} &amp; struct{}{}"></a>struct{} &amp; struct{}{}</h2><p><code>struct</code> is a keyword in Go. It is used to define struct types, which is a sequence of named elements.</p>
+<p>For example:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name <span class="type">string</span></span><br><span class="line">    Age  <span class="type">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The <code>struct&#123;&#125;</code> is a struct type with zero elements. It is often used when no information is to be stored. It has the benefit of being 0-sized, so usually no memory is required to store a value of type <code>struct&#123;&#125;</code>.</p>
+<p><code>struct&#123;&#125;&#123;&#125;</code> on the other hand is a <a target="_blank" rel="noopener" href="https://go.dev/ref/spec#Composite_literals">composite literal</a>, it constructs a value of type <code>struct&#123;&#125;</code>. A composite literal constructs values for types such as <code>structs</code>, <code>arrays</code>, <code>maps</code> and <code>slices</code>. Its syntax is the type followed by the elements in braces. Since the “empty” struct (struct{}) has no fields, the elements list is also empty:</p>
+<p> struct{}  {}<br>|  ^     | ^<br>  type     empty element list<br>As an example let’s create a “set” in Go. Go does not have a builtin set data structure, but it has a builtin map. We can use a map as a set, as a map can only have at most one entry with a given key. And since we want to only store keys (elements) in the map, we may choose the map value type to be struct{}.</p>
+<p>A map with string elements:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> set <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"><span class="comment">// Initialize the set</span></span><br><span class="line">set = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Add some values to the set:</span></span><br><span class="line">set[<span class="string">&quot;red&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">set[<span class="string">&quot;blue&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Check if a value is in the map:</span></span><br><span class="line">_, ok := set[<span class="string">&quot;red&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is red in the map?&quot;</span>, ok)</span><br><span class="line">_, ok = set[<span class="string">&quot;green&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is green in the map?&quot;</span>, ok)</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/03/05/golang/go-similar-concepts-comparison/" data-id="clokyy0z3000upjsjaraf1lnz" data-title="go similar concepts comparison" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/" rel="tag">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-golang/go-reflect" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/03/02/golang/go-reflect/" class="article-date">
+  <time class="dt-published" datetime="2023-03-02T02:44:50.000Z" itemprop="datePublished">2023-03-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/03/02/golang/go-reflect/">go reflect</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Reflection is the ability of a program to examine its own structure, particularly through types. </p>
+<h2 id="type-and-interfaces"><a href="#type-and-interfaces" class="headerlink" title="type and interfaces"></a>type and interfaces</h2><p>Go is statically typed. Every variable has a static type, Exactly one type known and fixed at compile time. If we declare</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> MyInt <span class="type">int</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> i <span class="type">int</span></span><br><span class="line"><span class="keyword">var</span> j MyInt</span><br></pre></td></tr></table></figure>
+<p><strong>The variables i and j have distinct static types and, although they have the same underlying type, they cannot be assigned to one another without a conversion.</strong></p>
+<p>One important category of type is interface types, which represent fixed sets of methods. An interface variable can store any concrete (non-interface) value as long as that value implements the interface’s methods. An extremely important example of an interface type is the empty interface:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>or its equivalent alias,</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">any</span><br></pre></td></tr></table></figure>
+<p>It represents the empty set of methods and is satisfied by any value at all, since every value has zero or more methods.<br>a variable of interface type always has the same static type, and even though at run time the value stored in the interface variable may change type, that value will always satisfy the interface.</p>
+<h2 id="the-representation-of-an-interface"><a href="#the-representation-of-an-interface" class="headerlink" title="the representation of an interface"></a>the representation of an interface</h2><p>A variable of interface type stores a pair: the concrete value assigned to the variable, and that value’s type descriptor.<br>For instance, after</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> r io.Reader</span><br><span class="line">tty, err := os.OpenFile(<span class="string">&quot;/dev/tty&quot;</span>, os.O_RDWR, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line">r = tty</span><br></pre></td></tr></table></figure>
+<p>r contains, schematically, the (value, type) pair, (tty, *os.File). Notice that the type *os.File implements methods other than Read; even though the interface value provides access only to the Read method, the value inside carries all the type information about that value. That’s why we can do things like this:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> w io.Writer</span><br><span class="line">w = r.(io.Writer)</span><br></pre></td></tr></table></figure>
+<p>The expression in this assignment is a type assertion; what it asserts is that the item inside r also implements io.Writer, and so we can assign it to w.  After the assignment, w will contain the pair (tty, *os.File). That’s the same pair as was held in r.<br>One important detail is that the pair inside an interface variable always has the form (value, concrete type) and cannot have the form (value, interface type). Interfaces do not hold interface values.</p>
+<h2 id="the-first-law-of-reflection"><a href="#the-first-law-of-reflection" class="headerlink" title="the first law of reflection"></a>the first law of reflection</h2><ol>
+<li><p>Reflection goes from interface value to reflection object<br>At the basic level, reflection is just a mechanism to examine the type and value pair stored inside an interface variable. <code>reflect.TypeOf</code> and <code>reflect.ValueOf</code>, retrieve <code>reflect.Type</code> and <code>reflect.Value</code> pieces out of an interface value.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">fmt.Println(<span class="string">&quot;type:&quot;</span>, reflect.TypeOf(x))</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type: float64</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">v := reflect.ValueOf(x)</span><br><span class="line">fmt.Println(<span class="string">&quot;type:&quot;</span>, v.Type())</span><br><span class="line">fmt.Println(<span class="string">&quot;kind is float64:&quot;</span>, v.Kind() == reflect.Float64)</span><br><span class="line">fmt.Println(<span class="string">&quot;value:&quot;</span>, v.Float())</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">type: float64</span><br><span class="line">kind is float64: true</span><br><span class="line">value: 3.4</span><br></pre></td></tr></table></figure>
+<p>There are also methods like SetInt and SetFloat. <strong>to keep the API simple, the “getter” and “setter” methods of Value operate on the largest type that can hold the value</strong>: int64 for all the signed integers, for instance. </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">uint8</span> = <span class="string">&#x27;x&#x27;</span></span><br><span class="line">v := reflect.ValueOf(x)</span><br><span class="line">fmt.Println(<span class="string">&quot;type:&quot;</span>, v.Type())                            <span class="comment">// uint8.</span></span><br><span class="line">fmt.Println(<span class="string">&quot;kind is uint8: &quot;</span>, v.Kind() == reflect.Uint8) <span class="comment">// true.</span></span><br><span class="line">x = <span class="type">uint8</span>(v.Uint())                                       <span class="comment">// v.Uint returns a uint64.</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Reflection goes from reflection object to interface value.<br>Given a reflect.Value we can recover an interface value using the Interface method;</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Interface returns v&#x27;s current value as an interface&#123;&#125;.</span></span><br><span class="line"><span class="comment">// It is equivalent to:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	var i interface&#123;&#125; = (v&#x27;s underlying value)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v Value)</span></span> Interface() <span class="keyword">interface</span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">y := v.Interface().(<span class="type">float64</span>) <span class="comment">// y will have type float64.</span></span><br><span class="line">fmt.Println(y)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>To modify a reflection object, the value must be settable.<br>The CanSet method of Value reports the settability of a Value; in our case,</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">v := reflect.ValueOf(x)</span><br><span class="line">fmt.Println(<span class="string">&quot;settability of v:&quot;</span>, v.CanSet())</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">settability of v: false</span><br></pre></td></tr></table></figure>
+<p>we pass a copy of x to reflect.ValueOf, so the interface value created as the argument to reflect.ValueOf is a copy of x, not x itself. Thus, if the statement <code>v.SetFloat(7.1)</code> were allowed to succeed, it would not update x, even though v looks like it was created from x. Instead, it would update the copy of x stored inside the reflection value and x itself would be unaffected. That would be confusing and useless, so it is illegal, and settability is the property used to avoid this issue. If we want to modify x by reflection, we must give the reflection library a pointer to the value we want to modify.<br>Let’s do that. </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">p := reflect.ValueOf(&amp;x) <span class="comment">// Note: take the address of x.</span></span><br><span class="line">fmt.Println(<span class="string">&quot;type of p:&quot;</span>, p.Type())</span><br><span class="line">fmt.Println(<span class="string">&quot;settability of p:&quot;</span>, p.CanSet())</span><br></pre></td></tr></table></figure>
+<p>The reflection object p isn’t settable, but it’s not p we want to set, it’s (in effect) *p. To get to what p points to, we call the Elem method of Value, which indirects through the pointer, and save the result in a reflection Value called v:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">v := p.Elem()</span><br><span class="line">fmt.Println(<span class="string">&quot;settability of v:&quot;</span>, v.CanSet())</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">settability of v: true</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="structs"><a href="#structs" class="headerlink" title="structs"></a>structs</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    A <span class="type">int</span></span><br><span class="line">    B <span class="type">string</span></span><br><span class="line">&#125;</span><br><span class="line">t := T&#123;<span class="number">23</span>, <span class="string">&quot;skidoo&quot;</span>&#125;</span><br><span class="line">s := reflect.ValueOf(&amp;t).Elem()</span><br><span class="line">typeOfT := s.Type()</span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; s.NumField(); i++ &#123;</span><br><span class="line">    f := s.Field(i)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%d: %s %s = %v\n&quot;</span>, i,</span><br><span class="line">        typeOfT.Field(i).Name, f.Type(), f.Interface())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0: A int = 23</span><br><span class="line">1: B string = skidoo</span><br></pre></td></tr></table></figure>
+<p>There’s one more point about settability introduced in passing here: the field names of T are upper case (exported) because only exported fields of a struct are settable.<br>Because s contains a settable reflection object, we can modify the fields of the structure.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">s.Field(0).SetInt(77)</span><br><span class="line">s.Field(1).SetString(&quot;Sunset Strip&quot;)</span><br><span class="line">fmt.Println(&quot;t is now&quot;, t)</span><br></pre></td></tr></table></figure>
+<p>If we modified the program so that s was created from t, not &amp;t, the calls to SetInt and SetString would fail as the fields of t would not be settable.</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://go.dev/blog/laws-of-reflection">official blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://research.swtch.com/interfaces">go data structure: interface</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/03/02/golang/go-reflect/" data-id="clokyy0z2000rpjsjcj27a8u8" data-title="go reflect" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/" rel="tag">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cryptography/paillier-encryption" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/02/23/cryptography/paillier-encryption/" class="article-date">
@@ -139,7 +760,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/23/cryptography/paillier-encryption/" data-id="clk1e4wpw001h6hsj7tdyclkv" data-title="paillier encryption" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/02/23/cryptography/paillier-encryption/" data-id="clokyy0z1000npjsjh229gbgx" data-title="paillier encryption" class="article-share-link">Share</a>
       
       
       
@@ -153,650 +774,11 @@
 
 
   
-    <article id="post-cryptography/two-party-ecdsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/02/07/cryptography/two-party-ecdsa/" class="article-date">
-  <time class="dt-published" datetime="2023-02-07T06:29:26.000Z" itemprop="datePublished">2023-02-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/02/07/cryptography/two-party-ecdsa/">two party ecdsa</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>this post is my reading summary of paper Yehuda Lindell 2017: Fast secure two-party ecdsa signing. the implementation could be found in tss-lib (golang), zengo’s library (rust).</p>
-<p>Unlike other schemes like RSA, Schnorr signatures and more, it is particularly hard to construct efficient threshold signature protocols for ECDSA as there is an inverse computaion of \( k \).</p>
-<p>In this paper, we consider the specific case of two parties (and thus no honest majority) and con-struct a protocol that is approximately two orders of magnitude faster than the previous best.</p>
-<h2 id="Comparing-ECDSA-signing-to-EC-Schnorr-signing"><a href="#Comparing-ECDSA-signing-to-EC-Schnorr-signing" class="headerlink" title="Comparing ECDSA signing to EC-Schnorr signing"></a>Comparing ECDSA signing to EC-Schnorr signing</h2><p>In both cases, the public verification key is an elliptic curve point \( Q \) and the private signing key is \( x \) such that \( Q &#x3D; x \cdot G \), where \( G \) is the generator point of an EC group of order \( q \).<br><img src="/images/two_party_ecdsa/schnorr_ecdsa_comparison.png" alt="schnorr ecdsa comparison"></p>
-<p>Observe that Schnorr signing can be easily distributed since the private key \( x \) and the value k are both used in a linear equation.  In contrast, in ECDSA signing, the equation for computing \( s \) includes \( k^{-1} \). Now, given shares \(k_1\), \(k_2\) such that \(k_1 + k_2 &#x3D; k \bmod q\) .It is very difficult to compute \(k_1^{\prime}\), \(k_2^{\prime}\) such  that \(k_1^{\prime} + k_2^{\prime} &#x3D; k^{-1} \bmod q\)</p>
-<p>two-party protocols for ECDSA signing use multiplicative sharing of \( x \) and of \( k \). That is, the parties hold \(x_1\), \(x_2\)  such that \(x_1 \cdot x_2 &#x3D; x \bmod q\), and in each signing operation they generate \(k_1\), \(k_2\) such that \(k_1 \cdot k_2 &#x3D; k \bmod q\). This enables them to easily compute \(k^{-1}\) since each party can locally compute  \(k_i^{\prime} &#x3D; k_i^{-1} \bmod q\), and then \(k_1^{\prime}\), \(k_2^{\prime}\) are multiplicative shares of \(k^{-1}\). The parties can then use additively homomorphic encryption – specifically Paillier encryption  – in order to combine their equations. For example, \(P_1\) can compute \(c_1 &#x3D; Enc_{pk}(k_1^{-1} \cdot H(m))\) and \(c_2 &#x3D; Enc_{pk}(k_1^{-1} \cdot x_1 \cdot r)\) . Then, using scar multiplication (denoted ⊙) and homomorphic addition (denoted ⊕), \( P_2 \) can compute \( (k_2^{-1} ⊙ c_1 ) ⊕ [( k_2^{-1} \cdot x_2)  ⊙ c_2 ]\), which will be an encryption of </p>
-<p><img src="/images/two_party_ecdsa/paillier_enc.png" alt="paillier encryption"></p>
-<p>However, proving that each party worked correctly is extremely difficult. For example, the first party must prove that the Paillier encryption includes \(k_1^{-1}\) when the second party only has \(R_1 &#x3D; k_1 \cdot G\). it must prove that the Paillier encryptions are to values in the expected range, and more. This can be done, but it results in a protocol that is very expensive.</p>
-<h2 id="their-results"><a href="#their-results" class="headerlink" title="their results"></a>their results</h2><p>[WIP]</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2017/552.pdf">original papger</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/02/07/cryptography/two-party-ecdsa/" data-id="clk1e4wq000276hsjgnt73tin" data-title="two party ecdsa" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-MPT" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/01/22/MPT/" class="article-date">
-  <time class="dt-published" datetime="2023-01-22T09:25:36.000Z" itemprop="datePublished">2023-01-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/01/22/MPT/">MPT</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="trie"><a href="#trie" class="headerlink" title="trie"></a>trie</h1><p>a trie, also called prefix tree, is a type of k-ary search tree. These keys are most often strings, with links between nodes defined not by the entire key, but by individual characters. In order to access a key, the trie is traversed depth-first, following the links between nodes, which represent each character in the key.</p>
-<p><img src="/images/trie.prefix.png" alt="prefix trie"><br>In general, the nodes of a Trie look like this:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ [Ia, Ib, … I*], value]</span><br></pre></td></tr></table></figure>
-<p>[Ia, Ib, … I*] is the index array of the node, which takes the next character in the key as the index, and each element I* points to the corresponding child node. value represents the value</p>
-<h1 id="MPT"><a href="#MPT" class="headerlink" title="MPT"></a>MPT</h1><p>Each block of Ethereum contains three MPT trees, respectively</p>
-<ul>
-<li>Transaction tree</li>
-<li>Receipt tree</li>
-<li>State tree</li>
-</ul>
-<p>In the figure below are two block headers, where state root, tx root receipt root stores the roots of the three trees, and the second block shows when the data of account 175 changes (27 -&gt; 45). Only need to store 3 nodes related to this account, and the data in the old block can still be accessed normally. (This is somewhat similar to the implementation of an immutable data structure in a functional programming language.) The detailed structure is</p>
-<p><img src="/images/mpt.state.ref.png" alt="state reference"></p>
-<ul>
-<li>use []byte as key, other than string</li>
-<li>nibble: the smallest unit of the key type (4 bit)</li>
-<li>Use hashes to refer to nodes instead of memory pointers</li>
-</ul>
-<p>there are two types of node: full nodes (fullNode) and short nodes (shortNode). Full nodes have 17 elements, while shortNode nodes have two elements. Their schematic expressions are as follows</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fullNode: [i0, i1, i2, … i15, hash]  </span><br><span class="line">shortNode： [ [k0, k1, … kn], hash ] // first element is an array</span><br></pre></td></tr></table></figure>
-<p>if the hash pointing to a value, it is a leaf node; if pointing another node, a non leaf node. shortNode contains extension and leaf node. full node is branch node.</p>
-<p><img src="/images/mpt.png" alt="mpt"></p>
-<p>Use the upper 4 bits of the first byte of the []byte value composed of nibbles as storage flag. The 0th bit stores the parity information, and the 1st bit stores the type represented by the value</p>
-<table>
-<thead>
-<tr>
-<th>hex char</th>
-<th align="center">bits</th>
-<th align="center">pointing to</th>
-<th align="center">odd&#x2F;even</th>
-<th>2nd niddle padding</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>0</td>
-<td align="center">0000</td>
-<td align="center">node</td>
-<td align="center">even</td>
-<td>no</td>
-</tr>
-<tr>
-<td>1</td>
-<td align="center">0001</td>
-<td align="center">node</td>
-<td align="center">odd</td>
-<td>yes</td>
-</tr>
-<tr>
-<td>2</td>
-<td align="center">0010</td>
-<td align="center">value</td>
-<td align="center">even</td>
-<td>no</td>
-</tr>
-<tr>
-<td>3</td>
-<td align="center">0011</td>
-<td align="center">value</td>
-<td align="center">odd</td>
-<td>yes</td>
-</tr>
-</tbody></table>
-<p>this encoding method is only used when accessing the database. After reading into memory, the key is directly stored in []byte type</p>
-<p>In the trie module, there is a <code>Database</code> object, which you can understand as a cache layer of the underlying database. In actual use, the Trie object uses the Database as a database. However, the important function of Database is not caching, but the reference counting of node data during caching, and provides Database.Reference and Database.Dereference to reference and dereference a trie node. If the reference count of a node becomes 0, the node will be deleted from memory, so it will not be written to the real database</p>
-<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/agiletechvn/go-ethereum-code-analysis/blob/master/trie-analysis.md">github</a></li>
-<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/01/12/ethereum-trie-part-1/">yangzhe’s blog</a></li>
-<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/01/18/ethereum-trie-part-2/">yangzhe’s blod</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clk1e4wpi00006hsj5wv8brh1" data-title="MPT" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-blockchain.kademlia" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/01/15/blockchain.kademlia/" class="article-date">
-  <time class="dt-published" datetime="2023-01-15T03:00:30.000Z" itemprop="datePublished">2023-01-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>Kademlia, a peer-to-peer distributed hash table(DHT). Some other DHT techniques are Chord. In the Kad network, each node has a unique 160-bit ID (ETH account address is 20 bytes, which is 160 bits) &lt;key,value&gt; pairs are stored in nodes whose ID is ‘close’ to the key for some notion of closeness. </p>
-<h1 id="system-description"><a href="#system-description" class="headerlink" title="system description"></a>system description</h1><p>Kad effectively treats nodes as leaves in a binary tree, with each nodes’s position determined by the shortest unique prefix of its ID. Figure 1 shows the position of a node with unique prefix 0011 in an example.</p>
-<p><img src="/images/kademlia.subtree.png" alt="Figure 1"><br>for any given node, the binary tree is divided into a series of successively lower subtrees that don’t contain the node.<br> The highest-level subtree is composed of the other half of the whole tree that does not contain itself; the next level of subtree is composed of the remaining half that does not contain itself; and so on, until the complete tree is split into n subtrees. As shown in the figure, the part contained by the dotted line is the subtree of node 0011.</p>
-<p>if there is at least one node knwon in each subtree (in total, at least n nodes), a  recursive routing algorithm can be used to reach any node within the binary tree. Figure 2 shows an example of node 0011 locating node 1110 by successively querying the best node it knows of to find contacts in lower and lower subtrees; finaly the lookup converges to the target node.</p>
-<p><img src="/images/kademlia.locating.png" alt="Figure 2"></p>
-<h2 id="node-distance-XOR-metric"><a href="#node-distance-XOR-metric" class="headerlink" title="node distance: XOR metric"></a>node distance: XOR metric</h2><p>Node’s id is 160 bit. Keys are also 160 bit. The Kad algorithm uses an XOR operation to calculate the distance between nodes.<br>d(x,y) &#x3D; x XOR y</p>
-<h2 id="node-state"><a href="#node-state" class="headerlink" title="node state"></a>node state</h2><p>for each 0 &lt;&#x3D; i &lt; 160, every node keeps k &lt;IP address, UDP port, node ID&gt; triples (as a list) for nodes of distance between 2^i and 2^i+1 from itself. it is called k-buckets.<br>each k-bucket is kept sorted by time last seen–least recently seen node at the head, most-recently seen at the tail.<br>for small values of i, the k-buckets will generally be empty (as no approriate nodes will exist).</p>
-<p> The K value mentioned here is a system-level constant (must be an even number). It is set by the software system using Kad (for example, the Kad network used by BT download, K is set to 8). </p>
-<h2 id="update-of-k-bucket"><a href="#update-of-k-bucket" class="headerlink" title="update of k bucket"></a>update of k bucket</h2><p>There are mainly the following ways to update the K bucket:</p>
-<ul>
-<li>Actively collect nodes: Any node can initiate a FIND_NODE (query node) request to refresh the node information in the K-bucket.</li>
-<li>Passive collection node: When receiving requests from other nodes (such as: FIND_NODE, FIND_VALUE), it will add the node ID of the other party to a certain K-bucket.</li>
-<li>Detect invalid nodes: By initiating a PING request, determine whether a node in the K-bucket is online, and then clean up which offline nodes in the K-bucket.</li>
-</ul>
-<p>The update principle is to insert the latest node into the tail of the queue, and not to remove the online nodes in the queue.</p>
-<p>According to the K-bucket update principle, nodes with a long online time are more likely to remain in the K-bucket list. Therefore, by keeping the nodes with a long online time in the K-bucket, Kad will significantly increase the number of nodes in the K-bucket. it can defend against DOS attacks to a certain extent, because only when the old node fails, Kad will update the K bucket information, which avoids flooding routing information through the addition of new nodes<br><img src="/images/kademlia.onlineprob.png" alt="probability of continuous online agains onlie duration"></p>
-<h2 id="RPC-method"><a href="#RPC-method" class="headerlink" title="RPC method"></a>RPC method</h2><p>The Kademlia protocol includes four remote RPC operations: PING, STORE, FIND_NODE, FIND_VALUE.</p>
-<ul>
-<li>PING probes a node to see if it is online.</li>
-<li>STORE instructs a node to store a &lt;key,value&gt; pair for later retrieval.</li>
-<li>FIND_NODE takes a 160bit ID as an argument. The receiver of this operation returns the (IP address, UDP port, Node ID) information of K nodes that it knows are closer to the target ID. The information of these nodes can be obtained from a single K-bucket, or from multiple K-buckets. In either case, the receiver will return the information of K nodes to the operation initiator. </li>
-<li>The FIND_VALUE operation is similar to the FIND_NODE operation, with one exception. if the RPC receipients has received a STORE RPC for the key, it just returns the stored value.</li>
-</ul>
-<h2 id="node-lookup"><a href="#node-lookup" class="headerlink" title="node lookup"></a>node lookup</h2><p>Kad participant must locate the k closest nodes to some given node ID. Kad employs a recursive algorithm for node lookups. It recursively send FIND_NODE requests to \alpha (out of k) closest nodes it knows of. </p>
-<h2 id="find-a-lt-key-value-gt-pair"><a href="#find-a-lt-key-value-gt-pair" class="headerlink" title="find a &lt;key,value&gt; pair"></a>find a &lt;key,value&gt; pair</h2><p>to find a &lt;key,value&gt; pair, a node starts by performing a lookup to find the k nodes with IDs closest to the key. However, value lookups use FIND_VLAUE rather than FIND_NODE RPCs.</p>
-<h2 id="node-join"><a href="#node-join" class="headerlink" title="node join"></a>node join</h2><p>to join the network, a node u must have a contact to an already participating node w.</p>
-<h2 id="routing-table"><a href="#routing-table" class="headerlink" title="routing table"></a>routing table</h2><h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf">kademlia paper</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/libp2p/go-libp2p-kad-dht">go implementation</a></li>
-<li><a target="_blank" rel="noopener" href="https://codethechange.stanford.edu/guides/guide_kademlia.html">kademlia stanford</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/388994038">zhihu</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clk1e4wpl00016hsjdgw02i4v" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-async" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/01/13/rust/rust-async/" class="article-date">
-  <time class="dt-published" datetime="2023-01-13T09:17:10.000Z" itemprop="datePublished">2023-01-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/01/13/rust/rust-async/">rust async</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="I-x2F-O"><a href="#I-x2F-O" class="headerlink" title="I&#x2F;O"></a>I&#x2F;O</h2><p>I&#x2F;O：在计算机中指Input&#x2F;Output。由于程序和运行时数据是在内存中驻留，由cpu来执行，涉及到数据交换的地方，通常是磁盘、网卡等，就需要IO接口</p>
-<h3 id="I-x2F-O-模型"><a href="#I-x2F-O-模型" class="headerlink" title="I&#x2F;O 模型"></a>I&#x2F;O 模型</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@startmindmap</span><br><span class="line">+ **I/O模型**</span><br><span class="line">++ 同步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ 阻塞I/O (BIO)</span><br><span class="line">+++_ 非阻塞I/O (NIO)</span><br><span class="line">+++_ I/O多路复用</span><br><span class="line">+++_ 信号驱动I/O</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">++ 异步I/O</span><br><span class="line">&#x27;tag::details[]</span><br><span class="line">+++_ linux (AIO, io_uring)</span><br><span class="line">+++_ windows (IOCP)</span><br><span class="line">&#x27;end::details[]</span><br><span class="line">@endmindmap</span><br></pre></td></tr></table></figure>
-<h4 id="同步阻塞"><a href="#同步阻塞" class="headerlink" title="同步阻塞"></a>同步阻塞</h4><ul>
-<li>当用户线程发起IO请求后，会进行系统调用（system call）来让内核（Kernel）进行IO操作（系统调用是用户空间和内核空间的一个通道）；</li>
-<li>此时用户线程阻塞，等待内核将数据准备好；</li>
-<li>内核将数据准备好后会将数据从内核空间拷贝到用户空间，并返回给用户线程结束阻塞。</li>
-</ul>
-<h4 id="同步非阻塞"><a href="#同步非阻塞" class="headerlink" title="同步非阻塞"></a>同步非阻塞</h4><ul>
-<li>由用户线程发起IO请求，进行系统调用来让内核进行IO操作；</li>
-<li>此时如果内核没有准备好数据则会直接返回error，并不会阻塞用户线程，用户线程可以重复发起IO请求；</li>
-<li>当用户线程发起请求并且内核已经将数据准备好后，会将数据从内核空间拷贝到用户空间（这个过程是需要阻塞用户线程的），返回给用户。</li>
-</ul>
-<h4 id="同步多路复用"><a href="#同步多路复用" class="headerlink" title="同步多路复用"></a>同步多路复用</h4><ul>
-<li>用户线程调用select后进行系统调用（内核会监视所有select负责的socket）</li>
-<li>当用户将数据准备好后就会返回，并通知用户线程进行读取操作，此时内核将数据拷贝到用户空间并返回。此时用户线程被阻塞；</li>
-</ul>
-<h4 id="异步I-x2F-O"><a href="#异步I-x2F-O" class="headerlink" title="异步I&#x2F;O"></a>异步I&#x2F;O</h4><ul>
-<li>用户线程进行aio_read，进行系统调用切换到内核；</li>
-<li>内核立即返回，并不会阻塞用户线程；</li>
-<li>内核准备好数据后会将数据从内核空间拷贝到用户空间并通知用户线程（发送信号）操作已完成。</li>
-</ul>
-<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><h4 id="同步blocking-I-x2F-O"><a href="#同步blocking-I-x2F-O" class="headerlink" title="同步blocking I&#x2F;O"></a>同步blocking I&#x2F;O</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@startuml Test Diagram</span><br><span class="line"></span><br><span class="line">participant &quot;application&quot; as app</span><br><span class="line">participant &quot;kernel&quot; as kernel</span><br><span class="line"></span><br><span class="line">activate app</span><br><span class="line">activate kernel</span><br><span class="line">app -&gt; kernel: syscall: Read recvfrom</span><br><span class="line">kernel -&gt; kernel: wait for data (no datagram ready)</span><br><span class="line">kernel -&gt; kernel: copy datagram to user (datagram ready)</span><br><span class="line">kernel -&gt; app: return</span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
-
-<h4 id="I-x2F-O多路复用"><a href="#I-x2F-O多路复用" class="headerlink" title="I&#x2F;O多路复用"></a>I&#x2F;O多路复用</h4><h3 id="异步编程"><a href="#异步编程" class="headerlink" title="异步编程"></a>异步编程</h3><h2 id="the-Future-Trait"><a href="#the-Future-Trait" class="headerlink" title="the Future Trait"></a>the Future Trait</h2><p>A Future is an asynchronous computation that can produce a value. A simplified version of the future trait might look something like this</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">trait</span> <span class="title class_">SimpleFuture</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, wake: <span class="title function_ invoke__">fn</span>()) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Poll</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="title function_ invoke__">Ready</span>(T),</span><br><span class="line">    Pending,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>For example, consider the case where we want to read from a socket that may or may not have data available already.</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">SocketRead</span>&lt;<span class="symbol">&#x27;a</span>&gt; &#123;</span><br><span class="line">    socket: &amp;<span class="symbol">&#x27;a</span> Socket,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">SimpleFuture</span> <span class="keyword">for</span> <span class="title class_">SocketRead</span>&lt;<span class="symbol">&#x27;_</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span> = <span class="type">Vec</span>&lt;<span class="type">u8</span>&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, wake: <span class="title function_ invoke__">fn</span>()) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.socket.<span class="title function_ invoke__">has_data_to_read</span>() &#123;</span><br><span class="line">            <span class="comment">// The socket has data -- read it into a buffer and return it.</span></span><br><span class="line">            Poll::<span class="title function_ invoke__">Ready</span>(<span class="keyword">self</span>.socket.<span class="title function_ invoke__">read_buf</span>())</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// The socket does not yet have data.</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// Arrange for `wake` to be called once data is available.</span></span><br><span class="line">            <span class="comment">// When data becomes available, `wake` will be called, and the</span></span><br><span class="line">            <span class="comment">// user of this `Future` will know to call `poll` again and</span></span><br><span class="line">            <span class="comment">// receive data.</span></span><br><span class="line">            <span class="keyword">self</span>.socket.<span class="title function_ invoke__">set_readable_callback</span>(wake);</span><br><span class="line">            Poll::Pending</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p> the real Future trait and how it is different</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">trait</span> <span class="title class_">Future</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Output</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll</span>(</span><br><span class="line">        <span class="comment">// Note the change from `&amp;mut self` to `Pin&lt;&amp;mut Self&gt;`:</span></span><br><span class="line">        <span class="keyword">self</span>: Pin&lt;&amp;<span class="keyword">mut</span> <span class="keyword">Self</span>&gt;,</span><br><span class="line">        <span class="comment">// and the change from `wake: fn()` to `cx: &amp;mut Context&lt;&#x27;_&gt;`:</span></span><br><span class="line">        cx: &amp;<span class="keyword">mut</span> Context&lt;<span class="symbol">&#x27;_</span>&gt;,</span><br><span class="line">    ) <span class="punctuation">-&gt;</span> Poll&lt;<span class="keyword">Self</span>::Output&gt;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>The first change you’ll notice is that our self type is no longer &amp;mut Self, but has changed to Pin&lt;&amp;mut Self&gt;. We’ll talk more about pinning in a later section, but for now know that it allows us to create futures that are immovable. Immovable objects can store pointers between their fields, e.g. struct MyFut { a: i32, ptr_to_a: *const i32 }. Pinning is necessary to enable async&#x2F;await.</p>
-<p>Secondly, wake: fn() has changed to &amp;mut Context&lt;’_&gt;. In SimpleFuture, we used a call to a function pointer (fn()) to tell the future executor that the future in question should be polled. However, since fn() is just a function pointer, it can’t store any data about which Future called wake.</p>
-<p>In a real-world scenario, a complex application like a web server may have thousands of different connections whose wakeups should all be managed separately. The Context type solves this by providing access to a value of type Waker, which can be used to wake up a specific task.</p>
-<h2 id="task-wakeups-with-Waker"><a href="#task-wakeups-with-Waker" class="headerlink" title="task wakeups with Waker"></a>task wakeups with Waker</h2><p>Waker provides a wake() method that can be used to tell the executor that the associated task should be awoken. When wake() is called, the executor knows that the task associated with the Waker is ready to make progress, and its future should be polled again.</p>
-<h2 id="referencs"><a href="#referencs" class="headerlink" title="referencs"></a>referencs</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/XMJYever/article/details/111560976">csdn blog</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/13/rust/rust-async/" data-id="clk1e4wpu000x6hsj51636y2x" data-title="rust async" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-geth/code_analysis/geth.evm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/01/08/geth/code_analysis/geth.evm/" class="article-date">
-  <time class="dt-published" datetime="2023-01-08T08:24:54.000Z" itemprop="datePublished">2023-01-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/01/08/geth/code_analysis/geth.evm/">geth evm source analysis</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="overall"><a href="#overall" class="headerlink" title="overall"></a>overall</h1><p>the code is under path <code>core/vm</code><br>overview of the whole evm module <img src="/images/evm.drawio.google.png" alt="evm"></p>
-<p>the core is <code>EVM</code> struct (in evm.go), with main function in creating or call contract. a new <code>EVM</code> object is created every time when processing a transaction. inside the EVM struct, the main items are <code>Interpreter</code>, and <code>StateDB</code> (for state persistence). <code>Interpreter</code> loops through contract call instructions.Before each instruction is executed, some checks are performed to ensure sufficient gas and stack space. actual instruction execution code is recorded in <code>JumpTable</code> (256 sized array of <code>operation</code>)</p>
-<p>depending on the version of Ethereum, JumpTable may point to four different instruction sets: constantinopleInstructionSet, byzantiumInstructionSet, homesteadInstructionSet, frontierInstructionSet. Most of the instructions of these four sets of instruction sets are the same, but as the version is updated, the new version supports more instruction sets than the old version.</p>
-<h1 id="evm"><a href="#evm" class="headerlink" title="evm"></a>evm</h1><p>The <code>EVM</code> object is the most important object exported by the evm module, which represents an Ethereum virtual machine</p>
-<h2 id="creating-evm"><a href="#creating-evm" class="headerlink" title="creating evm"></a>creating evm</h2><p>Every time a transaction is processed, an EVM is created to execute the transaction. This is reflected in the function <code>ApplyTransaction</code> (core&#x2F;state_processor.go)</p>
-<h2 id="creating-contract"><a href="#creating-contract" class="headerlink" title="creating contract"></a>creating contract</h2><p>If the <code>to</code> of the transaction is empty, it means that this transaction is to create a contract, so call <code>EVM.Create</code> to perform related functions</p>
-<ul>
-<li>CREATE<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))</span><br></pre></td></tr></table></figure></li>
-<li>CREATE2<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">codeAndHash := &amp;codeAndHash&#123;code: code&#125;</span><br><span class="line">	contractAddr = crypto.CreateAddress2(caller.Address(), salt.Bytes32(), codeAndHash.Hash().Bytes())</span><br></pre></td></tr></table></figure>
-during create contract, an object <code>Contract</code> is created. A Contract object contains and maintains the necessary information during the execution of the contract, such as the contract creator, the address of the contract itself, the remaining gas of the contract, the contract code and the <code>jumpdests</code> record of the code.</li>
-</ul>
-<p>then, it invokes below method to create contract</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ret, err := evm.interpreter.Run(contract, nil, false)</span><br><span class="line">evm.StateDB.SetCode(address, ret)</span><br></pre></td></tr></table></figure>
-<p>If the operation is successful and the contract code does not exceed the length limit, call StateDB.SetCode to store the contract code in the contract account of the Ethereum state database. Of course, the storage needs to consume a certain amount of gas.</p>
-<p>You may wonder why the stored contract code is the return code after the contract runs, not the data in the original transaction (ie Transaction.data.Payload). This is because when the contract source code is compiled into binary data, in addition to the original code of the contract, the compiler also inserts some codes to perform related functions. For creation, the compiler inserts code that executes the contract’s “constructor” (that is, the contract object’s constructor method). Therefore, when the binary compiled by the compiler is submitted to the Ethereum node to create a contract, the EVM executes this binary code, in fact, it mainly executes the constructor method of the contract, and then returns other codes of the contract, so there is a <code>ret</code> variable here Stored in the state database as the actual code of the contract</p>
-<h2 id="call-contract"><a href="#call-contract" class="headerlink" title="call contract"></a>call contract</h2><p>The EVM object has three methods to implement the call of the contract, they are:</p>
-<ul>
-<li>EVM. Call</li>
-<li>EVM. CallCode</li>
-<li>EVM. DelegateCall</li>
-<li>EVM.StaticCall<br>The basic contract call function implemented by EVM.Call is nothing special. The following three calling methods are the differences compared with EVM.Call. So here we only introduce the particularity of the last three calling methods</li>
-</ul>
-<h3 id="EVM-CallCode-amp-EVM-DelegateCall"><a href="#EVM-CallCode-amp-EVM-DelegateCall" class="headerlink" title="EVM.CallCode &amp; EVM.DelegateCall"></a>EVM.CallCode &amp; EVM.DelegateCall</h3><p>The existence of EVM.CallCode and EVM.DelegateCall is to realize the characteristics of the “library” of the contract. If the code written by solidity is to be called as a library, it must be deployed on the blockchain to obtain a fixed address like a normal contract. , other contracts can call the method provided by this “library contract”. But the contract also involves some unique attributes, such as the caller of the contract, contract address, the amount of ether it owns, etc. If we directly call the code of the “library contract”, these properties must be the properties of the “library contract” itself, but this may not be what we want</p>
-<p>as an example</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A -&gt; contractB - delegateCall -&gt; libC</span><br></pre></td></tr></table></figure>
-<p><code>EVM.DelegateCall</code> sets the caller (msg.sender) of the “library contract” (libC) to A, rather than contractB; sets the address of the “library contract” (libC) to contractB.<br><code>EVM.CallCode</code> is similar to <code>EVM.DelegateCall</code>. the only difference is that <code>EVM.CallCode</code> only change the address of the “library contract” (libC) to contractB, without chanding the caller to A.<br><code>EVM.StaticCall</code> is similar to <code>EVM.Call</code>, the only difference is that EVM.StaticCall does not allow execution of instructions that modify permanently stored data</p>
-<p>during contract call, it first check whether it is precompiled contract. some precompiled contracts are</p>
-<ul>
-<li>common.BytesToAddress([]byte{1}): &amp;ecrecover{},</li>
-<li>common.BytesToAddress([]byte{2}): &amp;sha256hash{},</li>
-<li>common.BytesToAddress([]byte{3}): &amp;ripemd160hash{},</li>
-<li>common.BytesToAddress([]byte{4}): &amp;dataCopy{},</li>
-</ul>
-<h1 id="EVMInterpreter"><a href="#EVMInterpreter" class="headerlink" title="EVMInterpreter"></a>EVMInterpreter</h1><p>The interpreter object EVMInterpreter is used to interpret and execute specified contract instructions. However, note that the actual instruction interpretation and execution is not really completed by the interpreter object, but by the operation object JumpTable. The interpreter object is only responsible for parsing instruction codes one by one, and then obtains the corresponding operation object, and check objects such as the stack before calling the operation.execute function that actually executre the instruction. It can also be said that the interpreter object is only responsible for the scheduling of interpretation.</p>
-<h2 id="execution-layout"><a href="#execution-layout" class="headerlink" title="execution layout"></a>execution layout</h2><p><img src="/images/evm.layout.png" alt="layout"></p>
-<h2 id="intrinsic-gas"><a href="#intrinsic-gas" class="headerlink" title="intrinsic gas"></a>intrinsic gas</h2><p>The intrinsic gas for a transaction is the amount of gas that the transaction uses before any code runs. It is a constant transaction fee (currently 21000 gas) plus a fee for every byte of data supplied with the transaction (4 gas for a zero byte, 68 gas for non-zeros). These constants are all currently defined for geth in params&#x2F;protocol_params.go.</p>
-<h2 id="gas-cost"><a href="#gas-cost" class="headerlink" title="gas cost"></a>gas cost</h2><p>the gas cost of each instruction is stored in <code>JumpTable.operation.dynamicGas</code> or <code>JumpTable.operation.constantGas</code>. constantGas means the operation gas cost is a fixed constant. dynamicGas is a function which will return gas during runtime.</p>
-<p>In fact, not only the interpretation and execution of the instruction itself consumes gas, but also consumes gas when using memory storage and StateDB permanent storage. For most instructions, the latter two are not used (memory &amp; storage), but for some instructions (such as CODECOPY or SSTORE), their gasCost function will take memory and StateDB usage into account.</p>
-<p>a method <code>memoryGasCost</code>is used to calculate the gas consumption of memory usage. only when the required space size exceeds the current space size, the excess part needs to consume gas.</p>
-<h1 id="JumpTable"><a href="#JumpTable" class="headerlink" title="JumpTable"></a>JumpTable</h1><p>jumptable is 256 sized array of <code>operation</code></p>
-<h2 id="jump-instruction"><a href="#jump-instruction" class="headerlink" title="jump instruction"></a>jump instruction</h2><p>Among the instructions of the contract, there are two jump instructions (excluding CALL): JUMP and JUMPI. Their special feature is that the first instruction of the target address after the jump must be JUMPDEST</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">func opJump(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) &#123;</span><br><span class="line">    pos := stack.pop()</span><br><span class="line">    if !contract.validJumpdest(pos) &#123;</span><br><span class="line">        nop := contract.GetOp(pos.Uint64())</span><br><span class="line">        return nil, fmt.Errorf(&quot;invalid jump destination (%v) %v&quot;, nop, pos)</span><br><span class="line">    &#125;</span><br><span class="line">    *pc = pos.Uint64()</span><br><span class="line"></span><br><span class="line">    interpreter.intPool.put(pos)</span><br><span class="line">    return nil, nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>A function interprets and executes the JUMP instruction. The code first fetches a value from the stack as the jump destination. This value is actually an offset relative to field 0 of the contract code. Then the code will call Contract.validJumpdest to determine whether the first instruction of this destination is JUMPDEST, if it is not, an error will occur.</p>
-<p>To judge whether the first instruction of the destination is JUMPDEST, two points must be guaranteed: first, its value is the value of the opcode of the JUMPDEST instruction; second, it is an instruction, not ordinary data.</p>
-<p>Let’s introduce how Contract.validJumpdest works. In addition to comparing opcode (this is very simple), Contract will also create a bit vector object (ie bitvec, bit vector). This object will analyze the contract instructions from the beginning to the end. If the byte at a certain offset of the contract belongs to ordinary data, the “bit” corresponding to the offset value in bitvec is set to 1, and if it is an instruction, it is set to 0. In Contract.validJumpdest, it is judged whether this is a normal instruction by checking whether the “bit” of the offset value of the jump destination in this bit vector object is 0</p>
-<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter">yangzhe_blog</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.evm.codes/?fork=shanghai">op code manual</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="clk1e4wq2002m6hsjg7yx2331" data-title="geth evm source analysis" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-geth-fine-tune" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/01/01/geth-fine-tune/" class="article-date">
-  <time class="dt-published" datetime="2023-01-01T08:29:43.000Z" itemprop="datePublished">2023-01-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/01/01/geth-fine-tune/">geth_fine_tune</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>If we’re a full node on mainnet without –cache specified, bump default cache allowance<br>ctx.Set(utils.CacheFlag.Name, strconv.Itoa(4096))</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clk1e4wpo00046hsjbfs3g4aw" data-title="geth_fine_tune" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-07-macro" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/12/28/rust/rust-07-macro/" class="article-date">
-  <time class="dt-published" datetime="2022-12-28T02:24:21.000Z" itemprop="datePublished">2022-12-28</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/12/28/rust/rust-07-macro/">rust reflect and macro</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="reflect"><a href="#reflect" class="headerlink" title="reflect"></a>reflect</h2><h3 id="trait-object"><a href="#trait-object" class="headerlink" title="trait object"></a>trait object</h3><p>Rust provides dynamic dispatch through a feature called <code>trait objects</code>. Trait objects, like &amp;Foo or Box<Foo>, are normal values that store a value of any type that implements the given trait, where the precise type can only be known at <strong>runtime</strong>. more details can be found on [references 1]</p>
-<h3 id="any"><a href="#any" class="headerlink" title="any"></a>any</h3><p>This module (std::any) contains the <code>Any</code> trait, which enables dynamic typing of any <code>'static</code> type through runtime reflection. It also contains the <code>Provider</code> trait and accompanying API, which enable trait objects to provide data based on typed requests, an alternate form of runtime reflection.<br>Any itself can be used to get a TypeId</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::fmt::<span class="built_in">Debug</span>;</span><br><span class="line"><span class="keyword">use</span> std::any::Any;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">log</span>&lt;T: Any + <span class="built_in">Debug</span>&gt;(value: &amp;Any) &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">value_any</span> = value <span class="keyword">as</span> &amp;<span class="keyword">dyn</span> Any;  <span class="comment">// &amp;dyn Any (a borrowed trait object), Note that &amp;dyn Any is limited to testing whether a value is of a specified concrete type, and cannot be used to test whether a type implements a trait.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">match</span> value_any.downcast_ref::&lt;<span class="type">String</span>&gt;() &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(val_str) <span class="punctuation">-&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// do with string</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="literal">None</span> =&gt; &#123;</span><br><span class="line">            <span class="comment">// </span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="porpular-crates-using-Any"><a href="#porpular-crates-using-Any" class="headerlink" title="porpular crates using Any"></a>porpular crates using Any</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.osohq.com/">oso</a><br>The Oso Library is a batteries-included framework for building authorization in your application</li>
-<li><a target="_blank" rel="noopener" href="https://bevyengine.org/">bevy</a><br>A refreshingly simple data-driven game engine built in Rust</li>
-</ul>
-<h2 id="macro"><a href="#macro" class="headerlink" title="macro"></a>macro</h2><h3 id="rust-compile-process"><a href="#rust-compile-process" class="headerlink" title="rust compile process"></a>rust compile process</h3><p><img src="/images/rust/macros/16.compile_process.png" alt="rust compile process"></p>
-<h3 id="front-end-rustc"><a href="#front-end-rustc" class="headerlink" title="front end: rustc"></a>front end: rustc</h3><ol>
-<li>lexical analysis: Code Text -&gt; TokenStream</li>
-<li>syntax analysis: TokenStream -&gt; AST (abstract syntax tree)</li>
-<li>semantic analyzer:<br>     AST -&gt; HIR (High-Level Intermediate Representation) -&gt; Type HIR (static type analysis, syntactic desugar, e.g <code>for</code> changed to <code>loop</code>) -&gt; MIR: (Mid-Level Intermediate Representation, scope, reference &amp; borrow check)</li>
-</ol>
-<h3 id="back-end-LLVM"><a href="#back-end-LLVM" class="headerlink" title="back end: LLVM"></a>back end: LLVM</h3><p>LLVM IR -&gt; machine code</p>
-<h3 id="macros-in-compiling"><a href="#macros-in-compiling" class="headerlink" title="macros in compiling"></a>macros in compiling</h3><ul>
-<li>declarative macros: TokenStream - expand -&gt; TokenStream</li>
-<li>procedule macros: self defined AST with the help or third party crate such as syn, quote</li>
-</ul>
-<h2 id="declarative-macro-macro-rules"><a href="#declarative-macro-macro-rules" class="headerlink" title="declarative macro: macro_rules!"></a>declarative macro: macro_rules!</h2><p>Declarative macros allow us to write match-like code. The match expression is a control structure that receives an expression and then matches the result of the expression with multiple patterns. Once a pattern is matched, the code associated with the pattern will be executed</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">match</span> target &#123;</span><br><span class="line">        match_pattern_1 =&gt; expr_1,</span><br><span class="line">        match_pattern_2 =&gt; &#123;</span><br><span class="line">            statement1;</span><br><span class="line">            statement2;</span><br><span class="line">            expr_2</span><br><span class="line">        &#125;,</span><br><span class="line">        _ =&gt; expr_3</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="example-1-simplified-vec"><a href="#example-1-simplified-vec" class="headerlink" title="example 1, simplified vec!"></a>example 1, simplified <code>vec!</code></h3><p>below example use macro_rules to implement a simplified version of vec!</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[macro_export]</span></span><br><span class="line"><span class="built_in">macro_rules!</span> vec &#123;</span><br><span class="line">    ( $( $x:expr ),* ) =&gt; &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">temp_vec</span> = <span class="type">Vec</span>::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                temp_vec.<span class="title function_ invoke__">push</span>($x);</span><br><span class="line">            )*</span><br><span class="line">            temp_vec</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">v</span>: <span class="type">Vec</span>&lt;<span class="type">u32</span>&gt; = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="example-2-unless"><a href="#example-2-unless" class="headerlink" title="example 2, unless"></a>example 2, unless</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">macro_rules!</span> unless &#123;</span><br><span class="line">    ( ($arg:expr) =&gt; $branch:tt ) =&gt; ( <span class="keyword">if</span> !$arg &#123;$branch&#125;;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">cmp</span>(a:<span class="type">i32</span>, b:<span class="type">i32</span>) &#123;</span><br><span class="line">    unless!&#123;</span><br><span class="line">        (a&gt;b) =&gt; &#123;<span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125; &lt; &#123;&#125;&quot;</span>, a,b);&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="title function_ invoke__">cmp</span>(<span class="number">1</span>,<span class="number">2</span>);  <span class="comment">/// print &quot;1&lt;2&quot; as the condition is true !(a&gt;b)</span></span><br><span class="line">    <span class="title function_ invoke__">cmp</span>(<span class="number">3</span>,<span class="number">2</span>);  <span class="comment">/// print nothing</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="example-3-HashMap"><a href="#example-3-HashMap" class="headerlink" title="example 3, HashMap"></a>example 3, HashMap</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">macro_rules!</span> hashmap &#123;</span><br><span class="line">    <span class="comment">// match for &quot;a&quot; =&gt; 1, &quot;b&quot; =&gt; 2,</span></span><br><span class="line">    ( $($key:expr =&gt; $value:expr,)* ) =&gt;</span><br><span class="line">        &#123; hashmap!($($key =&gt; $value),*) &#125;; <span class="comment">// recuisive</span></span><br><span class="line">    <span class="comment">// match for &quot;a&quot; =&gt; 1, &quot;b&quot; =&gt; 2</span></span><br><span class="line">    ( $($key:expr =&gt; $value:expr),* ) =&gt; &#123; </span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">_map</span> = ::std::collections::HashMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                _map.<span class="title function_ invoke__">insert</span>($key, $value);</span><br><span class="line">            )*</span><br><span class="line">            _map</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">macro_rules!</span> hashmap_equivalent &#123;</span><br><span class="line">    ( $($key:expr =&gt; $value:expr),* $(,)*) =&gt; &#123; </span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">_map</span> = ::std::collections::HashMap::<span class="title function_ invoke__">new</span>();</span><br><span class="line">            $(</span><br><span class="line">                _map.<span class="title function_ invoke__">insert</span>($key, $value);</span><br><span class="line">            )*</span><br><span class="line">            _map</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">map</span> = hashmap!&#123;</span><br><span class="line">        <span class="string">&quot;a&quot;</span> =&gt; <span class="number">1</span>,</span><br><span class="line">        <span class="string">&quot;b&quot;</span> =&gt; <span class="number">2</span>,  <span class="comment">// with or without ,</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">map_2</span> = hashmap_equivalent!&#123;</span><br><span class="line">        <span class="string">&quot;a&quot;</span> =&gt; <span class="number">1</span>, </span><br><span class="line">        <span class="string">&quot;b&quot;</span> =&gt; <span class="number">2</span>,  <span class="comment">// with or without ,</span></span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="metavariables"><a href="#metavariables" class="headerlink" title="metavariables"></a>metavariables</h3><ul>
-<li>item: an Item</li>
-<li>stmt: a Statement without the trailing semicolon (except for item statements that require semicolons)</li>
-<li>expr: an Expression</li>
-<li>ty: a Type</li>
-<li>ident: an IDENTIFIER_OR_KEYWORD or RAW_IDENTIFIER</li>
-<li>path: a TypePath style path</li>
-<li>tt: a TokenTree (a single token or tokens in matching delimiters (), [], or {})</li>
-<li>meta: an Attr, the contents of an attribute</li>
-<li>lifetime: a LIFETIME_TOKEN</li>
-<li>vis: a possibly empty Visibility qualifier</li>
-<li>literal: matches LiteralExpression<br>details to be found <a target="_blank" rel="noopener" href="https://doc.rust-lang.org/reference/macros-by-example.html">here</a></li>
-</ul>
-<h2 id="procedures-macro"><a href="#procedures-macro" class="headerlink" title="procedures macro"></a>procedures macro</h2><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ol>
-<li><a target="_blank" rel="noopener" href="https://web.mit.edu/rust-lang_v1.25/arch/amd64_ubuntu1404/share/doc/rust/html/book/first-edition/trait-objects.html">rust trait object</a></li>
-</ol>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/28/rust/rust-07-macro/" data-id="clk1e4wps000l6hsja9odhbdf" data-title="rust reflect and macro" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/crates/rust-frequently-used-crates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/12/13/rust/crates/rust-frequently-used-crates/" class="article-date">
-  <time class="dt-published" datetime="2022-12-13T09:15:23.000Z" itemprop="datePublished">2022-12-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/12/13/rust/crates/rust-frequently-used-crates/">rust frequently used crates</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>tokio-trace -&gt; tracing</p>
-<p>contexts, multi threads<br>causality -<br>structured diagnostics ( no grep)</p>
-<p>tracing is part of tokio, tokio not requied</p>
-<p>spans: a perido of time, entered and exited<br>events: singular moment in time<br>subscriber: collect trace</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/13/rust/crates/rust-frequently-used-crates/" data-id="clk1e4wq000266hsjd3g4hlvb" data-title="rust frequently used crates" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-cargo-all-in-one" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/12/06/rust/rust-cargo-all-in-one/" class="article-date">
-  <time class="dt-published" datetime="2022-12-06T09:05:07.000Z" itemprop="datePublished">2022-12-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/12/06/rust/rust-cargo-all-in-one/">rust cargo all in one</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="useful-cmd"><a href="#useful-cmd" class="headerlink" title="useful cmd"></a>useful cmd</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo new $&#123;crate_name&#125; --lib ## create a lib crate</span><br><span class="line">cargo build --verbose ## print out each rustc invocation</span><br></pre></td></tr></table></figure>
-
-<h2 id="specifying-dependencies"><a href="#specifying-dependencies" class="headerlink" title="specifying dependencies"></a>specifying dependencies</h2><ul>
-<li><p>specifying dependencies from crates.io</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">time</span> = <span class="string">&quot;0.1.12&quot;</span></span><br></pre></td></tr></table></figure></li>
-<li><p>specifying dependencies from other registries</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">some-crate</span> = &#123; version = <span class="string">&quot;1.0&quot;</span>, registry = <span class="string">&quot;my-registry&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>specifying dependencies form git repositories</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">regex</span> = &#123; git = <span class="string">&quot;https://github.com/rust-lang/regex.git&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>path dependencies</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">hello_utils</span> = &#123; path = <span class="string">&quot;hello_utils&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>platform specific dependencies</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[target.&#x27;cfg(unix)&#x27;.dependencies]</span></span><br><span class="line"><span class="attr">openssl</span> = <span class="string">&quot;1.0.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">[target.&#x27;cfg(target_arch = &quot;x86&quot;)&#x27;.dependencies]</span></span><br><span class="line"><span class="attr">native-i686</span> = &#123; path = <span class="string">&quot;native/i686&quot;</span> &#125;</span><br></pre></td></tr></table></figure>
-<p>Like with Rust, the syntax here supports the not, any, and all operators to combine various cfg name&#x2F;value pairs.<br>If you want to know which cfg targets are available on your platform, run <code>rustc --print=cfg</code> from the command line.<br>If you want to know which cfg targets are available for another platform, such as 64-bit Windows, run <code>rustc --print=cfg --target=x86_64-pc-windows-msvc</code></p>
-</li>
-<li><p>custom target specifications</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[target.bar.dependencies]</span></span><br><span class="line"><span class="attr">winhttp</span> = <span class="string">&quot;0.4.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">[target.my-special-i686-platform.dependencies]</span></span><br><span class="line"><span class="attr">openssl</span> = <span class="string">&quot;1.0.1&quot;</span></span><br><span class="line"><span class="attr">native</span> = &#123; path = <span class="string">&quot;native/i686&quot;</span> &#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>development dependencies<br>  [dev-dependencies]<br>  Dev-dependencies are not used when compiling a package for building, but are used for compiling tests, examples, and benchmarks.<br>  These dependencies are not propagated to other packages which depend on this package.</p>
-  <figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[target.&#x27;cfg(unix)&#x27;.dev-dependencies]</span></span><br><span class="line"><span class="attr">mio</span> = <span class="string">&quot;0.0.1&quot;</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>build dependencies</p>
-  <figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[build-dependencies]</span></span><br><span class="line"><span class="attr">cc</span> = <span class="string">&quot;1.0.3&quot;</span></span><br></pre></td></tr></table></figure>
-<p>  The build script does not have access to the dependencies listed in the dependencies or dev-dependencies section. Build dependencies will likewise not be available to the package itself unless listed under the dependencies section as well.</p>
-</li>
-<li><p>choosing features</p>
-  <figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies.awesome]</span></span><br><span class="line"><span class="attr">version</span> = <span class="string">&quot;1.3.5&quot;</span></span><br><span class="line"><span class="attr">default-features</span> = <span class="literal">false</span> <span class="comment"># do not include the default features, and optionally</span></span><br><span class="line">                        <span class="comment"># cherry-pick individual features</span></span><br><span class="line"><span class="attr">features</span> = [<span class="string">&quot;secure-password&quot;</span>, <span class="string">&quot;civet&quot;</span>]</span><br></pre></td></tr></table></figure></li>
-<li><p>renaming dependencies in Cargo.toml<br>  When writing a [dependencies] section in Cargo.toml the key you write for a dependency typically matches up to the name of the crate you import from in the code. For some projects, though, you may wish to reference the crate with a different name in the code regardless of how it’s published on crates.io. For example you may wish to: Avoid the need to use foo as bar in Rust source.<br>  (more to be found in original book)</p>
-</li>
-</ul>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/cargo/">cargo book</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/12/06/rust/rust-cargo-all-in-one/" data-id="clk1e4wpu000z6hsjb7jy64m2" data-title="rust cargo all in one" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -810,7 +792,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -820,7 +802,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/zkp/" style="font-size: 12.86px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 16.67px;">zkp</a>
     </div>
   </div>
 
@@ -829,7 +811,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -858,7 +840,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
           </li>
         
           <li>
-            <a href="/2023/06/20/zkp/zkp-a-brief-understanding/">zkp a brief understanding</a>
+            <a href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
           </li>
         
       </ul>

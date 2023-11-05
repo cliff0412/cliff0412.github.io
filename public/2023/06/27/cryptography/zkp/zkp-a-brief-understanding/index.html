@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>zkp a brief understanding (1) | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="introductionzk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “qua">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zkp a brief understanding (1)">
+<meta property="og:url" content="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="introductionzk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “qua">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cliff0412.github.io/images/cryptography/zkp/r1cs.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/cryptography/zkp/lagrange_interpolating.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/cryptography/zkp/checking_qap.png">
+<meta property="article:published_time" content="2023-06-27T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-11-05T04:21:17.034Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
+<meta property="article:tag" content="zkp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/cryptography/zkp/r1cs.png">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cryptography/zkp/zkp-a-brief-understanding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" class="article-date">
+  <time class="dt-published" datetime="2023-06-27T06:29:26.000Z" itemprop="datePublished">2023-06-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      zkp a brief understanding (1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>zk-SNARKs cannot be applied to any computational problem directly; rather, you have to convert the problem into the right “form” for the problem to operate on. The form is called a “quadratic arithmetic program” (QAP), and transforming the code of a function into one of these is itself highly nontrivial.</p>
+<p>The example that we will choose is a simple one: proving that you know the solution to a cubic equation: \(x^3 + x + 5 &#x3D;&#x3D; 35\)</p>
+<p>Note that modulo (%) and comparison operators (&lt;, &gt;, ≤, ≥) are NOT supported, as there is no efficient way to do modulo or comparison directly in finite cyclic group arithmetic (be thankful for this; if there was a way to do either one, then elliptic curve cryptography would be broken faster)</p>
+<p>You can extend the language to modulo and comparisons by providing bit decompositions (eg. \(13 &#x3D; 2^3 + 2^2 + 1\)) as auxiliary inputs, proving correctness of those decompositions and doing the math in binary circuits; in finite field arithmetic, doing equality <code>(==)</code> checks is also doable and in fact a bit easier, but these are both details we won’t get into right now. We can extend the language to support conditionals (eg. <code>if x &lt; 5: y = 7; else: y = 9</code>) by converting them to an arithmetic form: <code>y = 7 * (x &lt; 5) + 9 * (x &gt;= 5)</code>;though note that both “paths” of the conditional would need to be executed.</p>
+<h2 id="Flattening"><a href="#Flattening" class="headerlink" title="Flattening"></a>Flattening</h2><p>The first step is a “flattening” procedure, where we convert the original code into a sequence of statements that are of two forms</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sym1 = x * x</span><br><span class="line">y = sym1 * x</span><br><span class="line">sym2 = y + x</span><br><span class="line">~out = sym2 + 5</span><br></pre></td></tr></table></figure>
+
+<h2 id="Gates-to-R1CS"><a href="#Gates-to-R1CS" class="headerlink" title="Gates to R1CS"></a>Gates to R1CS</h2><p>Now, we convert this into something called a rank-1 constraint system (R1CS). An R1CS is a sequence of groups of three vectors <code>(a, b, c)</code>, and the solution to an R1CS is a vector s, where s must satisfy the equation <code>s . a * s . b - s . c = 0</code>, where <code>.</code> represents the dot product. For example, this is a satisfied R1CS:<br><img src="/images/cryptography/zkp/r1cs.png" alt="r1cs"><br>\[s \cdot a &#x3D; (1,3,35,9,27,30) \cdot (5,0,0,0,0,1) &#x3D; 35\]<br>\[s \cdot b &#x3D; (1,3,35,9,27,30) \cdot (1,0,0,0,0,0) &#x3D; 1\]<br>\[s \cdot c &#x3D; (1,3,35,9,27,30) \cdot (0,0,1,0,0,0) &#x3D; 35\]<br>Hence<br>\[ s \cdot a * s \cdot b - s \cdot c &#x3D; 35 * 1 - 35 &#x3D; 0\]</p>
+<p>But instead of having just one constraint, we are going to have many constraints: one for each logic gate. There is a standard way of converting a logic gate into a <code>(a, b, c)</code> triple depending on what the operation is <code>(+, -, * or /)</code> and whether the arguments are variables or numbers. The length of each vector is equal to the total number of variables in the system, including a dummy variable <code>~one</code> at the first index representing the number 1, the input variables <code>x</code>, a dummy variable <code>~out</code> representing the output, and then all of the intermediate variables (<code>sym1</code> and <code>sym2</code> above);<br>First, we’ll provide the variable mapping that we’ll use:<br><code>&#39;~one&#39;, &#39;x&#39;, &#39;~out&#39;, &#39;sym1&#39;, &#39;y&#39;, &#39;sym2&#39;</code></p>
+<p>Now, we’ll give the (a, b, c) triple for the first gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 1, 0, 0, 0, 0]</span><br><span class="line">b = [0, 1, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 1, 0, 0]</span><br></pre></td></tr></table></figure>
+<p>which is \(x*x -sym1 &#x3D; 0\)</p>
+<p>Now, let’s go on to the second gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 0, 0, 1, 0, 0]</span><br><span class="line">b = [0, 1, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 0, 1, 0]</span><br></pre></td></tr></table></figure>
+<p>which is \(sym1 * x &#x3D; y\)<br>Now, the third gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [0, 1, 0, 0, 1, 0]</span><br><span class="line">b = [1, 0, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 0, 0, 0, 1]</span><br></pre></td></tr></table></figure>
+<p>which is \( (x+y) *  \sim one &#x3D; sym2\)</p>
+<p>Finally, the fourth gate:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [5, 0, 0, 0, 0, 1]</span><br><span class="line">b = [1, 0, 0, 0, 0, 0]</span><br><span class="line">c = [0, 0, 1, 0, 0, 0]</span><br></pre></td></tr></table></figure>
+<p>which is \((5 + sym2) * \sim one &#x3D; \sim out\)<br>And there we have our R1CS with four constraints. The witness is simply the assignment to all the variables, including input, output and internal variables:<br><code>[1, 3, 35, 9, 27, 30]</code></p>
+<p>The complete R1CS put together is:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">A</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[0, 0, 0, 1, 0, 0]</span><br><span class="line">[0, 1, 0, 0, 1, 0]</span><br><span class="line">[5, 0, 0, 0, 0, 1]</span><br><span class="line">B</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[0, 1, 0, 0, 0, 0]</span><br><span class="line">[1, 0, 0, 0, 0, 0]</span><br><span class="line">[1, 0, 0, 0, 0, 0]</span><br><span class="line">C</span><br><span class="line">[0, 0, 0, 1, 0, 0]</span><br><span class="line">[0, 0, 0, 0, 1, 0]</span><br><span class="line">[0, 0, 0, 0, 0, 1]</span><br><span class="line">[0, 0, 1, 0, 0, 0]</span><br></pre></td></tr></table></figure>
+
+<h2 id="R1CS-to-QAP"><a href="#R1CS-to-QAP" class="headerlink" title="R1CS to QAP"></a>R1CS to QAP</h2><p>The next step is taking this R1CS and converting it into QAP form, which implements the exact same logic except using polynomials instead of dot products. We do this as follows. We go from four groups of three vectors of length six to six groups of three degree-3 polynomials, where evaluating the polynomials at each x coordinate represents one of the constraints. That is, if we evaluate the polynomials at x&#x3D;1, then we get our first set of vectors, if we evaluate the polynomials at x&#x3D;2, then we get our second set of vectors, and so on.</p>
+<p>We can make this transformation using something called a <strong>Lagrange interpolation</strong>.<br><img src="/images/cryptography/zkp/lagrange_interpolating.png" alt="lagrange interpolating"></p>
+<p>Now, let’s use Lagrange interpolation to transform our R1CS. What we are going to do is take the first value out of every a vector, use Lagrange interpolation to make a polynomial out of that (where evaluating the polynomial at i gets you the first value of the ith a vector), repeat the process for the first value of every b and c vector, and then repeat that process for the second values, the third, values, and so on. For convenience I’ll provide the answers right now:</p>
+<blockquote>
+<p>Note: the intuition here is to think the R1CS A,B,C matrix vertically (column). For example, for the first column of A, the polynomial should pass (1,0), (2,0), (3,0), (4,5); the second polynomial shoudd pass (1,1), (2,0), (3,1), (4,)</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">A polynomials</span><br><span class="line">[-5.0, 9.166, -5.0, 0.833]</span><br><span class="line">[8.0, -11.333, 5.0, -0.666]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[-6.0, 9.5, -4.0, 0.5]</span><br><span class="line">[4.0, -7.0, 3.5, -0.5]</span><br><span class="line">[-1.0, 1.833, -1.0, 0.166]</span><br><span class="line">B polynomials</span><br><span class="line">[3.0, -5.166, 2.5, -0.333]</span><br><span class="line">[-2.0, 5.166, -2.5, 0.333]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">C polynomials</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[0.0, 0.0, 0.0, 0.0]</span><br><span class="line">[-1.0, 1.833, -1.0, 0.166]</span><br><span class="line">[4.0, -4.333, 1.5, -0.166]</span><br><span class="line">[-6.0, 9.5, -4.0, 0.5]</span><br><span class="line">[4.0, -7.0, 3.5, -0.5]</span><br></pre></td></tr></table></figure>
+<p>Coefficients are in ascending order, so the first polynomial above is actually \(0.833 x^3 — 5 x^2 + 9.166 x - 5\)<br>Let’s try evaluating all of these polynomials at x&#x3D;1. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">A results at x=1</span><br><span class="line">0 = 0.833 * 1^3 - 5 * 1^2 + 9.166 * 1^1 -5 * 1^0 = 0.833 -5 + 9.166 -5 = 0</span><br><span class="line">1 = -0.666 * 1^3 - 5.0 * 1^2 + -11.333 * 1^1 + 8.0 * 1^0 = -0.666 + 5.0 -11.333 +8.0 = 1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">B results at x=1</span><br><span class="line">0 = -0.333 * 1^3 +2.5 * 1^2 -5.166 * 1^1 +3.0 * 1^0 = -0.333 +2.5 -5.166 +3.0 = 0</span><br><span class="line">1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">C results at x=1</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">0</span><br><span class="line">1</span><br><span class="line">0</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+
+<h2 id="Checking-the-QAP"><a href="#Checking-the-QAP" class="headerlink" title="Checking the QAP"></a>Checking the QAP</h2><p>Now what’s the point of this crazy transformation? The answer is that instead of checking the constraints in the R1CS individually, we can now check all of the constraints at the same time by doing the dot product check on the polynomials.<br><img src="/images/cryptography/zkp/checking_qap.png" alt="checking qap"><br>Because in this case the dot product check is a series of additions and multiplications of polynomials, the result is itself going to be a polynomial. If the resulting polynomial, evaluated at every x coordinate that we used above to represent a logic gate, is equal to zero, then that means that all of the checks pass; if the resulting polynomial evaluated at at least one of the x coordinate representing a logic gate gives a nonzero value, then that means that the values going into and out of that logic gate are inconsistent</p>
+<p>To check correctness, we don’t actually evaluate the polynomial <code>t = A . s * B . s - C . s</code> at every point corresponding to a gate; instead, we divide <code>t</code> by another polynomial, <code>Z</code>, and check that <code>Z</code> evenly divides <code>t</code> - that is, <strong>the division <code>t / Z</code> leaves no remainder</strong>.</p>
+<p><code>Z</code> is defined as <code>(x - 1) * (x - 2) * (x - 3) ...</code> - the simplest polynomial that is equal to zero at all points that correspond to logic gates. It is an elementary fact of algebra that any polynomial that is equal to zero at all of these points has to be a multiple of this minimal polynomial, and if a polynomial is a multiple of <code>Z</code> then its evaluation at any of those points will be zero;</p>
+<p>Note that the above is a simplification; “in the real world”, the addition, multiplication, subtraction and division will happen not with regular numbers, but rather with finite field elements — a spooky kind of arithmetic which is self-consistent, so all the algebraic laws we know and love still hold true, but where all answers are elements of some finite-sized set</p>
+<h2 id="KEA-Knowledge-of-Exponent-Assumption"><a href="#KEA-Knowledge-of-Exponent-Assumption" class="headerlink" title="KEA (Knowledge of Exponent Assumption)"></a>KEA (Knowledge of Exponent Assumption)</h2><p>Let \(q\) be a prime such that \(2q+1\) is also prime, and let \(g\) be a generator<br>of the order \(q\) subgroup of \(Z_{2q+1}^{\ast}\). Suppose we are given input \(q, g, g^a\) and want to output a pair \((C, Y )\) such that \(Y &#x3D; C^a\). One way to do this is to pick some \(c \in Z_{q}\), let \(C &#x3D; g^c\), and let \(Y &#x3D; (g^a)^c\). Intuitively, &#96;KEA1&#96;&#96; can be viewed as saying that this is the ‘only’ way to produce such a pair. The assumption captures this by saying that any adversary outputting such a pair must “know” an exponent \(c\) such that \(g^c &#x3D; C\). The formalization asks that there be an “extractor” that can return \(c\). Roughly:</p>
+<hr>
+<p><strong>KEA1</strong><br>For any adversary \(A\) that takes input \(q, g,g^a\) and returns \((C,Y)\) with \(Y &#x3D; C^a\), there exists an ‘extractor’ \(\bar{A}\), which given the same inputs as \(A\) returns \(c\) such that \(g^c &#x3D; C\)</p>
+<hr>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649">vitalik’s blog: qap zero to hero</a></li>
+<li><a target="_blank" rel="noopener" href="https://mathworld.wolfram.com/LagrangeInterpolatingPolynomial.html">lagrange interpolating</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell">zkSNARKs in a nutshell</a></li>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2013/279.pdf">Pinocchio protocol by Parno, Gentry, Howell</a></li>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2004/008.pdf">KEA</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/27/cryptography/zkp/zkp-a-brief-understanding/" data-id="clokyy0zd002hpjsj68ugf9tg" data-title="zkp a brief understanding (1)" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/06/27/cryptography/elliptic_curve/elliptic-curve-pairing/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          elliptic curve paring
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/06/20/cryptography/cryptography-04-digital-signature/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cryptography (4) digital signature</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 16.67px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
+          </li>
+        
+          <li>
+            <a href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
