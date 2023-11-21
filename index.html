@@ -71,6 +71,297 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-math/goldilocks-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/18/math/goldilocks-field/" class="article-date">
+  <time class="dt-published" datetime="2023-11-18T03:06:53.000Z" itemprop="datePublished">2023-11-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/18/math/goldilocks-field/">goldilocks field</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h1 id="properties"><a href="#properties" class="headerlink" title="properties"></a>properties</h1><p>\( p &#x3D; \phi^2 - \phi + 1\)<br>\( \epsilon  &#x3D; \phi -1\)</p>
+<h2 id="Goldilocks-Addition"><a href="#Goldilocks-Addition" class="headerlink" title="Goldilocks Addition"></a>Goldilocks Addition</h2><p>let \( a &#x3D; a_0 + a_1 \cdot \phi, b &#x3D; b_0 + b_1 \cdot \phi\)</p>
+<p><code>(c, carry) = a + b</code>;</p>
+<ul>
+<li>if carry &#x3D; 0 &amp;&amp; c &gt; p, result should be <code>c -p</code></li>
+<li>if carry &#x3D; 0 &amp;&amp; c &lt; p, result should be <code>c</code></li>
+<li>if carry &#x3D; 1<br>let \( c &#x3D; c_0 + c_1 \cdot \phi + c_2 \cdot \phi^2\), and \(c_2 &#x3D; 1 \). let \( u &#x3D; c_0 + c_1 \cdot \phi \)<br>therefore \(a + b \mod p\) should be \( a + b - p &#x3D; c_0 + c_1 \cdot \phi + \phi^2 - (\phi^2 - \phi + 1) &#x3D;c_0 + c_1 \cdot \phi + \phi - 1 &#x3D; u + \phi - 1\) <ul>
+<li>if \( u  &lt;  p\), computationally, \( u  -  p\) will borrow from \( \phi^2\), which is equivalent to<br>\( \phi^2 + u - p &#x3D; u + \phi - 1  \), which is \( a - b \mod p\). therefore, the result is just \( u-p \)</li>
+<li>if \( u&gt; p\), this will unlikely occur, if u &gt;p, given by \( \phi^2 &gt; p \), so \( u + \phi^2 &gt; p + \phi^2 &gt; 2p\) that means a or b is not in canonical form. <span style="color:red"><strong>does not consider this case for now</strong></span></li>
+</ul>
+</li>
+</ul>
+<h2 id="Goldilocks-Subtraction"><a href="#Goldilocks-Subtraction" class="headerlink" title="Goldilocks Subtraction"></a>Goldilocks Subtraction</h2><p>\(a - b \mod MOD\)<br>if a &lt; b, a - b is negative, and the binary representation is 2’s complement of the negative value. therefore, it’s requied to add by MOD and treat the final binary representation as positive value.</p>
+<h2 id="Goldilocks-Multiplication"><a href="#Goldilocks-Multiplication" class="headerlink" title="Goldilocks Multiplication"></a>Goldilocks Multiplication</h2><p>let \(a &#x3D; a_0 + a_1 \cdot \phi\), and \(b&#x3D;b_0 + b_1 \cdot \phi\)<br>to compute \(c &#x3D; a \cdot b\)</p>
+<ul>
+<li>first, turn it into \( a_0 \cdot b_0 +(a_1\cdot b_0 +a_0\cdot b_1)\cdot \phi + a_1 \cdot b_1 \phi^2 \)<br>it may carry to \( \phi^2 \). so the results is a <code>u128</code> (<code>[u32;4]</code>)</li>
+<li>second, reduce the <code>[u32;4]</code> to <code>u64</code>, details to be described in the following section.</li>
+</ul>
+<h2 id="plonky2-Goldilocks-Fieldreduce128"><a href="#plonky2-Goldilocks-Fieldreduce128" class="headerlink" title="plonky2 Goldilocks Fieldreduce128"></a>plonky2 Goldilocks Fieldreduce128</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">reduce128</span>(x: <span class="type">u128</span>) <span class="punctuation">-&gt;</span> GoldilocksField &#123;</span><br><span class="line">    <span class="keyword">let</span> (x_lo, x_hi) = <span class="title function_ invoke__">split</span>(x); <span class="comment">// This is a no-op</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_hi</span> = x_hi &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_lo</span> = x_hi &amp; EPSILON;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> (<span class="keyword">mut</span> t0, borrow) = x_lo.<span class="title function_ invoke__">overflowing_sub</span>(x_hi_hi);</span><br><span class="line">    <span class="keyword">if</span> borrow &#123;</span><br><span class="line">        <span class="title function_ invoke__">branch_hint</span>(); <span class="comment">// A borrow is exceedingly rare. It is faster to branch.</span></span><br><span class="line">        t0 -= EPSILON; <span class="comment">// Cannot underflow.</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t1</span> = x_hi_lo * EPSILON;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t2</span> = <span class="keyword">unsafe</span> &#123; <span class="title function_ invoke__">add_no_canonicalize_trashing_input</span>(t0, t1) &#125;;</span><br><span class="line">    <span class="title function_ invoke__">GoldilocksField</span>(t2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>since, \(\phi^{3} &#x3D; -1\), \(n\) could be reduced to \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} - n_3  \),<br>which is line 6 in the above code snipet. when borrow occurs, it means it borrows \( \phi^2\) ( subtraction is of u64, so borrow 1 menas add \( \phi^2\), <code>1&lt;&lt;64</code>). therefore, needs to reduce \( \phi^2\). since \( \phi^2 &#x3D; \phi - 1\), which is reduce by \( \phi - 1\) (this is <code>EPSILON</code>).<br><strong>Note</strong> needs to consider line 23 could underflow</p>
+<p>next step is to reduce \( n_2 \cdot \phi^2 \), which is just \( n_2 \cdot (\phi -1)  \), which is \( n_2 \cdot EPSILON  \), line 11, <code>x_hi_lo * EPSILON</code></p>
+<h2 id="Sppark-reduce-uint32-t-temp-4"><a href="#Sppark-reduce-uint32-t-temp-4" class="headerlink" title="Sppark reduce(uint32_t temp[4])"></a>Sppark reduce(uint32_t temp[4])</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">reduce</span><span class="params">(<span class="type">uint32_t</span> temp[<span class="number">4</span>])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">uint32_t</span> carry;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;sub.cc.u32 %0, %0, %3; subc.cc.u32 %1, %1, %4; subc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;add.cc.u32 %0, %0, %2; addc.u32 %1, %1, %3;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;+r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %3, %4, %0; madc.hi.cc.u32 %1, %3, %4, %1; addc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(temp[<span class="number">2</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(carry), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mov.b64 %0, &#123;%1, %2&#125;;&quot;</span> : <span class="string">&quot;=l&quot;</span>(val) : <span class="string">&quot;r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">1</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>note</strong>: <code>W</code> is epsilon<br>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>\( n &#x3D; n_0 + n_2\cdot\phi^2 + \phi(n_1+n_3\cdot \phi^2)\).<br>since \( \phi^2 &#x3D; \phi - 1\)<br>\( n &#x3D; n_0 + n_2\cdot(\phi-1) + \phi(n_1+n_3\cdot(\phi-1))\).<br>\( n &#x3D; n_0 -n_2 +n_2\phi + \phi(n_1-n_3 + n_3\cdot\phi)\).<br>\( n &#x3D; n_0 -n_2 + \phi(n_1-n_3 +n_2) + n_3\cdot\phi^2\).<br>line 5 computes <code>n0 - n2</code> and set to temp[0]; &amp; computes <code>n1-n3</code> and sets to temp[1]<br>line 8 computes <code>n1- n3 + n2</code>; add n_3 with carry and put it to carry.</p>
+<p>let \(c\) be the carry, at \(\phi^2\), it is actually \( c \cdot \phi^2\). it could be further reduced to  \(c \cdot (\phi - 1) &#x3D; c \cdot W\)<br>line 12 is to reduce the carry part to temp[0], temp[1], and temp[2].<br>if temp[2] still exist. line 15 will reduce it to temp[0], temp[1] similar as above.<br>at this step. only temp[0] and temp[1] will contains value and return as the result</p>
+<h2 id="appendix"><a href="#appendix" class="headerlink" title="appendix"></a>appendix</h2><ul>
+<li>underflow<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uint64_t tmp;</span><br><span class="line">uint32_t borrow;</span><br><span class="line">asm(&quot;&#123; .reg.pred %top;&quot;);</span><br><span class="line">asm(&quot;sub.cc.u64 %0, %0, %2; subc.u32 %1, 0, 0;&quot;</span><br><span class="line">    : &quot;+l&quot;(val), &quot;=r&quot;(borrow)</span><br><span class="line">    : &quot;l&quot;(b.val));</span><br></pre></td></tr></table></figure>
+all bits of borrow will be set to 1 if underflow occurs</li>
+</ul>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://2π.com/22/goldilocks/">The Goldilocks Prime by Remco Bloemem</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/18/math/goldilocks-field/" data-id="clp3h29tn0002p97u7qv74jys" data-title="goldilocks field" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cuda/inline-ptx-assembly-in-cuda" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" class="article-date">
+  <time class="dt-published" datetime="2023-11-15T06:47:28.000Z" itemprop="datePublished">2023-11-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/">inline_ptx_assembly_in_cuda</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p>PTX, a low-level parallel thread execution virtual machine and instruction set architecture (ISA). PTX exposes the GPU as a data-parallel computing device.<br>The PTX Instruction Set Architecture (ISA) is lower-level compared to CUDA C++, but the programming model is entirely the same, with only some terminology differences. For example: CTA (Cooperative Thread Array): Equivalent to the Block in the CUDA thread model.</p>
+<h1 id="assembler-statements"><a href="#assembler-statements" class="headerlink" title="assembler statements"></a>assembler statements</h1><h2 id="parameters"><a href="#parameters" class="headerlink" title="parameters"></a>parameters</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;template-string&quot;</span> : <span class="string">&quot;constraint&quot;</span>(output) : <span class="string">&quot;constraint&quot;</span>(input));</span><br></pre></td></tr></table></figure>
+<p>an example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(j), <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>Each <code>%n</code> in the template string is an index into the following list of operands, in text order. So <code>%0</code> refers to the first operand, <code>%1</code> to the second operand, and so on. Since the output operands are always listed ahead of the input operands, they are assigned the smallest indices.<br>Note that the numbered references in the string can be in arbitrary order. The following is equivalent to the above example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %2, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k), <span class="string">&quot;r&quot;</span>(j));</span><br></pre></td></tr></table></figure>
+<p>You can also repeat a reference, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>If there is no input operand, you can drop the final colon, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 %0, 2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+
+<p>If there is no output operand, the colon separators are adjacent, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 r1, %0;&quot;</span> :: <span class="string">&quot;r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+<p>the “r” constraint refers to a 32bit integer register. The “&#x3D;” modifier in “&#x3D;r” specifies that the register is written to.  There is also available a “+” modifier that specifies the register is both read and written</p>
+<p>Multiple instructions can be combined into a single asm() statement;<br>am example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__device__ <span class="type">int</span> <span class="title">cube</span> <span class="params">(<span class="type">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> y;</span><br><span class="line">  <span class="built_in">asm</span>(<span class="string">&quot;.reg .u32 t1;\n\t&quot;</span>              <span class="comment">// temp reg t1</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 t1, %1, %1;\n\t&quot;</span>    <span class="comment">// t1 = x * x</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 %0, t1, %1;&quot;</span>        <span class="comment">// y = t1 * x</span></span><br><span class="line">      : <span class="string">&quot;=r&quot;</span>(y) : <span class="string">&quot;r&quot;</span> (x));</span><br><span class="line">  <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="constraints"><a href="#constraints" class="headerlink" title="constraints"></a>constraints</h2><p>There is a separate constraint letter for each PTX register type:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;h&quot;</span> = .u16 reg</span><br><span class="line"><span class="string">&quot;r&quot;</span> = .u32 reg</span><br><span class="line"><span class="string">&quot;l&quot;</span> = .u64 reg</span><br><span class="line"><span class="string">&quot;f&quot;</span> = .f32 reg</span><br><span class="line"><span class="string">&quot;d&quot;</span> = .f64 reg</span><br></pre></td></tr></table></figure>
+<p>The constraint “n” may be used for immediate integer operands with a known value. Example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.u32 %0, %0, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(x) : <span class="string">&quot;n&quot;</span>(<span class="number">42</span>));</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="State-Space-Type-Identifier"><a href="#State-Space-Type-Identifier" class="headerlink" title="State Space + Type + Identifier"></a>State Space + Type + Identifier</h1><h2 id="state-spaces"><a href="#state-spaces" class="headerlink" title="state spaces"></a>state spaces</h2><p>A state space is a storage area with particular characteristics. All variables reside in some state space. </p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>.reg</td>
+<td>Registers, fast.</td>
+</tr>
+<tr>
+<td>.sreg</td>
+<td>Special registers. Read-only; pre-defined; platform-specific.</td>
+</tr>
+<tr>
+<td>.const</td>
+<td>Shared, read-only memory.</td>
+</tr>
+<tr>
+<td>.global</td>
+<td>Global memory, shared by all threads.</td>
+</tr>
+<tr>
+<td>.local</td>
+<td>Local memory, private to each thread.</td>
+</tr>
+<tr>
+<td>.param</td>
+<td>Kernel parameters, defined per-grid; or Function or local parameters, defined per-thread.</td>
+</tr>
+<tr>
+<td>.shared</td>
+<td>Addressable memory, defined per CTA, accessible to all threads in the cluster throughout the lifetime of the CTA that defines it.</td>
+</tr>
+</tbody></table>
+<h2 id="types"><a href="#types" class="headerlink" title="types"></a>types</h2><h3 id="fundamental-types"><a href="#fundamental-types" class="headerlink" title="fundamental types"></a>fundamental types</h3><p>In PTX, the fundamental types reflect the native data types supported by the target architectures.</p>
+<table>
+<thead>
+<tr>
+<th>Basic Type</th>
+<th>Fundamental Type Specifiers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Signed integer</td>
+<td>.s8, .s16, .s32, .s64</td>
+</tr>
+<tr>
+<td>Unsigned integer</td>
+<td>.u8, .u16, .u32, .u64</td>
+</tr>
+<tr>
+<td>Floating-point</td>
+<td>.f16, .f16x2, .f32, .f64</td>
+</tr>
+<tr>
+<td>Bits (untyped)</td>
+<td>.b8, .b16, .b32, .b64, .b128</td>
+</tr>
+<tr>
+<td>Predicate</td>
+<td>.pred</td>
+</tr>
+</tbody></table>
+<h2 id="variables"><a href="#variables" class="headerlink" title="variables"></a>variables</h2><p>In PTX, a variable declaration describes both the variable’s type and its state space. In addition to fundamental types, PTX supports types for simple aggregate objects such as vectors and arrays.<br><strong>examples</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.global .v4 .f32 V;   <span class="comment">// a length-4 vector of floats</span></span><br><span class="line">.shared .v2 .u16 uv;  <span class="comment">// a length-2 vector of unsigned ints</span></span><br><span class="line">.global .v4 .b8  v;   <span class="comment">// a length-4 vector of bytes</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/inline-ptx-assembly/index.html">nvidia docs inlline ptx assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=features-inline-assembly-statements">IBM Open XL C&#x2F;C++ Inline Assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#">parallel thread execution ISA guide</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" data-id="clp3h29tl0000p97ug63eajx3" data-title="inline_ptx_assembly_in_cuda" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cpp/cpp-notes" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/15/cpp/cpp-notes/" class="article-date">
+  <time class="dt-published" datetime="2023-11-15T03:35:20.000Z" itemprop="datePublished">2023-11-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/15/cpp/cpp-notes/">cpp_notes</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="Conversion-Operator"><a href="#Conversion-Operator" class="headerlink" title="Conversion Operator"></a>Conversion Operator</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MyIntegerWrapper</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> value;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Constructor</span></span><br><span class="line">    <span class="built_in">MyIntegerWrapper</span>(<span class="type">int</span> val) : <span class="built_in">value</span>(val) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Conversion operator to int</span></span><br><span class="line">    <span class="function"><span class="keyword">operator</span> <span class="title">int</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/15/cpp/cpp-notes/" data-id="clp3h29tm0001p97u8iuxa3ox" data-title="cpp_notes" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-zkp/plonky2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/06/zkp/plonky2/" class="article-date">
+  <time class="dt-published" datetime="2023-11-06T05:24:03.000Z" itemprop="datePublished">2023-11-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/06/zkp/plonky2/">plonky2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/06/zkp/plonky2/" data-id="clotduyfn0000f57ud7b85ouk" data-title="plonky2" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-zkp/stark-101" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/03/zkp/stark-101/" class="article-date">
@@ -320,7 +611,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
+      <a class="p-name article-title" href="/2023/11/01/zkp/understanding-plonk/">understanding plonk</a>
     </h1>
   
 
@@ -333,15 +624,28 @@
   type="text/javascript">
 </script>
 
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
+<h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
+<h1 id="preliminary"><a href="#preliminary" class="headerlink" title="preliminary"></a>preliminary</h1><h2 id="observation-1"><a href="#observation-1" class="headerlink" title="observation 1"></a>observation 1</h2><p>a key fact: for non-zero \( f \in \mathbb{F_p}^{\le d}[X]\) <br><br>for \( r  \leftarrow \mathbb{F_p}: Pr[f(r) &#x3D; 0] \le d&#x2F;p\)<br>understanding: polynomial \(f\) contains at most \(d\) roots of zeros. <br><br>suppose \( p \approx 2^{256}\) and  \( d \approx 2^{40}\) then \(d&#x2F;p\) is negligible. <br><br>Therefore, for \( r  \leftarrow \mathbb{F_p}\) if \(f(r) &#x3D; 0\) then \(f\) is identically zero w.h.p (with high probability)</p>
+<p>&#x3D;&gt; a simple zero test for a committed polynomial<br><strong>Note</strong> SZDL lemma: this also holds for multivariate polynomials (where d is total degree of f) </p>
+<h2 id="observation-2"><a href="#observation-2" class="headerlink" title="observation 2"></a>observation 2</h2><p>let \(f,g \in \mathbb{F_p}^{\le d}[X]\).<br>for \( r  \leftarrow \mathbb{F_p}\), if \(f(r) &#x3D; g(r)\), then \(f &#x3D; g\) w.h.p <br><br>\(f(r)-g(r)&#x3D;0\) &#x3D;&gt; \(f-g&#x3D;0\) w.h.p <br></p>
+<p>&#x3D;&gt; a simple equality test for two committed polynomials</p>
+<h1 id="useful-proof-gadgets"><a href="#useful-proof-gadgets" class="headerlink" title="useful proof gadgets"></a>useful proof gadgets</h1><h2 id="zero-test"><a href="#zero-test" class="headerlink" title="zero test"></a>zero test</h2><p>let \( \omega \in \mathbb{F_p} \) be a primitive k-th root of unity \(( \omega ^{k} &#x3D; 1)\)<br>set \( H:&#x3D; \{1,\omega,\omega^2,\omega^3,…,\omega^{k-1}\}  \subseteq \mathbb{F_p} \)<br>let \( f \in \mathbb{F_p}^{\le d}[X]\) and \( b, c \in \mathbb{F_p}\)  \((d \ge k)\)</p>
+<p>task: prove that \(f\) is identically zero on \(H\)<br><img src="/images/zkp/plonk/zero_test.png" alt="zero test"></p>
+<p><strong>info</strong> the box of \(f\) means the commitment of polynomial \(f\), i.e \(com_f\)</p>
+<h1 id="PLONK-a-poly-IOP-for-a-general-circuit-C-x-w"><a href="#PLONK-a-poly-IOP-for-a-general-circuit-C-x-w" class="headerlink" title="PLONK: a poly-IOP for a general circuit C(x,w)"></a>PLONK: a poly-IOP for a general circuit C(x,w)</h1><h2 id="step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2"><a href="#step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2" class="headerlink" title="step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)"></a>step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)</h2><p><img src="/images/zkp/plonk/plonk_circuit_to_trace.png" alt="circuit to trace"></p>
+<p>and encode the trace as polynomial</p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://hackmd.io/@learn-zkp/note-plonk-family">https://hackmd.io/@learn-zkp/note-plonk-family</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=A0oZVEXav24">ZKP MOOC Lecture 5: The Plonk SNARK</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs251.stanford.edu/lectures/lecture15.pdf">CS251.stanford lecture</a></li>
 </ul>
+<p>\( \Omega&#x3D;{1,\omega,\omega^2,\omega^3,…,\omega^{d-1}} \)<br>\(d&#x3D;3*|Gate|+|PublicInput|+|Witness|\)<br>\(Selector*(Left+Right-Output)+(1-Selector)<em>(Left</em>Right-Output)&#x3D;0\)</p>
+<p>LeftInput&#x3D;f(\omega^{3l})<br>  RightInput&#x3D;f(\omega^{3l+1})<br>  Output&#x3D;f(\omega^{3l+2})<br>  x_1&#x3D;f(\omega^9)</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clokyy8du001wqwsj56sv3t4w" data-title="understanding_plonk" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clokyy8du001wqwsj56sv3t4w" data-title="understanding plonk" class="article-share-link">Share</a>
       
       
       
@@ -447,237 +751,6 @@
 
 
   
-    <article id="post-math/fourier-series" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/12/math/fourier-series/" class="article-date">
-  <time class="dt-published" datetime="2023-10-12T03:13:17.000Z" itemprop="datePublished">2023-10-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/12/math/fourier-series/">fourier_series</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="Fourier-Series"><a href="#Fourier-Series" class="headerlink" title="Fourier Series"></a>Fourier Series</h2><h3 id="innter-product-of-two-functions"><a href="#innter-product-of-two-functions" class="headerlink" title="innter product of two functions"></a>innter product of two functions</h3><p>\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]<br>\(\bar{g}\) is the congugate of g on complex number system</p>
-<h3 id="Fourier-series-definition"><a href="#Fourier-series-definition" class="headerlink" title="Fourier series definition"></a>Fourier series definition</h3><p>let \(f(x)\) be a periodic function over a period of \([-\pi, +\pi]\)<br><img src="/images/math/fourier_series/f_x.png" alt="f(x)"></p>
-<p>\( f(x) \) can be transformed into below<br>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(kx) + B_{k}sin(kx)\],<br>where<br>\[ A_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)cos(kx)dx &#x3D; \frac{1}{||cos(kx)||^2}&lt;f(x),cos(kx)&gt; \]<br>\[ B_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)sin(kx)dx &#x3D; \frac{1}{||sin(kx)||^2}&lt;f(x),sin(kx)&gt; \]<br>where \(A_{k}, B_{k}\) is the projection of \(f(x)\) over \(sin(kx)\), or \(cos(kx)\)</p>
-<h3 id="if-period-is-L"><a href="#if-period-is-L" class="headerlink" title="if period is L"></a>if period is L</h3><p>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(\frac{2\pi kx}{L}) + B_{k}sin(\frac{2\pi kx}{L})\],<br>where<br>\[ A_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)cos(\frac{2\pi kx}{L})dx\]<br>\[ B_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)sin(\frac{2\pi kx}{L})dx\]</p>
-<h2 id="Complex-Fourier-Series"><a href="#Complex-Fourier-Series" class="headerlink" title="Complex Fourier Series"></a>Complex Fourier Series</h2><p>todo!()</p>
-<h2 id="Discrete-Fourier-Transform-DFT"><a href="#Discrete-Fourier-Transform-DFT" class="headerlink" title="Discrete Fourier Transform (DFT)"></a>Discrete Fourier Transform (DFT)</h2><p>The discrete Fourier transform transforms a sequence of N complex numbers<br>\[\lbrace x_{n} \rbrace :&#x3D; x_0, x_1,…, x_{N-1} \] into another sequence of complex numbers,<br>\[\lbrace X_{k} \rbrace :&#x3D; X_0, X_1,…, X_{N-1} \] which is defined by<br>\[X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot e^{-\frac{i2\pi}{N}kn}\]</p>
-<h3 id="inverse-DFT"><a href="#inverse-DFT" class="headerlink" title="inverse DFT"></a>inverse DFT</h3><p>The inverse transform is given by<br>\[x_{n} &#x3D; \frac{1}{N}\sum_{k&#x3D;0}^{N-1} X_{k} \cdot e^{\frac{i2\pi}{N}kn}\]</p>
-<h3 id="the-unitary-DFT"><a href="#the-unitary-DFT" class="headerlink" title="the unitary DFT"></a>the unitary DFT</h3><p>Another way of looking at the DFT is to note that the DFT can be expressed as the DFT matrix, a Vandermonde matrix, introduced by Sylvester in 1867.<br>\[<br>    \boldsymbol{F} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]<br>where \( \omega_{N} &#x3D; e^{-\frac{i2\pi}{N}}\) is a primitive Nth root of unity. (any complex number that yields 1 when raised to some positive integer power n)</p>
-<p>\[  \tag{1.1} X &#x3D; F \cdot x^{T}\]</p>
-<h2 id="Fast-Fourier-Transform-FFT"><a href="#Fast-Fourier-Transform-FFT" class="headerlink" title="Fast Fourier Transform (FFT)"></a>Fast Fourier Transform (FFT)</h2><p>FFT is an algorithm to compute DFT ,E.q(1.1). The original DFT contains \(N^2\) multiplications. However, FFT reduce it to \(N\cdot log(N)\)</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/12/math/fourier-series/" data-id="clokyy8dv0021qwsjhghcad7b" data-title="fourier_series" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-tools/markdown_and_latex" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/01/tools/markdown_and_latex/" class="article-date">
-  <time class="dt-published" datetime="2023-10-01T01:22:35.000Z" itemprop="datePublished">2023-10-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/01/tools/markdown_and_latex/">markdown &amp; latex</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="markdown-by-example"><a href="#markdown-by-example" class="headerlink" title="markdown by example"></a>markdown by example</h2><p><em>italic</em><br><span style="color:red">color</span></p>
-<h2 id="latex-by-example"><a href="#latex-by-example" class="headerlink" title="latex by example"></a>latex by example</h2><h2 id="symbol"><a href="#symbol" class="headerlink" title="symbol"></a>symbol</h2><p>\( \mu \)<br>\( \omega \)<br>\( \sigma \)<br>\( \epsilon \)<br>\( \zeta \)<br>\( \eta \)<br>\( \theta \)<br>\( \kappa \)<br>\( \nu \)<br>\( \omicron \)<br>\( \rho \)<br>\( \delta \)<br>\( \tau \)<br>\( \upsilon \)<br>\( \phi \)<br>\( \chi \)<br>\( \psi \)</p>
-<h2 id="font-amp-effects"><a href="#font-amp-effects" class="headerlink" title="font &amp; effects"></a>font &amp; effects</h2><p>\( \mathbb{G_{1}}\)<br>\( \boldsymbol{F}\)<br>\( \hat{h} \)</p>
-<h2 id="equation"><a href="#equation" class="headerlink" title="equation"></a>equation</h2><p>\[  \tag{1.1} X &#x3D; F \cdot x^{T}\]</p>
-<h2 id="blob"><a href="#blob" class="headerlink" title="blob"></a>blob</h2><p>\[<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/01/tools/markdown_and_latex/" data-id="clokyy8dv001zqwsj9hdfghdd" data-title="markdown &amp; latex" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tool/" rel="tag">tool</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/zkp-demystify-zokrates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" class="article-date">
-  <time class="dt-published" datetime="2023-07-14T06:29:26.000Z" itemprop="datePublished">2023-07-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><h3 id="source-file"><a href="#source-file" class="headerlink" title="source file"></a>source file</h3><p>an example, <code>square.zok</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def main(private field a, field b) &#123;</span><br><span class="line">    assert(a * a == b);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>The keyword private signals that we do not want to reveal this input, but still prove that we know its value.</li>
-</ul>
-<h3 id="compile"><a href="#compile" class="headerlink" title="compile"></a>compile</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates compile -i root.zok</span><br></pre></td></tr></table></figure>
-<p>after compile, it generates below files</p>
-<ul>
-<li>out</li>
-<li>out.r1cs</li>
-<li>abi.json</li>
-</ul>
-<h3 id="setup"><a href="#setup" class="headerlink" title="setup"></a>setup</h3><p>Performs a trusted setup for a given constraint system</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates setup</span><br></pre></td></tr></table></figure>
-<p>options </p>
-<ul>
-<li>-i, –input <FILE>                       Path of the binary [default: out]<br>it generates below two files</li>
-<li>proving.key</li>
-<li>verification.key</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" data-id="clokyy8e00039qwsjfxurcxan" data-title="zkp demystify zokrates" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/zkp-groth16-paper-review" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/" class="article-date">
-  <time class="dt-published" datetime="2023-07-07T06:29:26.000Z" itemprop="datePublished">2023-07-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/">zkp groth16 paper review</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-<h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Goldwasser, Micali and Rackoff [GMR89] introduced zero-knowledge proofs that enable a prover to convince a verifier that a statement is true without revealing anything else. They have three core properties:</p>
-<ul>
-<li><strong>Completeness</strong>: Given a statement and a witness, the prover can convince the verifier. </li>
-<li><strong>Soundness</strong>: A malicious prover cannot convince the verifier of a false statement. </li>
-<li><strong>Zero-knowledge</strong>: The proof does not reveal anything but the truth of the statement</li>
-</ul>
-<h3 id="1-1-Contribution"><a href="#1-1-Contribution" class="headerlink" title="1.1. Contribution"></a>1.1. Contribution</h3><p><strong>Succinct NIZK</strong> We construct a NIZK argument for arithmetic circuit satisfiability where a proof consists of only 3 group elements. In addition to being small, the proof is also easy to verify. The verifier just needs to compute a number of exponentiations proportional to the statement size and check a single pairing product equation, which only has 3 pairings.</p>
-<h2 id="2-Preliminaries"><a href="#2-Preliminaries" class="headerlink" title="2. Preliminaries"></a>2. Preliminaries</h2><h3 id="2-1-Bilinear-Groups"><a href="#2-1-Bilinear-Groups" class="headerlink" title="2.1 Bilinear Groups"></a>2.1 Bilinear Groups</h3><p>We will work over bilinear groups \((p, \mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} , e, g, h)\) with the following properties:</p>
-<ul>
-<li>\(\mathbb{G_{1}}, \mathbb{G_{2}}, \mathbb{G_{T}} \)are groups of prime order \(p\)</li>
-<li>The pairing \( e:\mathbb{G_{1}} \times \mathbb{G_{2}} \rightarrow \mathbb{G_{T}}\) is a bilinear map</li>
-<li>\(g\) is a generator for \(\mathbb{G_{1}}\), \(h\) is a generator for \(\mathbb{G_{2}}\), and \(e(g,h)\) is a generator for \(\mathbb{G_{T}}\)</li>
-</ul>
-<p>There are many ways to set up bilinear groups both as symmetric bilinear groups where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{1}}\) and as asymmetric bilinear groups where \(\mathbb{G_{1}} \neq \mathbb{G_{1}}\). Galbraith, Paterson and Smart [GPS08] classify bilinear groups as <strong>Type I</strong> where \(\mathbb{G_{1}} &#x3D; \mathbb{G_{2}}\), <strong>Type II</strong> where there is an efficiently computable non-trivial homomorphism \(\Phi : \mathbb{G_{2}} \rightarrow \mathbb{G_{1}}\), and <strong>Type III</strong> where no such efficiently computable homomorphism exists in either direction between \(\mathbb{G_{1}}\) and \(\mathbb{G_{2}}\). Type III bilinear groups are the most efficient type of bilinear groups and hence the most relevant for practical applications.<br>As a notation for group elements, we write \( \lbrack a \rbrack_{1} \) for \( g^a\), \( \lbrack b \rbrack_{2}\) for \( h^b\) and \( \lbrack c \rbrack_{T}\) for \(e(g,h)^{c} \).  A vector of group elements will be represented as \( \lbrack \mathbf{a} \rbrack_{i} \).  Given two vectors of \(n\) group elements \( \lbrack \mathbf{a} \rbrack_{1} \) and \( \lbrack \mathbf{b} \rbrack_{2} \), we define their dot product as \( \lbrack \mathbf{a} \rbrack_{1} \cdot \lbrack \mathbf{b} \rbrack_{2}  &#x3D; \lbrack \mathbf{a} \cdot  \mathbf{b} \rbrack_{T} \), which can be efficiently computed using the pairing \(e\).</p>
-<h3 id="2-2-Non-interactive-zero-knowledge-arguments-of-knowledge"><a href="#2-2-Non-interactive-zero-knowledge-arguments-of-knowledge" class="headerlink" title="2.2 Non-interactive zero-knowledge arguments of knowledge"></a>2.2 Non-interactive zero-knowledge arguments of knowledge</h3><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li>[1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/07/cryptography/zkp/zkp-groth16-paper-review/" data-id="clokyy8e1003cqwsjc3p416e4" data-title="zkp groth16 paper review" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -706,7 +779,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 16.67px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 14.29px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15.71px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 12.86px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.14px;">zkp</a>
     </div>
   </div>
 
@@ -728,23 +801,23 @@
       <ul>
         
           <li>
+            <a href="/2023/11/18/math/goldilocks-field/">goldilocks field</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/">inline_ptx_assembly_in_cuda</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/15/cpp/cpp-notes/">cpp_notes</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/06/zkp/plonky2/">plonky2</a>
+          </li>
+        
+          <li>
             <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
-          </li>
-        
-          <li>
-            <a href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
           </li>
         
       </ul>
