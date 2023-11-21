@@ -4,21 +4,24 @@
   <meta charset="utf-8">
   
   
-  <title>understanding_plonk | cliff&#39;s personal blog</title>
+  <title>understanding plonk | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="introductionPLONK, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateab">
 <meta property="og:type" content="article">
-<meta property="og:title" content="understanding_plonk">
+<meta property="og:title" content="understanding plonk">
 <meta property="og:url" content="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
 <meta property="og:description" content="introductionPLONK, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateab">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/zero_test.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/plonk_circuit_to_trace.png">
 <meta property="article:published_time" content="2023-11-01T09:19:04.000Z">
-<meta property="article:modified_time" content="2023-11-05T04:23:33.767Z">
+<meta property="article:modified_time" content="2023-11-11T02:17:40.225Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta property="article:tag" content="zkp">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/zkp/plonk/zero_test.png">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
   
@@ -89,7 +92,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      understanding_plonk
+      understanding plonk
     </h1>
   
 
@@ -102,15 +105,28 @@
   type="text/javascript">
 </script>
 
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
+<h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
+<h1 id="preliminary"><a href="#preliminary" class="headerlink" title="preliminary"></a>preliminary</h1><h2 id="observation-1"><a href="#observation-1" class="headerlink" title="observation 1"></a>observation 1</h2><p>a key fact: for non-zero \( f \in \mathbb{F_p}^{\le d}[X]\) <br><br>for \( r  \leftarrow \mathbb{F_p}: Pr[f(r) &#x3D; 0] \le d&#x2F;p\)<br>understanding: polynomial \(f\) contains at most \(d\) roots of zeros. <br><br>suppose \( p \approx 2^{256}\) and  \( d \approx 2^{40}\) then \(d&#x2F;p\) is negligible. <br><br>Therefore, for \( r  \leftarrow \mathbb{F_p}\) if \(f(r) &#x3D; 0\) then \(f\) is identically zero w.h.p (with high probability)</p>
+<p>&#x3D;&gt; a simple zero test for a committed polynomial<br><strong>Note</strong> SZDL lemma: this also holds for multivariate polynomials (where d is total degree of f) </p>
+<h2 id="observation-2"><a href="#observation-2" class="headerlink" title="observation 2"></a>observation 2</h2><p>let \(f,g \in \mathbb{F_p}^{\le d}[X]\).<br>for \( r  \leftarrow \mathbb{F_p}\), if \(f(r) &#x3D; g(r)\), then \(f &#x3D; g\) w.h.p <br><br>\(f(r)-g(r)&#x3D;0\) &#x3D;&gt; \(f-g&#x3D;0\) w.h.p <br></p>
+<p>&#x3D;&gt; a simple equality test for two committed polynomials</p>
+<h1 id="useful-proof-gadgets"><a href="#useful-proof-gadgets" class="headerlink" title="useful proof gadgets"></a>useful proof gadgets</h1><h2 id="zero-test"><a href="#zero-test" class="headerlink" title="zero test"></a>zero test</h2><p>let \( \omega \in \mathbb{F_p} \) be a primitive k-th root of unity \(( \omega ^{k} &#x3D; 1)\)<br>set \( H:&#x3D; \{1,\omega,\omega^2,\omega^3,…,\omega^{k-1}\}  \subseteq \mathbb{F_p} \)<br>let \( f \in \mathbb{F_p}^{\le d}[X]\) and \( b, c \in \mathbb{F_p}\)  \((d \ge k)\)</p>
+<p>task: prove that \(f\) is identically zero on \(H\)<br><img src="/images/zkp/plonk/zero_test.png" alt="zero test"></p>
+<p><strong>info</strong> the box of \(f\) means the commitment of polynomial \(f\), i.e \(com_f\)</p>
+<h1 id="PLONK-a-poly-IOP-for-a-general-circuit-C-x-w"><a href="#PLONK-a-poly-IOP-for-a-general-circuit-C-x-w" class="headerlink" title="PLONK: a poly-IOP for a general circuit C(x,w)"></a>PLONK: a poly-IOP for a general circuit C(x,w)</h1><h2 id="step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2"><a href="#step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2" class="headerlink" title="step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)"></a>step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)</h2><p><img src="/images/zkp/plonk/plonk_circuit_to_trace.png" alt="circuit to trace"></p>
+<p>and encode the trace as polynomial</p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://hackmd.io/@learn-zkp/note-plonk-family">https://hackmd.io/@learn-zkp/note-plonk-family</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=A0oZVEXav24">ZKP MOOC Lecture 5: The Plonk SNARK</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs251.stanford.edu/lectures/lecture15.pdf">CS251.stanford lecture</a></li>
 </ul>
+<p>\( \Omega&#x3D;{1,\omega,\omega^2,\omega^3,…,\omega^{d-1}} \)<br>\(d&#x3D;3*|Gate|+|PublicInput|+|Witness|\)<br>\(Selector*(Left+Right-Output)+(1-Selector)<em>(Left</em>Right-Output)&#x3D;0\)</p>
+<p>LeftInput&#x3D;f(\omega^{3l})<br>  RightInput&#x3D;f(\omega^{3l+1})<br>  Output&#x3D;f(\omega^{3l+2})<br>  x_1&#x3D;f(\omega^9)</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clokyy0z40012pjsj07dt7s72" data-title="understanding_plonk" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clokyy8du001wqwsj56sv3t4w" data-title="understanding plonk" class="article-share-link">Share</a>
       
       
       
@@ -164,7 +180,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.33px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.67px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 16.67px;">zkp</a>
+      <a href="/tags/blockchain/" style="font-size: 14.29px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15.71px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 12.86px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.14px;">zkp</a>
     </div>
   </div>
 
@@ -186,23 +202,23 @@
       <ul>
         
           <li>
+            <a href="/2023/11/18/math/goldilocks-field/">goldilocks field</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/">inline_ptx_assembly_in_cuda</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/15/cpp/cpp-notes/">cpp_notes</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/06/zkp/plonky2/">plonky2</a>
+          </li>
+        
+          <li>
             <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/01/zkp/understanding-plonk/">understanding_plonk</a>
-          </li>
-        
-          <li>
-            <a href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
           </li>
         
       </ul>

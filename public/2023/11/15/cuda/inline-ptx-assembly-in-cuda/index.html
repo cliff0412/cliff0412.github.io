@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>inline_ptx_assembly_in_cuda | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="introductionPTX, a low-level parallel thread execution virtual machine and instruction set architecture (ISA). PTX exposes the GPU as a data-parallel computing device.The PTX Instruction Set Architect">
+<meta property="og:type" content="article">
+<meta property="og:title" content="inline_ptx_assembly_in_cuda">
+<meta property="og:url" content="https://cliff0412.github.io/2023/11/15/cuda/inline-ptx-assembly-in-cuda/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="introductionPTX, a low-level parallel thread execution virtual machine and instruction set architecture (ISA). PTX exposes the GPU as a data-parallel computing device.The PTX Instruction Set Architect">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-11-15T06:47:28.000Z">
+<meta property="article:modified_time" content="2023-11-15T07:35:53.848Z">
+<meta property="article:author" content="cliff">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cuda/inline-ptx-assembly-in-cuda" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" class="article-date">
+  <time class="dt-published" datetime="2023-11-15T06:47:28.000Z" itemprop="datePublished">2023-11-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      inline_ptx_assembly_in_cuda
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p>PTX, a low-level parallel thread execution virtual machine and instruction set architecture (ISA). PTX exposes the GPU as a data-parallel computing device.<br>The PTX Instruction Set Architecture (ISA) is lower-level compared to CUDA C++, but the programming model is entirely the same, with only some terminology differences. For example: CTA (Cooperative Thread Array): Equivalent to the Block in the CUDA thread model.</p>
+<h1 id="assembler-statements"><a href="#assembler-statements" class="headerlink" title="assembler statements"></a>assembler statements</h1><h2 id="parameters"><a href="#parameters" class="headerlink" title="parameters"></a>parameters</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;template-string&quot;</span> : <span class="string">&quot;constraint&quot;</span>(output) : <span class="string">&quot;constraint&quot;</span>(input));</span><br></pre></td></tr></table></figure>
+<p>an example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(j), <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>Each <code>%n</code> in the template string is an index into the following list of operands, in text order. So <code>%0</code> refers to the first operand, <code>%1</code> to the second operand, and so on. Since the output operands are always listed ahead of the input operands, they are assigned the smallest indices.<br>Note that the numbered references in the string can be in arbitrary order. The following is equivalent to the above example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %2, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k), <span class="string">&quot;r&quot;</span>(j));</span><br></pre></td></tr></table></figure>
+<p>You can also repeat a reference, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>If there is no input operand, you can drop the final colon, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 %0, 2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+
+<p>If there is no output operand, the colon separators are adjacent, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 r1, %0;&quot;</span> :: <span class="string">&quot;r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+<p>the “r” constraint refers to a 32bit integer register. The “&#x3D;” modifier in “&#x3D;r” specifies that the register is written to.  There is also available a “+” modifier that specifies the register is both read and written</p>
+<p>Multiple instructions can be combined into a single asm() statement;<br>am example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__device__ <span class="type">int</span> <span class="title">cube</span> <span class="params">(<span class="type">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> y;</span><br><span class="line">  <span class="built_in">asm</span>(<span class="string">&quot;.reg .u32 t1;\n\t&quot;</span>              <span class="comment">// temp reg t1</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 t1, %1, %1;\n\t&quot;</span>    <span class="comment">// t1 = x * x</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 %0, t1, %1;&quot;</span>        <span class="comment">// y = t1 * x</span></span><br><span class="line">      : <span class="string">&quot;=r&quot;</span>(y) : <span class="string">&quot;r&quot;</span> (x));</span><br><span class="line">  <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="constraints"><a href="#constraints" class="headerlink" title="constraints"></a>constraints</h2><p>There is a separate constraint letter for each PTX register type:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;h&quot;</span> = .u16 reg</span><br><span class="line"><span class="string">&quot;r&quot;</span> = .u32 reg</span><br><span class="line"><span class="string">&quot;l&quot;</span> = .u64 reg</span><br><span class="line"><span class="string">&quot;f&quot;</span> = .f32 reg</span><br><span class="line"><span class="string">&quot;d&quot;</span> = .f64 reg</span><br></pre></td></tr></table></figure>
+<p>The constraint “n” may be used for immediate integer operands with a known value. Example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.u32 %0, %0, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(x) : <span class="string">&quot;n&quot;</span>(<span class="number">42</span>));</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="State-Space-Type-Identifier"><a href="#State-Space-Type-Identifier" class="headerlink" title="State Space + Type + Identifier"></a>State Space + Type + Identifier</h1><h2 id="state-spaces"><a href="#state-spaces" class="headerlink" title="state spaces"></a>state spaces</h2><p>A state space is a storage area with particular characteristics. All variables reside in some state space. </p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>.reg</td>
+<td>Registers, fast.</td>
+</tr>
+<tr>
+<td>.sreg</td>
+<td>Special registers. Read-only; pre-defined; platform-specific.</td>
+</tr>
+<tr>
+<td>.const</td>
+<td>Shared, read-only memory.</td>
+</tr>
+<tr>
+<td>.global</td>
+<td>Global memory, shared by all threads.</td>
+</tr>
+<tr>
+<td>.local</td>
+<td>Local memory, private to each thread.</td>
+</tr>
+<tr>
+<td>.param</td>
+<td>Kernel parameters, defined per-grid; or Function or local parameters, defined per-thread.</td>
+</tr>
+<tr>
+<td>.shared</td>
+<td>Addressable memory, defined per CTA, accessible to all threads in the cluster throughout the lifetime of the CTA that defines it.</td>
+</tr>
+</tbody></table>
+<h2 id="types"><a href="#types" class="headerlink" title="types"></a>types</h2><h3 id="fundamental-types"><a href="#fundamental-types" class="headerlink" title="fundamental types"></a>fundamental types</h3><p>In PTX, the fundamental types reflect the native data types supported by the target architectures.</p>
+<table>
+<thead>
+<tr>
+<th>Basic Type</th>
+<th>Fundamental Type Specifiers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Signed integer</td>
+<td>.s8, .s16, .s32, .s64</td>
+</tr>
+<tr>
+<td>Unsigned integer</td>
+<td>.u8, .u16, .u32, .u64</td>
+</tr>
+<tr>
+<td>Floating-point</td>
+<td>.f16, .f16x2, .f32, .f64</td>
+</tr>
+<tr>
+<td>Bits (untyped)</td>
+<td>.b8, .b16, .b32, .b64, .b128</td>
+</tr>
+<tr>
+<td>Predicate</td>
+<td>.pred</td>
+</tr>
+</tbody></table>
+<h2 id="variables"><a href="#variables" class="headerlink" title="variables"></a>variables</h2><p>In PTX, a variable declaration describes both the variable’s type and its state space. In addition to fundamental types, PTX supports types for simple aggregate objects such as vectors and arrays.<br><strong>examples</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.global .v4 .f32 V;   <span class="comment">// a length-4 vector of floats</span></span><br><span class="line">.shared .v2 .u16 uv;  <span class="comment">// a length-2 vector of unsigned ints</span></span><br><span class="line">.global .v4 .b8  v;   <span class="comment">// a length-4 vector of bytes</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/inline-ptx-assembly/index.html">nvidia docs inlline ptx assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=features-inline-assembly-statements">IBM Open XL C&#x2F;C++ Inline Assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#">parallel thread execution ISA guide</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" data-id="clp3h29tl0000p97ug63eajx3" data-title="inline_ptx_assembly_in_cuda" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/11/18/math/goldilocks-field/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          goldilocks field
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/11/15/cpp/cpp-notes/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cpp_notes</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 14.29px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15.71px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 12.86px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.14px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/11/18/math/goldilocks-field/">goldilocks field</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/">inline_ptx_assembly_in_cuda</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/15/cpp/cpp-notes/">cpp_notes</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/06/zkp/plonky2/">plonky2</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/03/zkp/stark-101/">stark 101</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
