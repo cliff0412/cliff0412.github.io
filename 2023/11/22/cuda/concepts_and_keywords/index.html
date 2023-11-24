@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>key concepts in cuda | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="key concepts Warps: In CUDA, a warp is a fundamental execution unit in the GPU. It represents a group of threads that are executed together in a SIMD (Single Instruction, Multiple Data) fashion on a s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="key concepts in cuda">
+<meta property="og:url" content="https://cliff0412.github.io/2023/11/22/cuda/concepts_and_keywords/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="key concepts Warps: In CUDA, a warp is a fundamental execution unit in the GPU. It represents a group of threads that are executed together in a SIMD (Single Instruction, Multiple Data) fashion on a s">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cliff0412.github.io/images/cuda/cuda_stream_example.png">
+<meta property="article:published_time" content="2023-11-22T06:47:28.000Z">
+<meta property="article:modified_time" content="2023-11-23T07:30:03.676Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cuda">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/cuda/cuda_stream_example.png">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cuda/concepts_and_keywords" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/22/cuda/concepts_and_keywords/" class="article-date">
+  <time class="dt-published" datetime="2023-11-22T06:47:28.000Z" itemprop="datePublished">2023-11-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      key concepts in cuda
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="key-concepts"><a href="#key-concepts" class="headerlink" title="key concepts"></a>key concepts</h2><ul>
+<li><strong>Warps</strong>: In CUDA, a warp is a fundamental execution unit in the GPU. It represents a group of threads that are executed together in a SIMD (Single Instruction, Multiple Data) fashion on a single GPU core. In CUDA, each group of 32 consecutive threads is called a warp. A Warp is the primary unit of execution in an SM. Once a thread block is allocated to an SM, it will be further divided into a set of warps for execution.</li>
+<li><strong>Stream Multiprocessor</strong> (SM)<br>The CUDA architecture is built around a scalable array of multithreaded Streaming Multiprocessors (SMs). When a CUDA program on the host CPU invokes a kernel grid, the blocks of the grid are enumerated and distributed to multiprocessors with available execution capacity. The threads of a thread block execute concurrently on one multiprocessor, and multiple thread blocks can execute concurrently on one multiprocessor. As thread blocks terminate, new blocks are launched on the vacated multiprocessors<br>Each SM contains 8 CUDA cores, and at any one time they’re executing a single warp of 32 threads - so it takes 4 clock cycles to issue a single instruction for the whole warp. You can assume that threads in any given warp execute in lock-step, but to synchronise across warps, you need to use <code>__syncthreads()</code></li>
+</ul>
+<h2 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h2><ul>
+<li>shared_memory: <a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/">https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/</a></li>
+<li><a target="_blank" rel="noopener" href="https://leimao.github.io/blog/Page-Locked-Host-Memory-Data-Transfer/">Page-Locked Host Memory</a></li>
+</ul>
+<h2 id="stream"><a href="#stream" class="headerlink" title="stream"></a>stream</h2><p>A sequence of operations that execute in issue-order on the GPU</p>
+<ul>
+<li>CUDA operations in different streams may run concurrently</li>
+<li>CUDA operations from different streams may be interleaved<br><img src="/images/cuda/cuda_stream_example.png" alt="cuda stream example"></li>
+</ul>
+<h2 id="event"><a href="#event" class="headerlink" title="event"></a>event</h2><p>events are synchronization mechanisms used to measure and manage time, particularly for timing purposes and performance profiling. </p>
+<ul>
+<li>event creation<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cuda_runtime.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">cudaEvent_t startEvent, stopEvent;</span><br><span class="line"><span class="built_in">cudaEventCreate</span>(&amp;startEvent);</span><br><span class="line"><span class="built_in">cudaEventCreate</span>(&amp;stopEvent);</span><br></pre></td></tr></table></figure></li>
+<li>record event<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cudaEventRecord</span>(startEvent, <span class="number">0</span>);</span><br><span class="line"><span class="comment">// ... GPU code to be timed ...</span></span><br><span class="line"><span class="built_in">cudaEventRecord</span>(stopEvent, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+Here, <code>cudaEventRecord</code> records the current time in the events startEvent and stopEvent. The second argument, <code>0</code>, specifies the stream in which to record the event (0 means the default stream).</li>
+<li>synchonize events<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cudaEventSynchronize</span>(stopEvent);</span><br></pre></td></tr></table></figure>
+This function call makes the CPU wait until the GPU has completed all tasks associated with the stopEvent.</li>
+<li>Calculate Elapsed Time<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float</span> milliseconds = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">cudaEventElapsedTime</span>(&amp;milliseconds, startEvent, stopEvent);</span><br></pre></td></tr></table></figure></li>
+<li>destroy event<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cudaEventDestroy</span>(startEvent);</span><br><span class="line"><span class="built_in">cudaEventDestroy</span>(stopEvent);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="keywords"><a href="#keywords" class="headerlink" title="keywords"></a>keywords</h2><ul>
+<li><p><strong>global</strong> functions that are executed on the GPU, called from CPU</p>
+</li>
+<li><p><strong>device</strong> functions that are executed on the GPU, called within GPU</p>
+</li>
+<li><p><strong>shared</strong> </p>
+</li>
+<li><p><strong>align</strong> is a compiler directive that can be used to specify alignment requirements for variables in device code.</p>
+</li>
+<li><p><code>__launch_bounds__</code><br>the <strong>launch_bounds</strong> attribute is used to specify launch bounds for a kernel function. The launch bounds control the number of threads per block and the maximum number of blocks per multiprocessor for a specific kernel.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__launch_bounds__(maxThreadsPerBlock, minBlocksPerMultiprocessor)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="macros"><a href="#macros" class="headerlink" title="macros"></a>macros</h2><ul>
+<li><strong>CUDACC</strong> is a predefined macro in CUDA C&#x2F;C++ that is used to determine whether the code is being compiled by the NVIDIA CUDA C&#x2F;C++ compiler (nvcc). </li>
+<li><strong>NVCC</strong>  is a predefined macro that is automatically defined by the NVIDIA CUDA compiler (nvcc). It allows you to conditionally compile code based on whether the code is being processed by the CUDA compiler or a regular C++ compiler</li>
+</ul>
+<h2 id="usage"><a href="#usage" class="headerlink" title="usage"></a>usage</h2><p>the triple-chevron notation <code>&lt;&lt;&lt;...&gt;&gt;&gt;</code> is used to specify the execution configuration of a CUDA kernel launch. </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kernel&lt;&lt;&lt;gridDim, blockDim, sharedMem, stream&gt;&gt;&gt;(...);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><code>gridDim</code>: Specifies the dimensions of the grid (number of blocks). It can be a 1D, 2D, or 3D configuration, specified as (gridDimX, gridDimY, gridDimZ).</p>
+</li>
+<li><p><code>blockDim</code>: Specifies the dimensions of each block (number of threads per block). It can also be a 1D, 2D, or 3D configuration, specified as (blockDimX, blockDimY, blockDimZ).</p>
+</li>
+<li><p><code>sharedMem</code>: Optional parameter specifying the dynamic shared memory per block in bytes. If not specified, it defaults to 0.</p>
+</li>
+<li><p><code>stream</code>: Optional parameter specifying the CUDA stream in which the kernel should be executed. If not specified, it defaults to the default stream (0).</p>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/22/cuda/concepts_and_keywords/" data-id="clp95py9p0000e37u3ivq1as7" data-title="key concepts in cuda" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/11/22/cuda/cuda_api_and_tools/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cuda standard api &amp; tools</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 18.75px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/11/22/cuda/concepts_and_keywords/">key concepts in cuda</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/22/cuda/cuda_api_and_tools/">cuda standard api &amp; tools</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/22/arithmatic/tricks/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/21/cpp/generics_and_macros/">cpp generics</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
