@@ -1,7 +1,7 @@
 ---
-title: inline_ptx_assembly_in_cuda
+title: inline ptx assembly in cuda
 date: 2023-11-15 14:47:28
-tags:
+tags: [cuda]
 ---
 # introduction
 PTX, a low-level parallel thread execution virtual machine and instruction set architecture (ISA). PTX exposes the GPU as a data-parallel computing device.

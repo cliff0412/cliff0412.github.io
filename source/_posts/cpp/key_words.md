@@ -25,3 +25,6 @@ int main() {
     return 0;
 }
 ```
+
+- `friend`
+In C++, the friend keyword is used to grant non-member functions or other classes access to the private and protected members of a class. When a function or class is declared as a friend of another class, it is allowed to access private and protected members of that class as if it were a member of that class.

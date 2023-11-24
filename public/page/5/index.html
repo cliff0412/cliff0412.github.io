@@ -71,6 +71,325 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cryptography/paillier-encryption" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/02/23/cryptography/paillier-encryption/" class="article-date">
+  <time class="dt-published" datetime="2023-02-23T13:25:41.000Z" itemprop="datePublished">2023-02-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/02/23/cryptography/paillier-encryption/">paillier encryption</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="fundamentals"><a href="#fundamentals" class="headerlink" title="fundamentals"></a>fundamentals</h2><ol>
+<li>fundamental theorem of arighmetic<br>the fundamental theorem of arithmetic, also called the unique factorization theorem and prime factorization theorem, states that every integer greater than 1 can be represented uniquely as a product of prime numbers, up to the order of the factors <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_arithmetic">wiki</a></li>
+<li>Euler’s totient function<br>In number theory, Euler’s totient function counts the positive integers up to a given integer n that are relatively prime to n. It is written using the Greek letter phi as \( \phi (n) \), and may also be called Euler’s phi function. In other words, it is the number of integers k in the range 1 ≤ k ≤ n for which the greatest common divisor gcd(n, k) is equal to 1. The integers k of this form are sometimes referred to as totatives of n. the collection of k is denoted by \( Z_{n}^{\ast } \), and \[ \phi(n) &#x3D; |Z_n^{\ast }| \]</li>
+<li>if p is prime, then \( Z_p^{\ast } &#x3D; Z_p \), \( \phi(p) &#x3D; p-1 \)</li>
+<li>if p is prime, for any integer r, then \( \begin{align} \tag{0.1} \phi(p^{r}) &#x3D;p^{r-1}\phi(p)&#x3D;p^{r-1}(p-1)\end{align} \)</li>
+<li>Euler’s totient function is a multiplicative function, meaning that if two numbers m and n are relatively prime, then \(\phi(mn) &#x3D; \phi(m)\phi(n)\)</li>
+<li>Euler’s product formula, it states<br>\[ \phi(n) &#x3D; n  \prod_{p|n}^{}(1-\frac{1}{p}) \]<br>where the product is over the distinct prime numbers dividing n.</li>
+<li>Euler’s theorem<br>if \(a\) and \(n\) are coprime positive integers, and \( \phi(n)\) is Euler’s totient function, then \(a\) raised to the power  \(\phi(n)\) is congruent to 1 modulo n; that is<br>\[a^{\phi(n)} \equiv 1 \bmod n\]</li>
+<li>according to 7, we have \( a \cdot a^{\phi(n)-1} \equiv 1 \bmod n \). then<br>\[ a^{-1} &#x3D; a^{\phi(n)-1} \]</li>
+<li>Fermat’s little theorem<br>Fermat’s little theorem states that if p is a prime number, then for any integer a, the number<br>\(a^{p}-a \) is an integer multiple of p. In the notation of modular arithmetic, this is expressed as<br>\[ a^{p} \equiv a \bmod p\]</li>
+<li>Binomial theorem<br>it states<br>\[ y &#x3D; (1+n)^{x} &#x3D; \sum_{k&#x3D;0}^{x}\tbinom{x}{k}n^{k} &#x3D; 1 + nx + \tbinom{x}{2}n^2 + …\]<br>observe that, the higher degree could be divided by \(n^2\). we have<br>\[ \begin{align} \tag{0.2} (1+n)^{x} \equiv 1 + nx \bmod n^2 \end{align} \]<br>therefore, \( y - 1 \equiv nx \bmod n^2 \). then we have<br>\[ x \equiv \frac{y-1}{n} \bmod n \].<br>In paillier, later we define \( \begin{align} \tag{0.3} L(y) &#x3D; \frac{y-1}{n} \end{align} \)<br>therefore<br>\[ L(y \bmod n^2) \equiv x \bmod n \]</li>
+</ol>
+<h2 id="Paillier"><a href="#Paillier" class="headerlink" title="Paillier"></a>Paillier</h2><ol>
+<li><p>key generation<br><code>KeyGen() -&gt; (pk, sk)</code><br>randomly select two big prime numbers \(p, q\). it shoud satisfy \(gcd(pq, (p-1)(q-1)) &#x3D;1 \), \(p\) and \(q\) should have similar bit length. let \( n &#x3D; pq \), \(\lambda &#x3D; lcm(p-1, q-1)\). randomly sample \( g \in Z_{n^2}^{\ast}\). to simplify, let \( g &#x3D; n+1\). we have<br>\[ pk&#x3D;(n,g) \]<br>\[ sk &#x3D; (\lambda)\]</p>
+</li>
+<li><p>encryption<br><code>Enc(pk, m) -&gt; c</code><br>randomly sample \( r \in Z_{n}^{\ast}\), then also have \( r \in Z_{n^2}^{\ast}\), cypher is calculated<br>\[ \begin{align} \tag{1.1} c &#x3D; g^mr^n  \bmod n^2 \end{align} \]</p>
+</li>
+<li><p>Decryption<br><code>Dec(sk, c) -&gt; m</code><br>Let \(L(x) &#x3D; \frac{x-1}{n} \), we have message<br>\[ \begin{align} \tag{1.2} m &#x3D; \frac{L(c^{\lambda} \bmod n^2)}{L(g^{\lambda} \bmod n^2)} \bmod n \end{align}\]</p>
+</li>
+<li><p>proof of correctness<br>based on Eq(1), we have \[ \begin{align} \tag{1.3} c^{\lambda} \bmod n^2 &#x3D; g^{m\lambda}r^{n\lambda} \bmod n^2 \end{align}\]<br>where \( r^{n\lambda} \bmod n^2 \equiv 1 \bmod n^2\), which is proved by Carmichael theorem later on. then Eq(3) becomes<br> \[ \begin{align} \tag{1.4} c^{\lambda} \bmod n^2 &#x3D; g^{m\lambda}\bmod n^2 \end{align}\]<br>since \( g &#x3D; n+1\), we have<br>\[ \begin{align} \tag{1.5} c^{\lambda} \bmod n^2 &#x3D; (1+n)^{m\lambda}\bmod n^2 \end{align}\]<br>According to Eq(0.2), we have<br>\[ \begin{align} \tag{1.6} c^{\lambda} \bmod n^2 &#x3D; 1 + nm\lambda \bmod n^2 \end{align}\]<br>\[ \begin{align} \tag{1.7} g^{\lambda} \bmod n^2 \equiv (1+n)^{\lambda} \bmod n^2 &#x3D; 1 +\lambda n \bmod n^2 \end{align}\]<br>therefore, based on definition given by Eq(0.3) we have<br>\[ \begin{align} \tag{1.8} L(c^{\lambda} \bmod n^2) &#x3D; \frac{c^{\lambda}-1}{n} \bmod n^2 \end{align} \]<br>Substitute Eq(1.6) into Eq(1.8), we have<br>\[ \begin{align} \tag{1.9} L(c^{\lambda} \bmod n^2) &#x3D; m\lambda \bmod n^2 \end{align} \]<br>Further, we have<br>\[ \begin{align} \tag{1.10} L(g^{\lambda} \bmod n^2) &#x3D; \frac{g^\lambda -1}{n} \end{align} \]<br>Sub Eq(1.7) into Eq(1.10), we have<br>\[ \begin{align} \tag{1.11} L(g^{\lambda} \bmod n^2) &#x3D; \frac{\lambda n}{n} \equiv \lambda \bmod n^2\end{align} \]<br>At last, Eq(1.2) becomes （bu sub Eq1.9 and Eq1.11)<br>\[ \begin{align}  m &#x3D; \frac{L(c^{\lambda} \bmod n^2)}{L(g^{\lambda} \bmod n^2)} \bmod n &#x3D; \frac{m \lambda}{\lambda} \equiv m \bmod n \end{align}\]<br><b>proved!!!</b></p>
+</li>
+<li><p>Carmichael theorem<br>In number theory, a branch of mathematics, the Carmichael function \(λ(n)\) of a positive integer n is the smallest positive integer m such that \(a^{m}\equiv 1{\pmod {n}}\) (similar but different from Euler’s totient function). Carmichael’s λ function, the reduced totient function, and the least universal exponent function<br><img src="/images/paillier/carmichael_thorem.png" alt="carmichael theorem"><br><img src="/images/paillier/carmichael_thorem_2.png"><br>let \( n &#x3D; pq\), where p and q are prime numbers; \( \phi(n)\) is the Euler’s totient function. Let \(\lambda(n)\) denotes carmichael function. We have \(\phi(n)&#x3D;(p-1)(q-1)\) and \( \lambda(n)&#x3D;\phi(n) &#x3D; (p-1)(q-1)\).</p>
+</li>
+</ol>
+<p>Since \( |Z_{n^2}^{\ast}| &#x3D; \phi(n^2) &#x3D; n \phi(n)\) (according to Eq(0.1)). Thereby, for any \( w \in Z_{n^2}^{\ast}\)<br>\[ \begin{align} \tag{1.12} w^{n\phi(n)} \equiv w^{n\lambda} \equiv 1 \bmod n^2 \end{align}\]</p>
+<p>\[ \begin{align} \tag{1.13} w^{\lambda} \equiv 1 \bmod n \end{align}\]<br>Eq(1.13) is just Carmichael’s function</p>
+<p>Based on Carmichael’s theorem<br>\[ \lambda(n^2) &#x3D; lcm(\lambda(q^2),\lambda(p^2)) &#x3D; lcm(\phi(q^2),\phi(p^2)) &#x3D; lcm(q(q-1), p(p-1)) &#x3D; pq(lcm(p-1, q-1)) &#x3D; n\lambda(n) \]<br>therefore, we have</p>
+<p>\[w^{\lambda(n^2)} &#x3D; w ^{n\lambda} \equiv 1 \bmod n^2\]</p>
+<ol start="6">
+<li><p>Addition homomorphic<br><img src="/images/paillier/homomorphic_addition.png" alt="homomorphic addition"></p>
+</li>
+<li><p>Multiplication homomorphic<br><img src="/images/paillier/homomorphic_mul.png" alt="homomorphic multiplication"></p>
+</li>
+</ol>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42328228/article/details/109349590">csdn post</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/02/23/cryptography/paillier-encryption/" data-id="clokyy8dp000nqwsjgbxocb3i" data-title="paillier encryption" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/two-party-ecdsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/02/07/cryptography/two-party-ecdsa/" class="article-date">
+  <time class="dt-published" datetime="2023-02-07T06:29:26.000Z" itemprop="datePublished">2023-02-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/02/07/cryptography/two-party-ecdsa/">two party ecdsa</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>this post is my reading summary of paper Yehuda Lindell 2017: Fast secure two-party ecdsa signing. the implementation could be found in tss-lib (golang), zengo’s library (rust).</p>
+<p>Unlike other schemes like RSA, Schnorr signatures and more, it is particularly hard to construct efficient threshold signature protocols for ECDSA as there is an inverse computaion of \( k \).</p>
+<p>In this paper, we consider the specific case of two parties (and thus no honest majority) and construct a protocol that is approximately two orders of magnitude faster than the previous best.</p>
+<h2 id="Comparing-ECDSA-signing-to-EC-Schnorr-signing"><a href="#Comparing-ECDSA-signing-to-EC-Schnorr-signing" class="headerlink" title="Comparing ECDSA signing to EC-Schnorr signing"></a>Comparing ECDSA signing to EC-Schnorr signing</h2><p>In both cases, the public verification key is an elliptic curve point \( Q \) and the private signing key is \( x \) such that \( Q &#x3D; x \cdot G \), where \( G \) is the generator point of an EC group of order \( q \).<br><img src="/images/two_party_ecdsa/schnorr_ecdsa_comparison.png" alt="schnorr ecdsa comparison"></p>
+<p>Observe that Schnorr signing can be easily distributed since the private key \( x \) and the value k are both used in a linear equation.  In contrast, in ECDSA signing, the equation for computing \( s \) includes \( k^{-1} \). Now, given shares \(k_1\), \(k_2\) such that \(k_1 + k_2 &#x3D; k \bmod q\) .It is very difficult to compute \(k_1^{\prime}\), \(k_2^{\prime}\) such  that \(k_1^{\prime} + k_2^{\prime} &#x3D; k^{-1} \bmod q\)</p>
+<p>two-party protocols for ECDSA signing use multiplicative sharing of \( x \) and of \( k \). That is, the parties hold \(x_1\), \(x_2\)  such that \(x_1 \cdot x_2 &#x3D; x \bmod q\), and in each signing operation they generate \(k_1\), \(k_2\) such that \(k_1 \cdot k_2 &#x3D; k \bmod q\). This enables them to easily compute \(k^{-1}\) since each party can locally compute  \(k_i^{\prime} &#x3D; k_i^{-1} \bmod q\), and then \(k_1^{\prime}\), \(k_2^{\prime}\) are multiplicative shares of \(k^{-1}\). The parties can then use additively homomorphic encryption – specifically Paillier encryption  – in order to combine their equations. For example, \(P_1\) can compute \(c_1 &#x3D; Enc_{pk}(k_1^{-1} \cdot H(m))\) and \(c_2 &#x3D; Enc_{pk}(k_1^{-1} \cdot x_1 \cdot r)\) . Then, using scar multiplication (denoted ⊙) and homomorphic addition (denoted ⊕), \( P_2 \) can compute \( (k_2^{-1} ⊙ c_1 ) ⊕ [( k_2^{-1} \cdot x_2)  ⊙ c_2 ]\), which will be an encryption of </p>
+<p><img src="/images/two_party_ecdsa/paillier_enc.png" alt="paillier encryption"></p>
+<p>However, proving that each party worked correctly is extremely difficult. For example, the first party must prove that the Paillier encryption includes \(k_1^{-1}\) when the second party only has \(R_1 &#x3D; k_1 \cdot G\). it must prove that the Paillier encryptions are to values in the expected range, and more. This can be done, but it results in a protocol that is very expensive.</p>
+<h2 id="their-results"><a href="#their-results" class="headerlink" title="their results"></a>their results</h2><p>[WIP]</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2017/552.pdf">original papger</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/02/07/cryptography/two-party-ecdsa/" data-id="clokyy8dq000pqwsjfar5aa4q" data-title="two party ecdsa" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-MPT" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/22/MPT/" class="article-date">
+  <time class="dt-published" datetime="2023-01-22T09:25:36.000Z" itemprop="datePublished">2023-01-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/22/MPT/">MPT</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="trie"><a href="#trie" class="headerlink" title="trie"></a>trie</h1><p>a trie, also called prefix tree, is a type of k-ary search tree. These keys are most often strings, with links between nodes defined not by the entire key, but by individual characters. In order to access a key, the trie is traversed depth-first, following the links between nodes, which represent each character in the key.</p>
+<p><img src="/images/trie.prefix.png" alt="prefix trie"><br>In general, the nodes of a Trie look like this:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ [Ia, Ib, … I*], value]</span><br></pre></td></tr></table></figure>
+<p>[Ia, Ib, … I*] is the index array of the node, which takes the next character in the key as the index, and each element I* points to the corresponding child node. value represents the value</p>
+<h1 id="MPT"><a href="#MPT" class="headerlink" title="MPT"></a>MPT</h1><p>Each block of Ethereum contains three MPT trees, respectively</p>
+<ul>
+<li>Transaction tree</li>
+<li>Receipt tree</li>
+<li>State tree</li>
+</ul>
+<p>In the figure below are two block headers, where state root, tx root receipt root stores the roots of the three trees, and the second block shows when the data of account 175 changes (27 -&gt; 45). Only need to store 3 nodes related to this account, and the data in the old block can still be accessed normally. (This is somewhat similar to the implementation of an immutable data structure in a functional programming language.) The detailed structure is</p>
+<p><img src="/images/mpt.state.ref.png" alt="state reference"></p>
+<ul>
+<li>use []byte as key, other than string</li>
+<li>nibble: the smallest unit of the key type (4 bit)</li>
+<li>Use hashes to refer to nodes instead of memory pointers</li>
+</ul>
+<p>there are two types of node: full nodes (fullNode) and short nodes (shortNode). Full nodes have 17 elements, while shortNode nodes have two elements. Their schematic expressions are as follows</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fullNode: [i0, i1, i2, … i15, hash]  </span><br><span class="line">shortNode： [ [k0, k1, … kn], hash ] // first element is an array</span><br></pre></td></tr></table></figure>
+<p>if the hash pointing to a value, it is a leaf node; if pointing another node, a non leaf node. shortNode contains extension and leaf node. full node is branch node.</p>
+<p><img src="/images/mpt.png" alt="mpt"></p>
+<p>Use the upper 4 bits of the first byte of the []byte value composed of nibbles as storage flag. The 0th bit stores the parity information, and the 1st bit stores the type represented by the value</p>
+<table>
+<thead>
+<tr>
+<th>hex char</th>
+<th align="center">bits</th>
+<th align="center">pointing to</th>
+<th align="center">odd&#x2F;even</th>
+<th>2nd niddle padding</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td align="center">0000</td>
+<td align="center">node</td>
+<td align="center">even</td>
+<td>no</td>
+</tr>
+<tr>
+<td>1</td>
+<td align="center">0001</td>
+<td align="center">node</td>
+<td align="center">odd</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>2</td>
+<td align="center">0010</td>
+<td align="center">value</td>
+<td align="center">even</td>
+<td>no</td>
+</tr>
+<tr>
+<td>3</td>
+<td align="center">0011</td>
+<td align="center">value</td>
+<td align="center">odd</td>
+<td>yes</td>
+</tr>
+</tbody></table>
+<p>this encoding method is only used when accessing the database. After reading into memory, the key is directly stored in []byte type</p>
+<p>In the trie module, there is a <code>Database</code> object, which you can understand as a cache layer of the underlying database. In actual use, the Trie object uses the Database as a database. However, the important function of Database is not caching, but the reference counting of node data during caching, and provides Database.Reference and Database.Dereference to reference and dereference a trie node. If the reference count of a node becomes 0, the node will be deleted from memory, so it will not be written to the real database</p>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/agiletechvn/go-ethereum-code-analysis/blob/master/trie-analysis.md">github</a></li>
+<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/01/12/ethereum-trie-part-1/">yangzhe’s blog</a></li>
+<li><a target="_blank" rel="noopener" href="http://yangzhe.me/2019/01/18/ethereum-trie-part-2/">yangzhe’s blod</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/22/MPT/" data-id="clokyy8dh0000qwsj6ebuelv1" data-title="MPT" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-blockchain.kademlia" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/15/blockchain.kademlia/" class="article-date">
+  <time class="dt-published" datetime="2023-01-15T03:00:30.000Z" itemprop="datePublished">2023-01-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/15/blockchain.kademlia/">understanding of kademlia protocol</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>Kademlia, a peer-to-peer distributed hash table(DHT). Some other DHT techniques are Chord. In the Kad network, each node has a unique 160-bit ID (ETH account address is 20 bytes, which is 160 bits) &lt;key,value&gt; pairs are stored in nodes whose ID is ‘close’ to the key for some notion of closeness. </p>
+<h1 id="system-description"><a href="#system-description" class="headerlink" title="system description"></a>system description</h1><p>Kad effectively treats nodes as leaves in a binary tree, with each nodes’s position determined by the shortest unique prefix of its ID. Figure 1 shows the position of a node with unique prefix 0011 in an example.</p>
+<p><img src="/images/kademlia.subtree.png" alt="Figure 1"><br>for any given node, the binary tree is divided into a series of successively lower subtrees that don’t contain the node.<br> The highest-level subtree is composed of the other half of the whole tree that does not contain itself; the next level of subtree is composed of the remaining half that does not contain itself; and so on, until the complete tree is split into n subtrees. As shown in the figure, the part contained by the dotted line is the subtree of node 0011.</p>
+<p>if there is at least one node knwon in each subtree (in total, at least n nodes), a  recursive routing algorithm can be used to reach any node within the binary tree. Figure 2 shows an example of node 0011 locating node 1110 by successively querying the best node it knows of to find contacts in lower and lower subtrees; finaly the lookup converges to the target node.</p>
+<p><img src="/images/kademlia.locating.png" alt="Figure 2"></p>
+<h2 id="node-distance-XOR-metric"><a href="#node-distance-XOR-metric" class="headerlink" title="node distance: XOR metric"></a>node distance: XOR metric</h2><p>Node’s id is 160 bit. Keys are also 160 bit. The Kad algorithm uses an XOR operation to calculate the distance between nodes.<br>d(x,y) &#x3D; x XOR y</p>
+<h2 id="node-state"><a href="#node-state" class="headerlink" title="node state"></a>node state</h2><p>for each 0 &lt;&#x3D; i &lt; 160, every node keeps k &lt;IP address, UDP port, node ID&gt; triples (as a list) for nodes of distance between 2^i and 2^i+1 from itself. it is called k-buckets.<br>each k-bucket is kept sorted by time last seen–least recently seen node at the head, most-recently seen at the tail.<br>for small values of i, the k-buckets will generally be empty (as no approriate nodes will exist).</p>
+<p> The K value mentioned here is a system-level constant (must be an even number). It is set by the software system using Kad (for example, the Kad network used by BT download, K is set to 8). </p>
+<h2 id="update-of-k-bucket"><a href="#update-of-k-bucket" class="headerlink" title="update of k bucket"></a>update of k bucket</h2><p>There are mainly the following ways to update the K bucket:</p>
+<ul>
+<li>Actively collect nodes: Any node can initiate a FIND_NODE (query node) request to refresh the node information in the K-bucket.</li>
+<li>Passive collection node: When receiving requests from other nodes (such as: FIND_NODE, FIND_VALUE), it will add the node ID of the other party to a certain K-bucket.</li>
+<li>Detect invalid nodes: By initiating a PING request, determine whether a node in the K-bucket is online, and then clean up which offline nodes in the K-bucket.</li>
+</ul>
+<p>The update principle is to insert the latest node into the tail of the queue, and not to remove the online nodes in the queue.</p>
+<p>According to the K-bucket update principle, nodes with a long online time are more likely to remain in the K-bucket list. Therefore, by keeping the nodes with a long online time in the K-bucket, Kad will significantly increase the number of nodes in the K-bucket. it can defend against DOS attacks to a certain extent, because only when the old node fails, Kad will update the K bucket information, which avoids flooding routing information through the addition of new nodes<br><img src="/images/kademlia.onlineprob.png" alt="probability of continuous online agains onlie duration"></p>
+<h2 id="RPC-method"><a href="#RPC-method" class="headerlink" title="RPC method"></a>RPC method</h2><p>The Kademlia protocol includes four remote RPC operations: PING, STORE, FIND_NODE, FIND_VALUE.</p>
+<ul>
+<li>PING probes a node to see if it is online.</li>
+<li>STORE instructs a node to store a &lt;key,value&gt; pair for later retrieval.</li>
+<li>FIND_NODE takes a 160bit ID as an argument. The receiver of this operation returns the (IP address, UDP port, Node ID) information of K nodes that it knows are closer to the target ID. The information of these nodes can be obtained from a single K-bucket, or from multiple K-buckets. In either case, the receiver will return the information of K nodes to the operation initiator. </li>
+<li>The FIND_VALUE operation is similar to the FIND_NODE operation, with one exception. if the RPC receipients has received a STORE RPC for the key, it just returns the stored value.</li>
+</ul>
+<h2 id="node-lookup"><a href="#node-lookup" class="headerlink" title="node lookup"></a>node lookup</h2><p>Kad participant must locate the k closest nodes to some given node ID. Kad employs a recursive algorithm for node lookups. It recursively send FIND_NODE requests to \alpha (out of k) closest nodes it knows of. </p>
+<h2 id="find-a-lt-key-value-gt-pair"><a href="#find-a-lt-key-value-gt-pair" class="headerlink" title="find a &lt;key,value&gt; pair"></a>find a &lt;key,value&gt; pair</h2><p>to find a &lt;key,value&gt; pair, a node starts by performing a lookup to find the k nodes with IDs closest to the key. However, value lookups use FIND_VLAUE rather than FIND_NODE RPCs.</p>
+<h2 id="node-join"><a href="#node-join" class="headerlink" title="node join"></a>node join</h2><p>to join the network, a node u must have a contact to an already participating node w.</p>
+<h2 id="routing-table"><a href="#routing-table" class="headerlink" title="routing table"></a>routing table</h2><h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf">kademlia paper</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/libp2p/go-libp2p-kad-dht">go implementation</a></li>
+<li><a target="_blank" rel="noopener" href="https://codethechange.stanford.edu/guides/guide_kademlia.html">kademlia stanford</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/388994038">zhihu</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/15/blockchain.kademlia/" data-id="clokyy8dj0001qwsj9waw412a" data-title="understanding of kademlia protocol" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rust/rust-async" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/01/13/rust/rust-async/" class="article-date">
@@ -473,228 +792,11 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 
 
   
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/27/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-11-27T03:47:56.000Z" itemprop="datePublished">2022-11-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/27/hello-world/">how to use hexo</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clokyy8dl0004qwsj06vjfxz2" data-title="how to use hexo" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-similar-concepts-comparison" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/23/rust/rust-similar-concepts-comparison/" class="article-date">
-  <time class="dt-published" datetime="2022-11-23T07:52:34.000Z" itemprop="datePublished">2022-11-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/23/rust/rust-similar-concepts-comparison/">rust similar concepts comparison</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="ref-vs-amp"><a href="#ref-vs-amp" class="headerlink" title="ref vs &amp;"></a>ref vs &amp;</h2><p><code>ref</code> annotates pattern bindings to make them borrow rather than move. It is <strong>not</strong> a part of the pattern as far as matching is concerned: it does not affect whether a value is matched, only how it is matched.<br>By default, match statements consume all they can, which can sometimes be a problem, when you don’t really need the value to be moved and owned:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">maybe_name</span> = <span class="title function_ invoke__">Some</span>(<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Alice&quot;</span>));</span><br><span class="line"><span class="comment">// Using `ref`, the value is borrowed, not moved ...</span></span><br><span class="line"><span class="keyword">match</span> maybe_name &#123;</span><br><span class="line">    <span class="title function_ invoke__">Some</span>(<span class="keyword">ref</span> n) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;Hello, &#123;n&#125;&quot;</span>),</span><br><span class="line">    _ =&gt; <span class="built_in">println!</span>(<span class="string">&quot;Hello, world&quot;</span>),</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ... so it&#x27;s available here!</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Hello again, &#123;&#125;&quot;</span>, maybe_name.<span class="title function_ invoke__">unwrap_or</span>(<span class="string">&quot;world&quot;</span>.<span class="title function_ invoke__">into</span>()));</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>&amp;</code> denotes that your pattern expects a reference to an object. Hence <code>&amp;</code> is a part of said pattern: <code>&amp;Foo</code> matches different objects than <code>Foo</code> does.</li>
-<li><code>ref</code> indicates that you want a reference to an unpacked value. It is not matched against: <code>Foo(ref foo)</code> matches the same objects as <code>Foo(foo)</code>.</li>
-</ul>
-<h2 id="Clone-vs-Copy"><a href="#Clone-vs-Copy" class="headerlink" title="Clone vs Copy"></a>Clone vs Copy</h2><h3 id="Copy-的含义"><a href="#Copy-的含义" class="headerlink" title="Copy 的含义"></a>Copy 的含义</h3><p><code>Copy</code> 的全名是 <code>std::marker::Copy</code>。<code>std::marker</code> 这个模块里面的所有的 trait 都是特殊的。目前稳定的有四个，它们是 <code>Copy</code>、<code>Send</code>、<code>Sized</code>、<code>Sync</code>。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定。</p>
-<p>如果一个类型 impl 了 Copy trait，意味着任何时候，我们可以通过简单的内存拷贝(C语言的按位拷贝memcpy)实现该类型的复制，而不会产生任何问题。</p>
-<p>一旦一个类型实现了 Copy trait，那么它在变量绑定、函数参数传递、函数返回值传递等场景下，它都是 copy 语义，而不再是默认的 move 语义。</p>
-<h3 id="Copy-的实现条件"><a href="#Copy-的实现条件" class="headerlink" title="Copy 的实现条件"></a>Copy 的实现条件</h3><p>并不是所有的类型都可以实现Copy trait。Rust规定，对于自定义类型，只有所有的成员都实现了 Copy trait，这个类型才有资格实现 Copy trait。</p>
-<p>常见的数字类型、bool类型、共享借用指针&amp;，都是具有 Copy 属性的类型。而 Box、Vec、可写借用指针&amp;mut 等类型都是不具备 Copy 属性的类型。</p>
-<p>我们可以认为，Rust中只有 POD(C++语言中的Plain Old Data) 类型才有资格实现Copy trait。在Rust中，如果一个类型只包含POD数据类型的成员，没有指针类型的成员，并且没有自定义析构函数（实现Drop trait），那它就是POD类型。比如整数、浮点数、只包含POD类型的数组等。而Box、 String、 Vec等，不能按 bit 位拷贝的类型，都不属于POD类型。但是，反过来讲，并不是所有的POD类型都应该实现Copy trait。</p>
-<h3 id="Clone-的含义"><a href="#Clone-的含义" class="headerlink" title="Clone 的含义"></a>Clone 的含义</h3><p>Clone 的全名是 std::clone::Clone。它的完整声明是这样的：</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">trait</span> <span class="title class_">Clone</span> : <span class="built_in">Sized</span> &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">clone</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">clone_from</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, source: &amp;<span class="keyword">Self</span>) &#123;</span><br><span class="line">        *<span class="keyword">self</span> = source.<span class="title function_ invoke__">clone</span>()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>它有两个关联方法，其中 clone_from 是有默认实现的，它依赖于 clone 方法的实现。clone 方法没有默认实现，需要我们手动实现。</p>
-<p>clone 方法一般用于“基于语义的复制”操作。所以，它做什么事情，跟具体类型的作用息息相关。比如对于 Box 类型，clone 就是执行的“深拷贝”，而对于 Rc 类型，clone 做的事情就是把引用计数值加1。</p>
-<p>虽然说，Rust中 clone 方法一般是用来执行复制操作的，但是你如果在自定义的 clone 函数中做点什么别的工作编译器也没法禁止，你可以根据情况在 clone 函数中编写任意的逻辑。但是有一条规则需要注意：对于实现了 Copy 的类型，它的 clone 方法应该跟 Copy 语义相容，等同于按位拷贝。</p>
-<h3 id="自动-derive"><a href="#自动-derive" class="headerlink" title="自动 derive"></a>自动 derive</h3><p>绝大多数情况下，实现 Copy Clone 这样的 trait 都是一个重复而无聊的工作。因此，Rust提供了一个 attribute，让我们可以利用编译器自动生成这部分代码。示例如下：</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[derive(Copy, Clone)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">MyStruct</span>(<span class="type">i32</span>);</span><br></pre></td></tr></table></figure>
-<p>这里的 derive 会让编译器帮我们自动生成 impl Copy 和 impl Clone 这样的代码。自动生成的 clone 方法，就是依次调用每个成员的 clone 方法。</p>
-<p>通过 derive 方式自动实现 Copy 和手工实现 Copy 有一丁点的微小区别。当类型具有泛型参数的时候，比如 struct MyStruct<T>{}，通过 derive 自动生成的代码会自动添加一个 T: Copy 的约束。</p>
-<p>目前，只有一部分固定的特殊 trait 可以通过 derive 来自动实现。将来 Rust 会允许自定义的 derive 行为，让我们自己的 trait 也可以通过 derive 的方式自动实现。</p>
-<h2 id="Cell-vs-RefCell"><a href="#Cell-vs-RefCell" class="headerlink" title="Cell vs RefCell"></a>Cell vs RefCell</h2><ul>
-<li>Cell 是操作T(values), RefCell操作&amp;T(references). Cell<T> get的时候要求T impl Copy。比如String类型没有实现Copy trait, 那么Cell::new(String::from(“Hello”)).get()会报错</li>
-<li>Cell 在编译器检查，运行时不会panic；RefCell在运行时检查，使用不当会发生panic</li>
-<li>一般来说，Cell内部实现会发生内存的分配，性能较之RefCell有点大</li>
-</ul>
-<h2 id="AsRef-vs-Borrow"><a href="#AsRef-vs-Borrow" class="headerlink" title="AsRef vs Borrow"></a>AsRef vs Borrow</h2><p>[WIP]</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="clokyy8dt001kqwsj843kh526" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-tools" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/20/rust/rust-tools/" class="article-date">
-  <time class="dt-published" datetime="2022-11-20T09:14:05.000Z" itemprop="datePublished">2022-11-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/20/rust/rust-tools/">rust tools</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="tools"><a href="#tools" class="headerlink" title="tools"></a>tools</h2><ul>
-<li><p>cargo-edit<br>This tool extends Cargo to allow you to add, remove, and upgrade dependencies by modifying your Cargo.toml file from the command line</p>
-</li>
-<li><p>cargo whatfeatures ${crate}<br>  eg: <code>cargo whatfeatures hyper</code></p>
-</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/20/rust/rust-tools/" data-id="clokyy8du001rqwsj7syrcry3" data-title="rust tools" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-sugar" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/17/rust/rust-sugar/" class="article-date">
-  <time class="dt-published" datetime="2022-11-17T07:47:13.000Z" itemprop="datePublished">2022-11-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/17/rust/rust-sugar/">rust sugar</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="formatted-print"><a href="#formatted-print" class="headerlink" title="formatted print"></a>formatted print</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Positional arguments can be used</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;0&#125;, this is &#123;1&#125;. &#123;1&#125;, this is &#123;0&#125;&quot;</span>, <span class="string">&quot;Alice&quot;</span>, <span class="string">&quot;Bob&quot;</span>);</span><br><span class="line"><span class="comment">// As can named arguments.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;subject&#125; &#123;verb&#125; &#123;object&#125;&quot;</span>,</span><br><span class="line">            object=<span class="string">&quot;the lazy dog&quot;</span>,</span><br><span class="line">            subject=<span class="string">&quot;the quick brown fox&quot;</span>,</span><br><span class="line">            verb=<span class="string">&quot;jumps over&quot;</span>);</span><br><span class="line"><span class="comment">// Different formatting can be invoked by specifying the format character</span></span><br><span class="line"><span class="comment">// after a `:`.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 10:               &#123;&#125;&quot;</span>,   <span class="number">69420</span>); <span class="comment">// 69420</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 2 (binary):       &#123;:b&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10000111100101100</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 8 (octal):        &#123;:o&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 207454</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 16 (hexadecimal): &#123;:x&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10f2c</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Base 16 (hexadecimal): &#123;:X&#125;&quot;</span>, <span class="number">69420</span>); <span class="comment">// 10F2C</span></span><br><span class="line"><span class="comment">// You can right-justify text with a specified width. This will</span></span><br><span class="line"><span class="comment">// output &quot;    1&quot;. (Four white spaces and a &quot;1&quot;, for a total width of 5.)</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:&gt;5&#125;&quot;</span>, number=<span class="number">1</span>);</span><br><span class="line"><span class="comment">// You can pad numbers with extra zeroes,</span></span><br><span class="line"><span class="comment">// and left-adjust by flipping the sign. This will output &quot;10000&quot;.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:0&lt;5&#125;&quot;</span>, number=<span class="number">1</span>);</span><br><span class="line"><span class="comment">// You can use named arguments in the format specifier by appending a `$`.</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;number:0&gt;width$&#125;&quot;</span>, number=<span class="number">1</span>, width=<span class="number">5</span>);</span><br></pre></td></tr></table></figure>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/rust-by-example/hello/print.html">reference</a></li>
-</ul>
-<h2 id="syntax"><a href="#syntax" class="headerlink" title="syntax"></a>syntax</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// print to stderr</span></span><br><span class="line">eprintln!(<span class="string">&quot;server error: &#123;&#125;&quot;</span>, e);</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">MyTupleStruct</span>&lt;M&gt;(M);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">myTupleStruct</span> =  MyTupleStruct::&lt;<span class="type">String</span>&gt;(<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>));</span><br><span class="line"></span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">position</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">find</span>()</span><br><span class="line">vec.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">any</span>()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">mut</span> A: <span class="type">u32</span> = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
-
-<h2 id="attributes"><a href="#attributes" class="headerlink" title="attributes"></a>attributes</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#![allow(warnings)]</span></span><br><span class="line"><span class="meta">#[allow(dead_code)]</span></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="comment">// Suppress all warnings from casts which overflow.</span></span><br><span class="line"><span class="meta">#![allow(overflowing_literals)]</span></span><br><span class="line"><span class="meta">#![allow(unreachable_code)]</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h2><p>The compiler will not rearrange the memory layout</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[repr(C)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    a:<span class="type">u8</span>,</span><br><span class="line">    b:<span class="type">u32</span>,</span><br><span class="line">    c:<span class="type">u16</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="ptr"><a href="#ptr" class="headerlink" title="ptr"></a>ptr</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">NonNull::<span class="title function_ invoke__">new_unchecked</span>()</span><br><span class="line"></span><br><span class="line"><span class="meta">#![feature(new_uninit)]</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">five</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_uninit</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">five</span> = <span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="comment">// Deferred initialization:</span></span><br><span class="line">    five.<span class="title function_ invoke__">as_mut_ptr</span>().<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    five.<span class="title function_ invoke__">assume_init</span>()</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*five, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="type">Box</span>::&lt;<span class="type">u32</span>&gt;::<span class="title function_ invoke__">new_zeroed</span>();</span><br><span class="line"><span class="keyword">let</span> <span class="variable">zero</span> = <span class="keyword">unsafe</span> &#123; zero.<span class="title function_ invoke__">assume_init</span>() &#125;;</span><br><span class="line"><span class="built_in">assert_eq!</span>(*zero, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::alloc::&#123;alloc, Layout&#125;;</span><br><span class="line"><span class="keyword">unsafe</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">ptr</span> = <span class="title function_ invoke__">alloc</span>(Layout::new::&lt;<span class="type">i32</span>&gt;()) <span class="keyword">as</span> *<span class="keyword">mut</span> <span class="type">i32</span>;</span><br><span class="line">    ptr.<span class="title function_ invoke__">write</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span> = <span class="type">Box</span>::<span class="title function_ invoke__">from_raw</span>(ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/17/rust/rust-sugar/" data-id="clokyy8du001pqwsj1k4uhzw0" data-title="rust sugar" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/4/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/">Next &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/4/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/6/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -708,7 +810,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -718,7 +820,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 14.29px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 12.86px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 18.57px;">cryptography</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 15.71px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 12.86px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.14px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 18.75px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -740,23 +842,23 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       <ul>
         
           <li>
+            <a href="/2023/11/22/cuda/concepts_and_keywords/">key concepts in cuda</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/22/cuda/cuda_api_and_tools/">cuda standard api &amp; tools</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/22/arithmatic/tricks/">(no title)</a>
+          </li>
+        
+          <li>
             <a href="/2023/11/21/cpp/generics_and_macros/">cpp generics</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/21/cpp/key_words/">cpp key workds</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/21/cpp/std/">cpp std</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/18/math/goldilocks-field/">goldilocks field</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/">inline_ptx_assembly_in_cuda</a>
           </li>
         
       </ul>

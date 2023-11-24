@@ -122,3 +122,4 @@ all bits of borrow will be set to 1 if underflow occurs
 
 # references
 - [The Goldilocks Prime by Remco Bloemem](https://xn--2-umb.com/22/goldilocks/)
+- [parameters of goldilocks field](https://cronokirby.com/notes/2022/09/the-goldilocks-field/)
