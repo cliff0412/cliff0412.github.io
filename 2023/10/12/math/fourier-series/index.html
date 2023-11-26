@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cliff0412.github.io/images/math/fourier_series/f_x.png">
 <meta property="article:published_time" content="2023-10-12T11:13:17.000Z">
-<meta property="article:modified_time" content="2023-11-24T02:56:35.278Z">
+<meta property="article:modified_time" content="2023-11-26T15:53:21.846Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="math">
 <meta name="twitter:card" content="summary">
@@ -125,11 +125,22 @@
 <p>Since \(k &#x3D; k_1r_1 + k_0\), we have<br>\[ \omega_N^{kn_1r_2} &#x3D;\omega_N^{(k_1r_1+k_0)n_1r_2} &#x3D; \omega_N^{(k_1r_1)n_1r_2} \cdot \omega_N^{k_0n_1r_2}\]<br>according to the property of Nth root of unity, \( \omega_N^{N} &#x3D; \omega_N^{r_1r_2} &#x3D;1 \), \( \omega_N^{(k_1r_1)n_1r_2}\) is also 1.<br>then we have<br>\[ \omega_N^{kn_1r_2} &#x3D;  \omega_N^{k_0n_1r_2}\]<br>substitute it into E.q 2.2, we get<br>\[ \tag{2.3} X(k_1, k_0) &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn} &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{k_0n_1r_2}\omega_N^{kn_0}  \]<br>Therefore, the inner sum, over \(n_1\), depends only on \(k_0\) and \(n_0\), and can be defined as a new array,<br>\[ \tag{2.4} x_1(k_0, n_0) &#x3D; \sum_{n_1} x(n_1, n_0) \cdot \omega_N^{k_0n_1r_2}\]<br>E.q(2.3) can be writtern as<br>\[ \tag{2.5} X(k_1, k_0) &#x3D; \sum_{n_0} x_1(k_0,n_0)\omega_N^{kn_0} &#x3D;  \sum_{n_0} x_1(k_0,n_0)\omega_N^{(k_1r_1 + k_0)n_0}  \]</p>
 <p>There are N elements in the matrix \(x_1\), each requiring \(r_1\) operations, giving a total of \(Nr_1\) operations. Similarly, it takes \(Nr_2\) operations to calculate \(X\) from \(x_1\). Therefore, the two-step algorithm, given by Eq(2.4) and Eq(2.5) requires a total of<br>\[ \tag{2.6} T &#x3D; N(r_1+r_2) \]</p>
 <p>it is easy to see how successive applications of the above procedure (recursively),  starting with its appliation to Eq(2.4) give an m-step algorihtm requiring<br>\[ \tag{2.7} T &#x3D; N(r_1+r_2 + … + r_m) \]<br>where<br>\[ N &#x3D; \prod_{j&#x3D;1}^{j&#x3D;m}r_j\]<br>if all \(r_j\) are equal to \(r\), i.e \(N &#x3D; r^m \), which gives \( m &#x3D; log_rN \)<br>E.q(2.7) becomes<br>\[ \tag{2.8} T &#x3D; N(m \cdot r)  &#x3D; rNm &#x3D; rN(log_rN) \]</p>
-<p>The algorithm with \(r&#x3D;2\) is derived by expressing the indices in the form</p>
+<h2 id="radix-2-FFT"><a href="#radix-2-FFT" class="headerlink" title="radix-2 FFT"></a>radix-2 FFT</h2><p>The algorithm with \(r&#x3D;2\) is derived by expressing the indices in the form</p>
+<p>\[\tag{3.1} k&#x3D;k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0 \]<br>\[\tag{3.2} n&#x3D;n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0 \]<br>where \( k_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \), and \( n_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \)<br><strong>\(k_v\) and \(n_v\) are the contents of the respective bit positions in the binary representation of \(k\) and \(n\)</strong></p>
+<p>All arrays will now be written as functions of the bits of their indices. With this convention E.q(2.1) is written as<br>\[ \tag{3.3}<br>\displaylines{<br>  X(k_{m-1}, …, k_0) &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{k(n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0)} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn_{m-1} \cdot 2^{m-1} + … + kn_1 \cdot 2 + kn_0}<br>}<br>\]<br>where the sums are over \(n_v \in [0,1]\), for \(v &#x3D; 0,1,…,m-1\)</p>
+<p>Since \[ \displaylines{<br>  \omega_N^{kn_{m-1}\cdot 2^{m-1}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-1}\cdot 2^{m-1}} \\<br>  &#x3D; \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]<br>(it is easy to show that all other terms are 1 as \( \omega_N^{2^m} &#x3D; 1 \), so only \( k_0\) is kept)</p>
+<p>the innermost sum of E.q(3.3) over \(n_{m-1} \), depends only on \( k_0, n_{m-2}, …, n_0\) and can be writtern<br>\[ \displaylines{<br>x_1(k_0, n_{m-2}, …, n_1, n_0) &#x3D; \sum_{n_{m-1}} x(n_{m-1}, …, n_0) \cdot \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]</p>
+<p>proceeding to the next innermost sum, over \( n_{m-2} \), and so on, and using<br>\[ \displaylines{<br>  \omega_N^{kn_{m-l}\cdot 2^{m-l}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-l}\cdot 2^{m-l}} \\<br>  &#x3D; \omega_N^{(k_{l-1}\cdot 2^{l-1} + … + k_0) n_{m-l} \cdot 2^{m-1}}<br>}<br>  \]<br>one obtains successive arrays<br>\[\displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; \sum_{n_{m-l}}x_{l-1}(k_0, …, k_{l-2}, n_{m-l}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot n_{m-l} \cdot 2^{m-l}}<br>}\]<br>for \(l &#x3D; 1,2,…,m \)</p>
+<p>writing out the sum this appears as<br>\[  \tag{3.4} \displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 0 \cdot 2^{m-l}}   \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 1 \cdot 2^{m-l}}  \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + k_{l-2}\cdot 2^{l-2 }+k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{l-1} \cdot 2^{m-l} } \cdot \omega_N^{k_{l-2}\cdot 2^{l-2 } \cdot 2^{m-l}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{m-1} } \cdot \omega_N^{k_{l-2}\cdot 2^{m-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ (-1)^{k_{l-1} } \cdot i^{k_{l-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}}<br>}\]<br>according to the indexing convension, this is stored in a location whose index is<br>\[ k_0 \cdot 2^{m-1} + … + k_{l-1} \cdot 2 ^{m-l} + n_{m-l-1} \cdot 2^{m-l-1} + … + n_0 \]</p>
+<p>It can be seen in E.q(3.4) that only the two storage locations with indices having 0 and 1 in the \(2^{m-l}\) bit position are involved in the computation. Parallel computation is permitted since the operation described by E.q(3.4) can be carried out with all values of \(k_0, …, k_{l-2} \), and \( n_0, …, n_{m-l-1}\) simultaneously. In some applications it is convenient to use E.q(3.4) to express \(x_l\) in terms of \(x_{l-2}\), giving what is equivalent to an algorithm with \(r &#x3D; 4\).<br>the last array calculated gives the desired Fourier sums,</p>
+<p>\[\tag{3.5}<br>X(k_{m-1}, …, k_0) &#x3D; x_{m}(k_0, …, k_{m-1})<br>\]<br>in such an order that the index of an X must have its binary bits put in reverse order to yield its index in the array \(x_m\)</p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=MB6XGQWLV04">youtube video by Steve Brunton, Fourier Series</a></li>
 <li>[2] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">DFT wikipedia</a></li>
-<li>[3] <a target="_blank" rel="noopener" href="https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/S0025-5718-1965-0178586-1.pdf">1965, Cooley &amp; Turkey: an algorithm for the machine calculation of complex fourier series</a></li>
+<li>[3] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm">Cooley–Tukey FFT algorithm wikipedia</a></li>
+<li>[4] <a target="_blank" rel="noopener" href="https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/S0025-5718-1965-0178586-1.pdf">1965, Cooley &amp; Turkey: an algorithm for the machine calculation of complex fourier series</a></li>
+<li>[5] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Split-radix_FFT_algorithm">Split-radix FFT algorithm wikipedia</a></li>
+<li>[6] <a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43870101/article/details/106095644?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_utm_term~default-2-106095644-blog-132357995.235%5Ev38%5Epc_relevant_sort_base1&spm=1001.2101.3001.4242.2&utm_relevant_index=5">csdn blog of FFT notes</a></li>
 </ul>
 
       
@@ -189,7 +200,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 18.75px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
     </div>
   </div>
 
@@ -211,6 +222,14 @@
       <ul>
         
           <li>
+            <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
+          </li>
+        
+          <li>
             <a href="/2023/11/22/cuda/concepts_and_keywords/">key concepts in cuda</a>
           </li>
         
@@ -220,14 +239,6 @@
         
           <li>
             <a href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/22/arithmatic/tricks/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/21/cpp/generics_and_macros/">cpp generics</a>
           </li>
         
       </ul>

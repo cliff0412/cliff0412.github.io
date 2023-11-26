@@ -71,6 +71,153 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rust/rust_std/rust-smart-pointer-and-internal-mutibility" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" class="article-date">
+  <time class="dt-published" datetime="2023-06-03T14:04:38.000Z" itemprop="datePublished">2023-06-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/">rust std smart pointer &amp; interior mutability</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="smart-pointer"><a href="#smart-pointer" class="headerlink" title="smart pointer"></a>smart pointer</h1><h2 id="Rc"><a href="#Rc" class="headerlink" title="Rc"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/rc/struct.Rc.html">Rc</a></h2><p>A single-threaded reference-counting pointer. The inherent methods of Rc are all associated functions, which means that you have to call them as e.g., Rc::get_mut(&amp;mut value) instead of value.get_mut(). This avoids conflicts with methods of the inner type T.</p>
+<h1 id="internal-mutibility"><a href="#internal-mutibility" class="headerlink" title="internal mutibility"></a>internal mutibility</h1><h2 id="Cell"><a href="#Cell" class="headerlink" title="Cell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.Cell.html">Cell</a></h2><p><code>Cell&lt;T&gt;</code> enables mutation inside an immutable value. In other words, it enables <code>interior mutability</code>. It never gives out mutable pointer to the inner value; A Cell can be shared by multiple references.</p>
+<h3 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h3><ul>
+<li><code>fn get(&amp;self) -&gt; T</code></li>
+<li><code>fn set(&amp;self, val: T)</code></li>
+<li><code>fn swap(&amp;self, other: &amp;Cell&lt;T&gt;)</code></li>
+<li><code>fn replace(&amp;self, val: T) -&gt; T</code><br>Replaces the contained value with val, and returns the old contained value</li>
+<li><code>fn into_inner(self) -&gt; T</code></li>
+<li><code>const fn as_ptr(&amp;self) -&gt; *mut T</code></li>
+<li><code>fn get_mut(&amp;mut self) -&gt; &amp;mut T</code></li>
+<li><code>fn from_mut(t: &amp;mut T) -&gt; &amp;Cell&lt;T&gt;</code></li>
+</ul>
+<h3 id="traits"><a href="#traits" class="headerlink" title="traits"></a>traits</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">impl</span>&lt;T&gt; !<span class="built_in">Sync</span> <span class="keyword">for</span> <span class="title class_">Cell</span>&lt;T&gt;  <span class="comment">// cannot be used in other threads</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="OnceCell"><a href="#OnceCell" class="headerlink" title="OnceCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.OnceCell.html">OnceCell</a></h2><p>A cell which can be written to only once.</p>
+<h3 id="special-methods"><a href="#special-methods" class="headerlink" title="special methods"></a>special methods</h3><ul>
+<li><code>fn get_or_init&lt;F&gt;(&amp;self, f: F) -&gt; &amp;T</code></li>
+</ul>
+<h2 id="LazyCell"><a href="#LazyCell" class="headerlink" title="LazyCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.LazyCell.html">LazyCell</a></h2><p>A value which is initialized on the first access</p>
+<h2 id="UnsafeCell"><a href="#UnsafeCell" class="headerlink" title="UnsafeCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.UnsafeCell.html#">UnsafeCell</a></h2><p><code>UnsafeCell&lt;T&gt;</code> opts-out of the immutability guarantee for <code>&amp;T</code>: a shared reference <code>&amp;UnsafeCell&lt;T&gt;</code> may point to data that is being mutated. This is called <code>interior mutability</code>.<br>All other types that allow internal mutability, such as <code>Cell&lt;T&gt;</code> and <code>RefCell&lt;T&gt;</code>, internally use <code>UnsafeCell</code> to wrap their data.<br>Note that only the immutability guarantee for shared references is affected by <code>UnsafeCell</code>. The uniqueness guarantee for mutable references is unaffected (only one mutable reference at one time, or multiple immutable reference). </p>
+<h3 id="methods-1"><a href="#methods-1" class="headerlink" title="methods"></a>methods</h3><ul>
+<li><code>pub const fn get(&amp;self) -&gt; *mut T</code><br>Gets a mutable pointer to the wrapped value.</li>
+<li><code>pub fn get_mut(&amp;mut self) -&gt; &amp;mut T</code><br>Returns a mutable reference to the underlying data</li>
+<li><code>pub const fn raw_get(this: *const UnsafeCell&lt;T&gt;) -&gt; *mut T</code><br>Gets a mutable pointer to the wrapped value. The difference from get is that this function accepts a raw pointer, which is useful to avoid the creation of temporary references. e.g. Gradual initialization of an UnsafeCell requires raw_get, as calling get would require creating a reference to uninitialized data:<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::cell::UnsafeCell;</span><br><span class="line"><span class="keyword">use</span> std::mem::MaybeUninit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">m</span> = MaybeUninit::&lt;UnsafeCell&lt;<span class="type">i32</span>&gt;&gt;::<span class="title function_ invoke__">uninit</span>();</span><br><span class="line"><span class="keyword">unsafe</span> &#123; UnsafeCell::<span class="title function_ invoke__">raw_get</span>(m.<span class="title function_ invoke__">as_ptr</span>()).<span class="title function_ invoke__">write</span>(<span class="number">5</span>); &#125;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">uc</span> = <span class="keyword">unsafe</span> &#123; m.<span class="title function_ invoke__">assume_init</span>() &#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">assert_eq!</span>(uc.<span class="title function_ invoke__">into_inner</span>(), <span class="number">5</span>);</span><br></pre></td></tr></table></figure></li>
+<li><code>fn into_inner(self) -&gt; T</code><br>Unwraps the value, consuming the cell.</li>
+</ul>
+<h2 id="SyncUnsafeCell"><a href="#SyncUnsafeCell" class="headerlink" title="SyncUnsafeCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.SyncUnsafeCell.html">SyncUnsafeCell</a></h2><p>This is just an <code>UnsafeCell</code>, except it implements <code>Sync</code> if T implements Sync.</p>
+<h2 id="std-cell-RefCell"><a href="#std-cell-RefCell" class="headerlink" title="std::cell::RefCell"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/cell/struct.RefCell.html">std::cell::RefCell</a></h2><p>A mutable memory location with <strong>dynamically</strong> checked borrow rules</p>
+<ul>
+<li><code>fn borrow(&amp;self) -&gt; Ref&lt;&#39;_, T&gt;</code></li>
+<li><code>fn borrow_mut(&amp;self) -&gt; RefMut&lt;&#39;_, T&gt;</code></li>
+<li><code>fn as_ptr(&amp;self) -&gt; *mut T</code></li>
+</ul>
+<h1 id="borrow"><a href="#borrow" class="headerlink" title="borrow"></a>borrow</h1><h2 id="std-borrow-Cow"><a href="#std-borrow-Cow" class="headerlink" title="std::borrow::Cow"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/std/borrow/enum.Cow.html">std::borrow::Cow</a></h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/03/rust/rust_std/rust-smart-pointer-and-internal-mutibility/" data-id="clokyy8e3003rqwsje2592e0r" data-title="rust std smart pointer &amp; interior mutability" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/cryptography-01-primitive-group-and-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" class="article-date">
+  <time class="dt-published" datetime="2023-06-03T06:29:26.000Z" itemprop="datePublished">2023-06-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/">cryptography (1) group &amp; field</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+
+
+<h2 id="Group"><a href="#Group" class="headerlink" title="Group"></a>Group</h2><p>a group is a set of elements \( G \) together with an operation \( \circ \). a group has the following properties</p>
+<ol>
+<li>the group operation \( \circ \) is closed. that is, for all \( a,b, \in G  \), it holds that \( a \circ b &#x3D; c \in G \)</li>
+<li>the group operation is associative. That is, \( a \circ (b \circ c) &#x3D; (a \circ b) \circ c \) for all \( a,b,c \in G \)</li>
+<li>there is an element \( 1 \in G \), called the neutral element (or identity element), such that \( a \circ \ &#x3D; 1 \circ a\) for all \( a \in G \)</li>
+<li>For each \( a \in G \) there exists an element \( a^{-1} \in G\), called the inverse of a, such that \( a \circ a^{-1} &#x3D; 1 \).</li>
+<li>a group G is abelian (or commutative) if, furthermore, \( a \circ b &#x3D; b \circ a \) for all \( a, b \in G \)</li>
+</ol>
+<h3 id="Example-of-Group"><a href="#Example-of-Group" class="headerlink" title="Example of Group"></a>Example of Group</h3><p>the set of integers \( Z_{m} &#x3D; 0,1,…,m-1 \) and the operation addition modulo \( m \) forma group with the neutral element 0. every element \( a \) has an inverse \(  -a \). note that this set does not form a group with the operation multiplication gecause mose eleents \(  a \) do not have an inverse such that \(  a a^{-1} &#x3D; 1 \bmod m\).</p>
+<p>In order to have all four basic arithmetic operations (i.e. addition, subtraction, multiplication, division) in one structure, we need a set which contains an additive and a multiplicative group. this is what we call a field.</p>
+<h2 id="Field"><a href="#Field" class="headerlink" title="Field"></a>Field</h2><p>A field is a set of elements with the following properties</p>
+<ul>
+<li>all elements of \( F\) form an additive group with the group operation \( + \) and the neutral element \( 0 \)</li>
+<li>all element of \( F \) except \( 0 \) form a multiplicative group with the gorup operation \( x \) and the neutral element \( 1 \) .</li>
+<li>when the two group operations are mixed, the distributivety law holds, i.e., for all \( a,b,c \in F: a(b+c) &#x3D; (ab) + (ac) \)</li>
+</ul>
+<h3 id="Example-of-Field"><a href="#Example-of-Field" class="headerlink" title="Example of Field"></a>Example of Field</h3><p>the set \( R \) of real numbers is a field with the neutral element 0 for the additive group and the neutral element 1 for the multiplicative group. every real number \( a \) has an additive inverse, namely \( -a \), and every nonzero element \( a \) has a multiplicative inverse \( 1 \div a \)</p>
+<h2 id="Galois-Field"><a href="#Galois-Field" class="headerlink" title="Galois Field"></a>Galois Field</h2><p>In cryptography, we are almose always interested in fields with a <strong>finite</strong> number of elements, which we call finite fields or <code>Galois field</code>. the number of elements in the field is called the <code>order</code> or <code>cardinality</code> of the field. Of fundamental importance is the following theorem</p>
+<hr>
+<p>a field with order <code>m</code> only exists if <code>m</code> is a prime power, i.e, \( m &#x3D; p^{n} \), for some positive integer <code>n</code> and prime integer <code>p</code>. <code>p</code> is called the characteristic of the finite field</p>
+<hr>
+<p>the theorem implies that there are, for instance, finite fields with 11 elements (\( 11^{1} \)), or with 81 elements \( 81 &#x3D; 3^{4} \) or with 256 elements (\( 256 &#x3D; 2^{8} \)). </p>
+<h2 id="Prime-Field"><a href="#Prime-Field" class="headerlink" title="Prime Field"></a>Prime Field</h2><p>the most intuitive examples of finite fields are fields of prime order, i.e., fields with \( n &#x3D;1 \). elements of the field \( GF(p) \) can be represented by integers \( 0,1,…, p-1 \).</p>
+<h2 id="Extension-Field-GF-2-m"><a href="#Extension-Field-GF-2-m" class="headerlink" title="Extension Field GF(2^m)"></a>Extension Field <code>GF(2^m)</code></h2><p>In AES the finite field contains 256 elements and is denoted as \( GF(2^8) \).<br>However, if the order  of a finite field is not prime, and \( 2^8 \) is clearly not a prime, the addition and multiplication operation cannot be represented by addition and multiplication of integers modulo \( 2^8 \). such fields with \( m &gt;1 \) are called <code>extension field</code>. in order to deal with extension fields we need (1) a different notation for field elements and (2) different rules for performing arithmetic with the elements. elements of extension fields can be represented as <code>polynomials</code>, and computation in the extension field is achieved by performing a certain type of <code>polynomial arithmetic</code>.</p>
+<p>In the field \( GF(2^8) \), which is used in AES, each element \( A \in GF(2^8) \) is thus represented as:<br>\[ A(x) &#x3D; a_{7}x^7 + …+a_{1}x+a_{0}, a_{i} \in GF(2) &#x3D; {0,1} \]<br>It is also important to observe that every polynomial can simply be stored in digital form as an 8-bit vector<br>\[ A &#x3D; (a_7,a_6,a_5,a_4,a_3,a_2,a_1,a_0) \]</p>
+<h3 id="addition-and-subtraction-in-GF-2-m"><a href="#addition-and-subtraction-in-GF-2-m" class="headerlink" title="addition and subtraction in GF(2^m)"></a>addition and subtraction in <code>GF(2^m)</code></h3><p>addition and subtraction are simply achieved by performing polynomial addition and subtraction. note that we perform modulo 2 addition (or subtraction) with the coefficients.<br>\[ A(x) &#x3D; x^7 + x^6 + x^4 + 1 \]<br>\[ B(x) &#x3D; x^4 + x^2+ 1 \]<br>\[ A(x) + B(x) &#x3D; x^7 + x^6+ x^2 \]</p>
+<h3 id="multiplication-in-GF-2-m"><a href="#multiplication-in-GF-2-m" class="headerlink" title="multiplication in GF(2^m)"></a>multiplication in <code>GF(2^m)</code></h3><p>firstly, two elements (represented by their polynomials) of a finite field <code>GF(2^m)</code> are multiplied usig the standard polynomial multiplication rule \[ A(x) \dot B(x) &#x3D; C(x) \]. In general, the product polynomial \[ C(x) \] will have a degree higher than <code>m-1</code> and has to be reduced. to do that, the product of the multiplication is divided by a certain polyhomial, and we consider only the remainder after the polynomial division. we need <strong>irreducible</strong> polynomials for the module reduction. irreducible polynomials are roughly comparable to prime numbers. their only factors are 1 and polynomial itself.<br>Thus, every field <code>GF(2^m)</code> requires an irreducible polynomial <code>P(x)</code> of degree <code>m</code>.<br>For AES, the irreducible polynomial is<br>\[ P(x) &#x3D; x^8 + x^4+ x^3 +x + 1 \]<br>the main algorithm for computing multiplicative inverse is the extended Euclidean algorithm, which is introduced in other posts.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/06/03/cryptography/cryptography-01-primitive-group-and-field/" data-id="clokyy8dm0009qwsj4fr9fx90" data-title="cryptography (1) group &amp; field" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rust/rust-10-concurrency" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/06/01/rust/rust-10-concurrency/" class="article-date">
@@ -615,138 +762,6 @@
 
 
   
-    <article id="post-golang/go-similar-concepts-comparison" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/03/05/golang/go-similar-concepts-comparison/" class="article-date">
-  <time class="dt-published" datetime="2023-03-05T02:44:50.000Z" itemprop="datePublished">2023-03-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/03/05/golang/go-similar-concepts-comparison/">go similar concepts comparison</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="struct-amp-struct"><a href="#struct-amp-struct" class="headerlink" title="struct{} &amp; struct{}{}"></a>struct{} &amp; struct{}{}</h2><p><code>struct</code> is a keyword in Go. It is used to define struct types, which is a sequence of named elements.</p>
-<p>For example:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name <span class="type">string</span></span><br><span class="line">    Age  <span class="type">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>The <code>struct&#123;&#125;</code> is a struct type with zero elements. It is often used when no information is to be stored. It has the benefit of being 0-sized, so usually no memory is required to store a value of type <code>struct&#123;&#125;</code>.</p>
-<p><code>struct&#123;&#125;&#123;&#125;</code> on the other hand is a <a target="_blank" rel="noopener" href="https://go.dev/ref/spec#Composite_literals">composite literal</a>, it constructs a value of type <code>struct&#123;&#125;</code>. A composite literal constructs values for types such as <code>structs</code>, <code>arrays</code>, <code>maps</code> and <code>slices</code>. Its syntax is the type followed by the elements in braces. Since the “empty” struct (struct{}) has no fields, the elements list is also empty:</p>
-<p> struct{}  {}<br>|  ^     | ^<br>  type     empty element list<br>As an example let’s create a “set” in Go. Go does not have a builtin set data structure, but it has a builtin map. We can use a map as a set, as a map can only have at most one entry with a given key. And since we want to only store keys (elements) in the map, we may choose the map value type to be struct{}.</p>
-<p>A map with string elements:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> set <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"><span class="comment">// Initialize the set</span></span><br><span class="line">set = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Add some values to the set:</span></span><br><span class="line">set[<span class="string">&quot;red&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">set[<span class="string">&quot;blue&quot;</span>] = <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Check if a value is in the map:</span></span><br><span class="line">_, ok := set[<span class="string">&quot;red&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is red in the map?&quot;</span>, ok)</span><br><span class="line">_, ok = set[<span class="string">&quot;green&quot;</span>]</span><br><span class="line">fmt.Println(<span class="string">&quot;Is green in the map?&quot;</span>, ok)</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/05/golang/go-similar-concepts-comparison/" data-id="clokyy8dq000uqwsj46jo8rlt" data-title="go similar concepts comparison" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/" rel="tag">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-golang/go-reflect" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/03/02/golang/go-reflect/" class="article-date">
-  <time class="dt-published" datetime="2023-03-02T02:44:50.000Z" itemprop="datePublished">2023-03-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/03/02/golang/go-reflect/">go reflect</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Reflection is the ability of a program to examine its own structure, particularly through types. </p>
-<h2 id="type-and-interfaces"><a href="#type-and-interfaces" class="headerlink" title="type and interfaces"></a>type and interfaces</h2><p>Go is statically typed. Every variable has a static type, Exactly one type known and fixed at compile time. If we declare</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> MyInt <span class="type">int</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> i <span class="type">int</span></span><br><span class="line"><span class="keyword">var</span> j MyInt</span><br></pre></td></tr></table></figure>
-<p><strong>The variables i and j have distinct static types and, although they have the same underlying type, they cannot be assigned to one another without a conversion.</strong></p>
-<p>One important category of type is interface types, which represent fixed sets of methods. An interface variable can store any concrete (non-interface) value as long as that value implements the interface’s methods. An extremely important example of an interface type is the empty interface:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span>&#123;&#125;</span><br></pre></td></tr></table></figure>
-<p>or its equivalent alias,</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">any</span><br></pre></td></tr></table></figure>
-<p>It represents the empty set of methods and is satisfied by any value at all, since every value has zero or more methods.<br>a variable of interface type always has the same static type, and even though at run time the value stored in the interface variable may change type, that value will always satisfy the interface.</p>
-<h2 id="the-representation-of-an-interface"><a href="#the-representation-of-an-interface" class="headerlink" title="the representation of an interface"></a>the representation of an interface</h2><p>A variable of interface type stores a pair: the concrete value assigned to the variable, and that value’s type descriptor.<br>For instance, after</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> r io.Reader</span><br><span class="line">tty, err := os.OpenFile(<span class="string">&quot;/dev/tty&quot;</span>, os.O_RDWR, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br><span class="line">r = tty</span><br></pre></td></tr></table></figure>
-<p>r contains, schematically, the (value, type) pair, (tty, *os.File). Notice that the type *os.File implements methods other than Read; even though the interface value provides access only to the Read method, the value inside carries all the type information about that value. That’s why we can do things like this:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> w io.Writer</span><br><span class="line">w = r.(io.Writer)</span><br></pre></td></tr></table></figure>
-<p>The expression in this assignment is a type assertion; what it asserts is that the item inside r also implements io.Writer, and so we can assign it to w.  After the assignment, w will contain the pair (tty, *os.File). That’s the same pair as was held in r.<br>One important detail is that the pair inside an interface variable always has the form (value, concrete type) and cannot have the form (value, interface type). Interfaces do not hold interface values.</p>
-<h2 id="the-first-law-of-reflection"><a href="#the-first-law-of-reflection" class="headerlink" title="the first law of reflection"></a>the first law of reflection</h2><ol>
-<li><p>Reflection goes from interface value to reflection object<br>At the basic level, reflection is just a mechanism to examine the type and value pair stored inside an interface variable. <code>reflect.TypeOf</code> and <code>reflect.ValueOf</code>, retrieve <code>reflect.Type</code> and <code>reflect.Value</code> pieces out of an interface value.</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">fmt.Println(<span class="string">&quot;type:&quot;</span>, reflect.TypeOf(x))</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type: float64</span><br></pre></td></tr></table></figure>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">v := reflect.ValueOf(x)</span><br><span class="line">fmt.Println(<span class="string">&quot;type:&quot;</span>, v.Type())</span><br><span class="line">fmt.Println(<span class="string">&quot;kind is float64:&quot;</span>, v.Kind() == reflect.Float64)</span><br><span class="line">fmt.Println(<span class="string">&quot;value:&quot;</span>, v.Float())</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">type: float64</span><br><span class="line">kind is float64: true</span><br><span class="line">value: 3.4</span><br></pre></td></tr></table></figure>
-<p>There are also methods like SetInt and SetFloat. <strong>to keep the API simple, the “getter” and “setter” methods of Value operate on the largest type that can hold the value</strong>: int64 for all the signed integers, for instance. </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">uint8</span> = <span class="string">&#x27;x&#x27;</span></span><br><span class="line">v := reflect.ValueOf(x)</span><br><span class="line">fmt.Println(<span class="string">&quot;type:&quot;</span>, v.Type())                            <span class="comment">// uint8.</span></span><br><span class="line">fmt.Println(<span class="string">&quot;kind is uint8: &quot;</span>, v.Kind() == reflect.Uint8) <span class="comment">// true.</span></span><br><span class="line">x = <span class="type">uint8</span>(v.Uint())                                       <span class="comment">// v.Uint returns a uint64.</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>Reflection goes from reflection object to interface value.<br>Given a reflect.Value we can recover an interface value using the Interface method;</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Interface returns v&#x27;s current value as an interface&#123;&#125;.</span></span><br><span class="line"><span class="comment">// It is equivalent to:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	var i interface&#123;&#125; = (v&#x27;s underlying value)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v Value)</span></span> Interface() <span class="keyword">interface</span>&#123;&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">y := v.Interface().(<span class="type">float64</span>) <span class="comment">// y will have type float64.</span></span><br><span class="line">fmt.Println(y)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>To modify a reflection object, the value must be settable.<br>The CanSet method of Value reports the settability of a Value; in our case,</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">v := reflect.ValueOf(x)</span><br><span class="line">fmt.Println(<span class="string">&quot;settability of v:&quot;</span>, v.CanSet())</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">settability of v: false</span><br></pre></td></tr></table></figure>
-<p>we pass a copy of x to reflect.ValueOf, so the interface value created as the argument to reflect.ValueOf is a copy of x, not x itself. Thus, if the statement <code>v.SetFloat(7.1)</code> were allowed to succeed, it would not update x, even though v looks like it was created from x. Instead, it would update the copy of x stored inside the reflection value and x itself would be unaffected. That would be confusing and useless, so it is illegal, and settability is the property used to avoid this issue. If we want to modify x by reflection, we must give the reflection library a pointer to the value we want to modify.<br>Let’s do that. </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x <span class="type">float64</span> = <span class="number">3.4</span></span><br><span class="line">p := reflect.ValueOf(&amp;x) <span class="comment">// Note: take the address of x.</span></span><br><span class="line">fmt.Println(<span class="string">&quot;type of p:&quot;</span>, p.Type())</span><br><span class="line">fmt.Println(<span class="string">&quot;settability of p:&quot;</span>, p.CanSet())</span><br></pre></td></tr></table></figure>
-<p>The reflection object p isn’t settable, but it’s not p we want to set, it’s (in effect) *p. To get to what p points to, we call the Elem method of Value, which indirects through the pointer, and save the result in a reflection Value called v:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">v := p.Elem()</span><br><span class="line">fmt.Println(<span class="string">&quot;settability of v:&quot;</span>, v.CanSet())</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">settability of v: true</span><br></pre></td></tr></table></figure></li>
-</ol>
-<h2 id="structs"><a href="#structs" class="headerlink" title="structs"></a>structs</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    A <span class="type">int</span></span><br><span class="line">    B <span class="type">string</span></span><br><span class="line">&#125;</span><br><span class="line">t := T&#123;<span class="number">23</span>, <span class="string">&quot;skidoo&quot;</span>&#125;</span><br><span class="line">s := reflect.ValueOf(&amp;t).Elem()</span><br><span class="line">typeOfT := s.Type()</span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; s.NumField(); i++ &#123;</span><br><span class="line">    f := s.Field(i)</span><br><span class="line">    fmt.Printf(<span class="string">&quot;%d: %s %s = %v\n&quot;</span>, i,</span><br><span class="line">        typeOfT.Field(i).Name, f.Type(), f.Interface())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0: A int = 23</span><br><span class="line">1: B string = skidoo</span><br></pre></td></tr></table></figure>
-<p>There’s one more point about settability introduced in passing here: the field names of T are upper case (exported) because only exported fields of a struct are settable.<br>Because s contains a settable reflection object, we can modify the fields of the structure.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">s.Field(0).SetInt(77)</span><br><span class="line">s.Field(1).SetString(&quot;Sunset Strip&quot;)</span><br><span class="line">fmt.Println(&quot;t is now&quot;, t)</span><br></pre></td></tr></table></figure>
-<p>If we modified the program so that s was created from t, not &amp;t, the calls to SetInt and SetString would fail as the fields of t would not be settable.</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://go.dev/blog/laws-of-reflection">official blog</a></li>
-<li><a target="_blank" rel="noopener" href="https://research.swtch.com/interfaces">go data structure: interface</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/03/02/golang/go-reflect/" data-id="clokyy8dq000rqwsj5r3jepey" data-title="go reflect" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/" rel="tag">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -775,7 +790,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 18.75px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
     </div>
   </div>
 
@@ -797,6 +812,14 @@
       <ul>
         
           <li>
+            <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
+          </li>
+        
+          <li>
             <a href="/2023/11/22/cuda/concepts_and_keywords/">key concepts in cuda</a>
           </li>
         
@@ -806,14 +829,6 @@
         
           <li>
             <a href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/22/arithmatic/tricks/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/21/cpp/generics_and_macros/">cpp generics</a>
           </li>
         
       </ul>
