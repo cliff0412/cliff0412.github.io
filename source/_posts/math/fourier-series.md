@@ -126,9 +126,80 @@ if all \\(r_j\\) are equal to \\(r\\), i.e \\(N = r^m \\), which gives \\( m = l
 E.q(2.7) becomes
 \\[ \tag{2.8} T = N(m \cdot r)  = rNm = rN(log_rN) \\]
 
+## radix-2 FFT
 The algorithm with \\(r=2\\) is derived by expressing the indices in the form
 
+\\[\tag{3.1} k=k_{m-1} \cdot 2^{m-1} + ... + k_1 \cdot 2 + k_0 \\]
+\\[\tag{3.2} n=n_{m-1} \cdot 2^{m-1} + ... + n_1 \cdot 2 + n_0 \\]
+where \\( k_v \in [0,1] \\), for \\( v = 0,...,m-1 \\), and \\( n_v \in [0,1] \\), for \\( v = 0,...,m-1 \\)
+**\\(k_v\\) and \\(n_v\\) are the contents of the respective bit positions in the binary representation of \\(k\\) and \\(n\\)**
+
+All arrays will now be written as functions of the bits of their indices. With this convention E.q(2.1) is written as 
+\\[ \tag{3.3} 
+\displaylines{
+  X(k_{m-1}, ..., k_0) = \sum_{n_0}\sum_{n_1} ... \sum_{n_{m-1}} x(n_{m-1}, ...,n_1, n_0) \cdot \omega_N^{kn} \\\\
+  = \sum_{n_0}\sum_{n_1} ... \sum_{n_{m-1}} x(n_{m-1}, ...,n_1, n_0) \cdot \omega_N^{k(n_{m-1} \cdot 2^{m-1} + ... + n_1 \cdot 2 + n_0)} \\\\
+  = \sum_{n_0}\sum_{n_1} ... \sum_{n_{m-1}} x(n_{m-1}, ...,n_1, n_0) \cdot \omega_N^{kn_{m-1} \cdot 2^{m-1} + ... + kn_1 \cdot 2 + kn_0}
+} 
+\\]
+where the sums are over \\(n_v \in [0,1]\\), for \\(v = 0,1,...,m-1\\)
+
+Since \\[ \displaylines{
+  \omega_N^{kn_{m-1}\cdot 2^{m-1}} = \omega_N^{(k_{m-1} \cdot 2^{m-1} + ... + k_1 \cdot 2 + k_0)n_{m-1}\cdot 2^{m-1}} \\\\
+  = \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}
+}
+  \\]
+(it is easy to show that all other terms are 1 as \\( \omega_N^{2^m} = 1 \\), so only \\( k_0\\) is kept)
+
+the innermost sum of E.q(3.3) over \\(n_{m-1} \\), depends only on \\( k_0, n_{m-2}, ..., n_0\\) and can be writtern
+\\[ \displaylines{
+x_1(k_0, n_{m-2}, ..., n_1, n_0) = \sum_{n_{m-1}} x(n_{m-1}, ..., n_0) \cdot \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}
+}
+  \\]
+
+proceeding to the next innermost sum, over \\( n_{m-2} \\), and so on, and using 
+\\[ \displaylines{
+  \omega_N^{kn_{m-l}\cdot 2^{m-l}} = \omega_N^{(k_{m-1} \cdot 2^{m-1} + ... + k_1 \cdot 2 + k_0)n_{m-l}\cdot 2^{m-l}} \\\\
+  = \omega_N^{(k_{l-1}\cdot 2^{l-1} + ... + k_0) n_{m-l} \cdot 2^{m-1}}
+}
+  \\]
+one obtains successive arrays
+\\[\displaylines{
+x_l(k_0, ..., k_{l-1}, n_{m-l-1}, ... , n_0)   \\\\
+= \sum_{n_{m-l}}x_{l-1}(k_0, ..., k_{l-2}, n_{m-l}, ..., n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + ...+ k_0) \cdot n_{m-l} \cdot 2^{m-l}}
+}\\]
+for \\(l = 1,2,...,m \\)
+
+writing out the sum this appears as 
+\\[  \tag{3.4} \displaylines{
+x_l(k_0, ..., k_{l-1}, n_{m-l-1}, ... , n_0)   \\\\
+= x_{l-1}(k_0, ..., k_{l-2}, 0, n_{m-l -1}, ..., n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + ...+ k_0) \cdot 0 \cdot 2^{m-l}}   \\\\
+\+ x_{l-1}(k_0, ..., k_{l-2}, 1, n_{m-l -1}, ..., n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + ...+ k_0) \cdot 1 \cdot 2^{m-l}}  \\\\
+= x_{l-1}(k_0, ..., k_{l-2}, 0, n_{m-l -1}, ..., n_0 ) \\\\
+\+ x_{l-1}(k_0, ..., k_{l-2}, 1, n_{m-l-1}, ..., n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + k_{l-2}\cdot 2^{l-2 }+k_{l-3}\cdot 2^{l-3} + ...+ k_0) \cdot 2^{m-l}} \\\\
+= x_{l-1}(k_0, ..., k_{l-2}, 0, n_{m-l -1}, ..., n_0 ) \\\\
+\+ \omega_N^{k_{l-1}\cdot 2^{l-1} \cdot 2^{m-l} } \cdot \omega_N^{k_{l-2}\cdot 2^{l-2 } \cdot 2^{m-l}} \cdot x_{l-1}(k_0, ..., k_{l-2}, 1, n_{m-l-1}, ..., n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + ...+ k_0) \cdot 2^{m-l}} \\\\
+= x_{l-1}(k_0, ..., k_{l-2}, 0, n_{m-l -1}, ..., n_0 ) \\\\
+\+ \omega_N^{k_{l-1}\cdot 2^{m-1} } \cdot \omega_N^{k_{l-2}\cdot 2^{m-2}} \cdot x_{l-1}(k_0, ..., k_{l-2}, 1, n_{m-l-1}, ..., n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + ...+ k_0) \cdot 2^{m-l}} \\\\
+= x_{l-1}(k_0, ..., k_{l-2}, 0, n_{m-l -1}, ..., n_0 ) \\\\
+\+ (-1)^{k_{l-1} } \cdot i^{k_{l-2}} \cdot x_{l-1}(k_0, ..., k_{l-2}, 1, n_{m-l-1}, ..., n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + ...+ k_0) \cdot 2^{m-l}} 
+}\\]
+according to the indexing convension, this is stored in a location whose index is 
+\\[ k_0 \cdot 2^{m-1} + ... + k_{l-1} \cdot 2 ^{m-l} + n_{m-l-1} \cdot 2^{m-l-1} + ... + n_0 \\]
+
+It can be seen in E.q(3.4) that only the two storage locations with indices having 0 and 1 in the \\(2^{m-l}\\) bit position are involved in the computation. Parallel computation is permitted since the operation described by E.q(3.4) can be carried out with all values of \\(k_0, ..., k_{l-2} \\), and \\( n_0, ..., n_{m-l-1}\\) simultaneously. In some applications it is convenient to use E.q(3.4) to express \\(x_l\\) in terms of \\(x_{l-2}\\), giving what is equivalent to an algorithm with \\(r = 4\\).
+the last array calculated gives the desired Fourier sums,
+
+\\[\tag{3.5}
+X(k_{m-1}, ..., k_0) = x_{m}(k_0, ..., k_{m-1})
+\\]
+in such an order that the index of an X must have its binary bits put in reverse order to yield its index in the array \\(x_m\\)
 ## references
 - [1] [youtube video by Steve Brunton, Fourier Series](https://www.youtube.com/watch?v=MB6XGQWLV04)
 - [2] [DFT wikipedia](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)
-- [3] [1965, Cooley & Turkey: an algorithm for the machine calculation of complex fourier series](https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/S0025-5718-1965-0178586-1.pdf)
+- [3] [Cooley–Tukey FFT algorithm wikipedia](https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm)
+- [4] [1965, Cooley & Turkey: an algorithm for the machine calculation of complex fourier series](https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/S0025-5718-1965-0178586-1.pdf)
+- [5] [Split-radix FFT algorithm wikipedia](https://en.wikipedia.org/wiki/Split-radix_FFT_algorithm)
+- [6] [csdn blog of FFT notes](https://blog.csdn.net/weixin_43870101/article/details/106095644?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_utm_term~default-2-106095644-blog-132357995.235^v38^pc_relevant_sort_base1&spm=1001.2101.3001.4242.2&utm_relevant_index=5)
+
+

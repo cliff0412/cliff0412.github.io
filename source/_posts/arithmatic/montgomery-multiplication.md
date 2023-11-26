@@ -8,3 +8,4 @@ montgomery multiplciation
 
 ## references
 https://en.algorithmica.org/hpc/number-theory/montgomery/
+- [csdn blog on montgomery reduction](https://blog.csdn.net/mutourend/article/details/95613967)
