@@ -71,9 +71,186 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-zkp/plonky2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cuda/inline-ptx-assembly-in-cuda" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/11/06/zkp/plonky2/" class="article-date">
+    <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" class="article-date">
+  <time class="dt-published" datetime="2023-11-15T06:47:28.000Z" itemprop="datePublished">2023-11-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/">inline ptx assembly in cuda</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p>PTX, a low-level parallel thread execution virtual machine and instruction set architecture (ISA). PTX exposes the GPU as a data-parallel computing device.<br>The PTX Instruction Set Architecture (ISA) is lower-level compared to CUDA C++, but the programming model is entirely the same, with only some terminology differences. For example: CTA (Cooperative Thread Array): Equivalent to the Block in the CUDA thread model.</p>
+<h1 id="assembler-statements"><a href="#assembler-statements" class="headerlink" title="assembler statements"></a>assembler statements</h1><h2 id="parameters"><a href="#parameters" class="headerlink" title="parameters"></a>parameters</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;template-string&quot;</span> : <span class="string">&quot;constraint&quot;</span>(output) : <span class="string">&quot;constraint&quot;</span>(input));</span><br></pre></td></tr></table></figure>
+<p>an example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(j), <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>Each <code>%n</code> in the template string is an index into the following list of operands, in text order. So <code>%0</code> refers to the first operand, <code>%1</code> to the second operand, and so on. Since the output operands are always listed ahead of the input operands, they are assigned the smallest indices.<br>Note that the numbered references in the string can be in arbitrary order. The following is equivalent to the above example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %2, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k), <span class="string">&quot;r&quot;</span>(j));</span><br></pre></td></tr></table></figure>
+<p>You can also repeat a reference, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>If there is no input operand, you can drop the final colon, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 %0, 2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+
+<p>If there is no output operand, the colon separators are adjacent, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 r1, %0;&quot;</span> :: <span class="string">&quot;r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+<p>the “r” constraint refers to a 32bit integer register. The “&#x3D;” modifier in “&#x3D;r” specifies that the register is written to.  There is also available a “+” modifier that specifies the register is both read and written</p>
+<p>Multiple instructions can be combined into a single asm() statement;<br>am example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__device__ <span class="type">int</span> <span class="title">cube</span> <span class="params">(<span class="type">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> y;</span><br><span class="line">  <span class="built_in">asm</span>(<span class="string">&quot;.reg .u32 t1;\n\t&quot;</span>              <span class="comment">// temp reg t1</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 t1, %1, %1;\n\t&quot;</span>    <span class="comment">// t1 = x * x</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 %0, t1, %1;&quot;</span>        <span class="comment">// y = t1 * x</span></span><br><span class="line">      : <span class="string">&quot;=r&quot;</span>(y) : <span class="string">&quot;r&quot;</span> (x));</span><br><span class="line">  <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="constraints"><a href="#constraints" class="headerlink" title="constraints"></a>constraints</h2><p>There is a separate constraint letter for each PTX register type:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;h&quot;</span> = .u16 reg</span><br><span class="line"><span class="string">&quot;r&quot;</span> = .u32 reg</span><br><span class="line"><span class="string">&quot;l&quot;</span> = .u64 reg</span><br><span class="line"><span class="string">&quot;f&quot;</span> = .f32 reg</span><br><span class="line"><span class="string">&quot;d&quot;</span> = .f64 reg</span><br></pre></td></tr></table></figure>
+<p>The constraint “n” may be used for immediate integer operands with a known value. Example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.u32 %0, %0, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(x) : <span class="string">&quot;n&quot;</span>(<span class="number">42</span>));</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="State-Space-Type-Identifier"><a href="#State-Space-Type-Identifier" class="headerlink" title="State Space + Type + Identifier"></a>State Space + Type + Identifier</h1><h2 id="state-spaces"><a href="#state-spaces" class="headerlink" title="state spaces"></a>state spaces</h2><p>A state space is a storage area with particular characteristics. All variables reside in some state space. </p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>.reg</td>
+<td>Registers, fast.</td>
+</tr>
+<tr>
+<td>.sreg</td>
+<td>Special registers. Read-only; pre-defined; platform-specific.</td>
+</tr>
+<tr>
+<td>.const</td>
+<td>Shared, read-only memory.</td>
+</tr>
+<tr>
+<td>.global</td>
+<td>Global memory, shared by all threads.</td>
+</tr>
+<tr>
+<td>.local</td>
+<td>Local memory, private to each thread.</td>
+</tr>
+<tr>
+<td>.param</td>
+<td>Kernel parameters, defined per-grid; or Function or local parameters, defined per-thread.</td>
+</tr>
+<tr>
+<td>.shared</td>
+<td>Addressable memory, defined per CTA, accessible to all threads in the cluster throughout the lifetime of the CTA that defines it.</td>
+</tr>
+</tbody></table>
+<h2 id="types"><a href="#types" class="headerlink" title="types"></a>types</h2><h3 id="fundamental-types"><a href="#fundamental-types" class="headerlink" title="fundamental types"></a>fundamental types</h3><p>In PTX, the fundamental types reflect the native data types supported by the target architectures.</p>
+<table>
+<thead>
+<tr>
+<th>Basic Type</th>
+<th>Fundamental Type Specifiers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Signed integer</td>
+<td>.s8, .s16, .s32, .s64</td>
+</tr>
+<tr>
+<td>Unsigned integer</td>
+<td>.u8, .u16, .u32, .u64</td>
+</tr>
+<tr>
+<td>Floating-point</td>
+<td>.f16, .f16x2, .f32, .f64</td>
+</tr>
+<tr>
+<td>Bits (untyped)</td>
+<td>.b8, .b16, .b32, .b64, .b128</td>
+</tr>
+<tr>
+<td>Predicate</td>
+<td>.pred</td>
+</tr>
+</tbody></table>
+<h2 id="variables"><a href="#variables" class="headerlink" title="variables"></a>variables</h2><p>In PTX, a variable declaration describes both the variable’s type and its state space. In addition to fundamental types, PTX supports types for simple aggregate objects such as vectors and arrays.<br><strong>examples</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.global .v4 .f32 V;   <span class="comment">// a length-4 vector of floats</span></span><br><span class="line">.shared .v2 .u16 uv;  <span class="comment">// a length-2 vector of unsigned ints</span></span><br><span class="line">.global .v4 .b8  v;   <span class="comment">// a length-4 vector of bytes</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/inline-ptx-assembly/index.html">nvidia docs inlline ptx assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=features-inline-assembly-statements">IBM Open XL C&#x2F;C++ Inline Assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#">parallel thread execution ISA guide</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" data-id="clp3h29tl0000p97ug63eajx3" data-title="inline ptx assembly in cuda" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cpp/types" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/15/cpp/types/" class="article-date">
+  <time class="dt-published" datetime="2023-11-15T03:35:20.000Z" itemprop="datePublished">2023-11-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/15/cpp/types/">cpp types</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="Conversion-Operator"><a href="#Conversion-Operator" class="headerlink" title="Conversion Operator"></a>Conversion Operator</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MyIntegerWrapper</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> value;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Constructor</span></span><br><span class="line">    <span class="built_in">MyIntegerWrapper</span>(<span class="type">int</span> val) : <span class="built_in">value</span>(val) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Conversion operator to int</span></span><br><span class="line">    <span class="function"><span class="keyword">operator</span> <span class="title">int</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">MyIntegerWrapper <span class="title">myObj</span><span class="params">(<span class="number">42</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Implicit conversion using the conversion operator</span></span><br><span class="line">    <span class="type">int</span> intValue = myObj;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Implicit Conversion: &quot;</span> &lt;&lt; intValue &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Explicit conversion using static_cast</span></span><br><span class="line">    <span class="type">double</span> doubleValue = <span class="built_in">static_cast</span>&lt;<span class="type">double</span>&gt;(myObj);</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Explicit Conversion: &quot;</span> &lt;&lt; doubleValue &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/15/cpp/types/" data-id="clp8cm0w60006l57u0fvme5s2" data-title="cpp types" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/zkp/plonky2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/06/cryptography/zkp/plonky2/" class="article-date">
   <time class="dt-published" datetime="2023-11-06T05:24:03.000Z" itemprop="datePublished">2023-11-06</time>
 </a>
     
@@ -85,7 +262,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/06/zkp/plonky2/">plonky2</a>
+      <a class="p-name article-title" href="/2023/11/06/cryptography/zkp/plonky2/">plonky2</a>
     </h1>
   
 
@@ -100,7 +277,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/06/zkp/plonky2/" data-id="clotduyfn0000f57ud7b85ouk" data-title="plonky2" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/06/cryptography/zkp/plonky2/" data-id="clphpvdoi0002aj7uc7oscro3" data-title="plonky2" class="article-share-link">Share</a>
       
       
       
@@ -114,9 +291,9 @@
 
 
   
-    <article id="post-zkp/stark-101" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/zkp/stark-101" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/11/03/zkp/stark-101/" class="article-date">
+    <a href="/2023/11/03/cryptography/zkp/stark-101/" class="article-date">
   <time class="dt-published" datetime="2023-11-03T09:07:33.000Z" itemprop="datePublished">2023-11-03</time>
 </a>
     
@@ -128,7 +305,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/03/zkp/stark-101/">stark 101</a>
+      <a class="p-name article-title" href="/2023/11/03/cryptography/zkp/stark-101/">stark 101</a>
     </h1>
   
 
@@ -250,7 +427,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/03/zkp/stark-101/" data-id="clokyy8du001uqwsjh5bf58nq" data-title="stark 101" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/03/cryptography/zkp/stark-101/" data-id="clphpvdoj0005aj7ug6vbhr5l" data-title="stark 101" class="article-share-link">Share</a>
       
       
       
@@ -264,9 +441,9 @@
 
 
   
-    <article id="post-cryptography/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-arithmatic/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/11/01/cryptography/montgomery-multiplication/" class="article-date">
+    <a href="/2023/11/01/arithmatic/montgomery-multiplication/" class="article-date">
   <time class="dt-published" datetime="2023-11-01T11:10:13.000Z" itemprop="datePublished">2023-11-01</time>
 </a>
     
@@ -278,7 +455,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/01/cryptography/montgomery-multiplication/">montgomery_multiplication</a>
+      <a class="p-name article-title" href="/2023/11/01/arithmatic/montgomery-multiplication/">montgomery_multiplication</a>
     </h1>
   
 
@@ -288,11 +465,14 @@
       
         <p>montgomery multiplciation</p>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/95613967">csdn blog on montgomery reduction</a></li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/montgomery-multiplication/" data-id="clokyy8dp000lqwsj634n4rzr" data-title="montgomery_multiplication" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/01/arithmatic/montgomery-multiplication/" data-id="clphpvdof0000aj7u9gaz5qfy" data-title="montgomery_multiplication" class="article-share-link">Share</a>
       
       
       
@@ -349,9 +529,9 @@
 
 
   
-    <article id="post-zkp/understanding-plonk" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-cryptography/zkp/understanding-plonk" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/11/01/zkp/understanding-plonk/" class="article-date">
+    <a href="/2023/11/01/cryptography/zkp/understanding-plonk/" class="article-date">
   <time class="dt-published" datetime="2023-11-01T09:19:04.000Z" itemprop="datePublished">2023-11-01</time>
 </a>
     
@@ -363,7 +543,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/01/zkp/understanding-plonk/">understanding plonk</a>
+      <a class="p-name article-title" href="/2023/11/01/cryptography/zkp/understanding-plonk/">understanding plonk</a>
     </h1>
   
 
@@ -377,27 +557,49 @@
 </script>
 
 <h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
-<h1 id="preliminary"><a href="#preliminary" class="headerlink" title="preliminary"></a>preliminary</h1><h2 id="observation-1"><a href="#observation-1" class="headerlink" title="observation 1"></a>observation 1</h2><p>a key fact: for non-zero \( f \in \mathbb{F_p}^{\le d}[X]\) <br><br>for \( r  \leftarrow \mathbb{F_p}: Pr[f(r) &#x3D; 0] \le d&#x2F;p\)<br>understanding: polynomial \(f\) contains at most \(d\) roots of zeros. <br><br>suppose \( p \approx 2^{256}\) and  \( d \approx 2^{40}\) then \(d&#x2F;p\) is negligible. <br><br>Therefore, for \( r  \leftarrow \mathbb{F_p}\) if \(f(r) &#x3D; 0\) then \(f\) is identically zero w.h.p (with high probability)</p>
+<h1 id="preliminary"><a href="#preliminary" class="headerlink" title="preliminary"></a>preliminary</h1><h2 id="observation-1"><a href="#observation-1" class="headerlink" title="observation 1"></a>observation 1</h2><p>a key fact: for non-zero \( f \in \mathbb{F_p}^{\le d}[X]\) <br><br>for \( r  \leftarrow \mathbb{F_p}: Pr[f(r) &#x3D; 0] \le d&#x2F;p\)<br>understanding: polynomial \(f\) contains at most \(d\) roots of zeros. <br><br>suppose \( p \approx 2^{256}\) and  \( d \approx 2^{40}\) then \(d&#x2F;p\) is negligible. <br><br>Therefore, for random \( r  \leftarrow \mathbb{F_p}\) if \(f(r) &#x3D; 0\) then \(f\) is identically zero w.h.p (with high probability)</p>
 <p>&#x3D;&gt; a simple zero test for a committed polynomial<br><strong>Note</strong> SZDL lemma: this also holds for multivariate polynomials (where d is total degree of f) </p>
 <h2 id="observation-2"><a href="#observation-2" class="headerlink" title="observation 2"></a>observation 2</h2><p>let \(f,g \in \mathbb{F_p}^{\le d}[X]\).<br>for \( r  \leftarrow \mathbb{F_p}\), if \(f(r) &#x3D; g(r)\), then \(f &#x3D; g\) w.h.p <br><br>\(f(r)-g(r)&#x3D;0\) &#x3D;&gt; \(f-g&#x3D;0\) w.h.p <br></p>
 <p>&#x3D;&gt; a simple equality test for two committed polynomials</p>
 <h1 id="useful-proof-gadgets"><a href="#useful-proof-gadgets" class="headerlink" title="useful proof gadgets"></a>useful proof gadgets</h1><h2 id="zero-test"><a href="#zero-test" class="headerlink" title="zero test"></a>zero test</h2><p>let \( \omega \in \mathbb{F_p} \) be a primitive k-th root of unity \(( \omega ^{k} &#x3D; 1)\)<br>set \( H:&#x3D; \{1,\omega,\omega^2,\omega^3,…,\omega^{k-1}\}  \subseteq \mathbb{F_p} \)<br>let \( f \in \mathbb{F_p}^{\le d}[X]\) and \( b, c \in \mathbb{F_p}\)  \((d \ge k)\)</p>
 <p>task: prove that \(f\) is identically zero on \(H\)<br><img src="/images/zkp/plonk/zero_test.png" alt="zero test"></p>
 <p><strong>info</strong> the box of \(f\) means the commitment of polynomial \(f\), i.e \(com_f\)</p>
+<h2 id="product-check"><a href="#product-check" class="headerlink" title="product check"></a>product check</h2><h2 id="permutation-check"><a href="#permutation-check" class="headerlink" title="permutation check"></a>permutation check</h2><p>let \(f,g\) be polynomials in \(\mathbb{F_p}^{\le d}[X]\). Verifier has \(com_f, com_g\).<br>Prover wants to prove that \((f(1),f(\omega^1),f(\omega^2),…,f(\omega^{k-1})) \in \mathbb{F_p}^{\le k}[X]\) is a permutaion of \((g(1),g(\omega^1),g(\omega^2),…,g(\omega^{k-1})) \in \mathbb{F_p}^{\le k}[X]\)<br><img src="/images/zkp/plonk/permutation_check.png" alt="permutation check"></p>
 <h1 id="PLONK-a-poly-IOP-for-a-general-circuit-C-x-w"><a href="#PLONK-a-poly-IOP-for-a-general-circuit-C-x-w" class="headerlink" title="PLONK: a poly-IOP for a general circuit C(x,w)"></a>PLONK: a poly-IOP for a general circuit C(x,w)</h1><h2 id="step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2"><a href="#step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2" class="headerlink" title="step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)"></a>step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)</h2><p><img src="/images/zkp/plonk/plonk_circuit_to_trace.png" alt="circuit to trace"></p>
-<p>and encode the trace as polynomial</p>
+<p>and encode the trace as polynomial<br>let \(|C|\) be the total number of gates, \(|I| :&#x3D; |I_x| + |I_w|\) be total number of inputs, where \(|I_x|\) is the number of public inputs, \(I_w\) is the number of private inputs.<br>Let \(d&#x3D;3*|C|+|I|\) and \( \Omega&#x3D;\{1,\omega,\omega^2,\omega^3,…,\omega^{d-1}\} \)</p>
+<p>prover interpolates \( T \in \mathbb{F_p}^{\le d}[X]\) such that</p>
+<ul>
+<li><strong>T encodes all inputs</strong>: \( T(\omega^{-j})  \)&#x3D; input #j, for j &#x3D; 1,…,|I|</li>
+<li><strong>T encodes all wires</strong>:<br>\(LeftInput&#x3D;f(\omega^{3l})\), \(  RightInput&#x3D;f(\omega^{3l+1})\), \(Output&#x3D;f(\omega^{3l+2})\), for \(l &#x3D; 0,1,…, |C| -1\)<br>For the example,<br><strong>inputs</strong><br>\(x_1&#x3D; 5 &#x3D; T(\omega^9)\), \(x_2&#x3D; 6 &#x3D; T(\omega^{10})\), and \(w_1 &#x3D; 1&#x3D;T(\omega^{11})\)<br><strong>wires</strong><br>\(5&#x3D;T(\omega^0)\), \(6&#x3D;T(\omega^{1})\), and \(11&#x3D;T(\omega^{2})\)<br>\(6&#x3D;T(\omega^3)\), \(1&#x3D;T(\omega^{4})\), and \(7&#x3D;T(\omega^{5})\)<br>\(11&#x3D;T(\omega^6)\), \(7&#x3D;T(\omega^{7})\), and \(77&#x3D;T(\omega^{8})\)</li>
+</ul>
+<h2 id="step-2-proving-validity-of-T"><a href="#step-2-proving-validity-of-T" class="headerlink" title="step 2: proving validity of T"></a>step 2: proving validity of T</h2><p>Prover needs to prove 4 things</p>
+<ol>
+<li><strong>\(T(x)\) encodes the correct public inputs</strong><br>Both prover and verifier interpolate a polynomial \( v(x) \in \mathbb{F_p}^{\le |I_x|}[X]\)<br>that encodes the \(x\)-inputs to the circuit:<br>\(v(\omega^{-j}) &#x3D;\) input #j, for \(j &#x3D; 1, …, |I_x|\)<br>In our example, \(v(\omega^{-1} &#x3D; 5), v(\omega^{-2} &#x3D; 6)\)<br>Let \( \Omega_{inp}&#x3D;\{\omega^{-1},\omega^{-2},…,\omega^{-|I_x|}\} \)<br>Prover proves by using a <strong>ZeroTest</strong> on \(\Omega_inp\) to prove that<br>\[T(y) - v(y) &#x3D;0 \quad \forall y \in \Omega_{inp}\]</li>
+<li><strong>every gate is evaluated correctly</strong><br><strong>Idea</strong> encode gate types using a selector polynomial \(S(X)\)<br>define \(S(X) \in  \mathbb{F_p}^{\le d}[X]\) such that \( \forall l &#x3D; 0, …, |C| -1\):</li>
+</ol>
+<ul>
+<li>\(S(\omega^{3l}) &#x3D;1\) if gate #l is an addition gate</li>
+<li>\(S(\omega^{3l}) &#x3D;0\) if gate #l is a multiplication gate</li>
+</ul>
+<p>Then, \( \forall y \in   \Omega_{gates} : &#x3D; \{1,\omega^{3},\omega^{6},…,\omega^{3(|C|-1)}\} \)<br>\(S(y) \cdot [T(y) + T(\omega y)] + (1-S(y))\cdot T(y) \cdot T(\omega y) &#x3D; T(\omega^2 y)\)<br><img src="/images/zkp/plonk/gate_evaluation_zero_test.png" alt="gate_evaluation_zero_test"></p>
+<ol start="3">
+<li><p>the wiring is implemented correctly</p>
+</li>
+<li><p>the output of last gate is 0</p>
+</li>
+</ol>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://hackmd.io/@learn-zkp/note-plonk-family">https://hackmd.io/@learn-zkp/note-plonk-family</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=A0oZVEXav24">ZKP MOOC Lecture 5: The Plonk SNARK</a></li>
 <li><a target="_blank" rel="noopener" href="https://cs251.stanford.edu/lectures/lecture15.pdf">CS251.stanford lecture</a></li>
 </ul>
-<p>\( \Omega&#x3D;{1,\omega,\omega^2,\omega^3,…,\omega^{d-1}} \)<br>\(d&#x3D;3*|Gate|+|PublicInput|+|Witness|\)<br>\(Selector*(Left+Right-Output)+(1-Selector)<em>(Left</em>Right-Output)&#x3D;0\)</p>
+<p>\(d&#x3D;3*|Gate|+|PublicInput|+|Witness|\)<br>\(Selector*(Left+Right-Output)+(1-Selector)<em>(Left</em>Right-Output)&#x3D;0\)</p>
 <p>LeftInput&#x3D;f(\omega^{3l})<br>  RightInput&#x3D;f(\omega^{3l+1})<br>  Output&#x3D;f(\omega^{3l+2})<br>  x_1&#x3D;f(\omega^9)</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clokyy8du001wqwsj56sv3t4w" data-title="understanding plonk" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/zkp/understanding-plonk/" data-id="clphpvdok000baj7u3i3te2rg" data-title="understanding plonk" class="article-share-link">Share</a>
       
       
       
@@ -517,7 +719,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/12/math/fourier-series/">fourier_series</a>
+      <a class="p-name article-title" href="/2023/10/12/math/fourier-series/">fourier series, DFT and FFT</a>
     </h1>
   
 
@@ -532,138 +734,52 @@
 
 <h2 id="Fourier-Series"><a href="#Fourier-Series" class="headerlink" title="Fourier Series"></a>Fourier Series</h2><h3 id="innter-product-of-two-functions"><a href="#innter-product-of-two-functions" class="headerlink" title="innter product of two functions"></a>innter product of two functions</h3><p>\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]<br>\(\bar{g}\) is the congugate of g on complex number system</p>
 <h3 id="Fourier-series-definition"><a href="#Fourier-series-definition" class="headerlink" title="Fourier series definition"></a>Fourier series definition</h3><p>let \(f(x)\) be a periodic function over a period of \([-\pi, +\pi]\)<br><img src="/images/math/fourier_series/f_x.png" alt="f(x)"></p>
-<p>\( f(x) \) can be transformed into below<br>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(kx) + B_{k}sin(kx)\],<br>where<br>\[ A_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)cos(kx)dx &#x3D; \frac{1}{||cos(kx)||^2}&lt;f(x),cos(kx)&gt; \]<br>\[ B_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)sin(kx)dx &#x3D; \frac{1}{||sin(kx)||^2}&lt;f(x),sin(kx)&gt; \]<br>where \(A_{k}, B_{k}\) is the projection of \(f(x)\) over \(sin(kx)\), or \(cos(kx)\)</p>
+<p>\( f(x) \) can be transformed into below<br>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(kx) + B_{k}sin(kx)\],<br>where<br>\[ A_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)cos(kx)dx &#x3D; \frac{1}{||cos(kx)||^2}&lt;f(x),cos(kx)&gt; \]<br>\[ B_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)sin(kx)dx &#x3D; \frac{1}{||sin(kx)||^2}&lt;f(x),sin(kx)&gt; \]<br>where \(A_{k}, B_{k}\) is just the <strong>innver product</strong> of \(f(x)\), and \( cos(kx) \), \(sin(kx)\) respectively. intuitively, it is the <strong>projection</strong> of \(f(x)\) over \(sin(kx)\), or \(cos(kx)\). </p>
 <h3 id="if-period-is-L"><a href="#if-period-is-L" class="headerlink" title="if period is L"></a>if period is L</h3><p>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(\frac{2\pi kx}{L}) + B_{k}sin(\frac{2\pi kx}{L})\],<br>where<br>\[ A_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)cos(\frac{2\pi kx}{L})dx\]<br>\[ B_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)sin(\frac{2\pi kx}{L})dx\]</p>
-<h2 id="Complex-Fourier-Series"><a href="#Complex-Fourier-Series" class="headerlink" title="Complex Fourier Series"></a>Complex Fourier Series</h2><p>todo!()</p>
+<h2 id="Complex-Fourier-Series"><a href="#Complex-Fourier-Series" class="headerlink" title="Complex Fourier Series"></a>Complex Fourier Series</h2><p>let’s define \[ \psi_k &#x3D; e^{ikx} &#x3D; cos(kx) + i \cdot sin(kx)\]<br>we can prove that \(\psi_k, and \psi_j\) are <strong>orthogonal</strong> as their inner product is zero<br><strong>proof</strong><br>\[ &lt;\psi_j, \psi_k&gt; &#x3D; \int_{-\pi}^{+\pi} e^{jkx}e^{-ikx}dx &#x3D;  \int_{-\pi}^{+\pi} e^{j(j-k)x}dx &#x3D; \frac{1}{i(j-k)}[e^{i(j-k)x}]_{-\pi}^{\pi}\]<br>it is 0 if \(j \ne k\) , \(2\pi \) if \(j&#x3D;k\)</p>
+<p><strong>note</strong> conjugate of \(\psi_k\) is \(e^{-ikx}\)</p>
+<p>\(f(x) &#x3D; \frac{1}{2\pi} \sum_{k&#x3D;-\infty}^{\infty} c_k \psi_k\), where \(c_k&#x3D;&lt;f(x), \psi_k&gt; &#x3D; \int_{-\pi}^{+\pi} f(x)e^{-ikx}dx\)</p>
 <h2 id="Discrete-Fourier-Transform-DFT"><a href="#Discrete-Fourier-Transform-DFT" class="headerlink" title="Discrete Fourier Transform (DFT)"></a>Discrete Fourier Transform (DFT)</h2><p>The discrete Fourier transform transforms a sequence of N complex numbers<br>\[\lbrace x_{n} \rbrace :&#x3D; x_0, x_1,…, x_{N-1} \] into another sequence of complex numbers,<br>\[\lbrace X_{k} \rbrace :&#x3D; X_0, X_1,…, X_{N-1} \] which is defined by<br>\[X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot e^{-\frac{i2\pi}{N}kn}\]</p>
-<h3 id="inverse-DFT"><a href="#inverse-DFT" class="headerlink" title="inverse DFT"></a>inverse DFT</h3><p>The inverse transform is given by<br>\[x_{n} &#x3D; \frac{1}{N}\sum_{k&#x3D;0}^{N-1} X_{k} \cdot e^{\frac{i2\pi}{N}kn}\]</p>
+<p>let the n-th root of unity be \(\omega_N &#x3D; e^{-\frac{2\pi i}{N}}\), we have<br>\[ \tag{1.1} X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot \omega_N^{kn}\]</p>
+<h3 id="inverse-DFT"><a href="#inverse-DFT" class="headerlink" title="inverse DFT"></a>inverse DFT</h3><p>The inverse transform is given by<br>\[ \tag{1.2} x_{n} &#x3D; \frac{1}{N}\sum_{k&#x3D;0}^{N-1} X_{k} \cdot \omega_N^{-kn}\]</p>
 <h3 id="the-unitary-DFT"><a href="#the-unitary-DFT" class="headerlink" title="the unitary DFT"></a>the unitary DFT</h3><p>Another way of looking at the DFT is to note that the DFT can be expressed as the DFT matrix, a Vandermonde matrix, introduced by Sylvester in 1867.<br>\[<br>    \boldsymbol{F} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]<br>where \( \omega_{N} &#x3D; e^{-\frac{i2\pi}{N}}\) is a primitive Nth root of unity. (any complex number that yields 1 when raised to some positive integer power n)</p>
-<p>\[  \tag{1.1} X &#x3D; F \cdot x^{T}\]</p>
-<h2 id="Fast-Fourier-Transform-FFT"><a href="#Fast-Fourier-Transform-FFT" class="headerlink" title="Fast Fourier Transform (FFT)"></a>Fast Fourier Transform (FFT)</h2><p>FFT is an algorithm to compute DFT ,E.q(1.1). The original DFT contains \(N^2\) multiplications. However, FFT reduce it to \(N\cdot log(N)\)</p>
+<p>\[ X &#x3D; F \cdot x^{T}\]<br>\(x\) is a column vector</p>
+<h2 id="Polynomial-amp-DFT"><a href="#Polynomial-amp-DFT" class="headerlink" title="Polynomial &amp; DFT"></a>Polynomial &amp; DFT</h2><h3 id="Polynomial-evaluation-amp-DFT"><a href="#Polynomial-evaluation-amp-DFT" class="headerlink" title="Polynomial evaluation &amp; DFT"></a>Polynomial evaluation &amp; DFT</h3><p>let a polynomial be<br>$$f(x)&#x3D;\sum_{n&#x3D;0}^{N-1}x_nx^n$$<br>then,<br>$$f(\omega_N^{k})&#x3D;\sum_{n&#x3D;0}^{N-1}x_n\omega_N^{kn},\quad k&#x3D;0,1,2,…,N-1$$<br>compare this equation with E.q(1.1), we can know that DFT is the evaluations of a polynomial at N points of Nth root of unity, \(\omega_N^{0},\omega_N^1,\omega_N^2,…,\omega_N^{N-1}\)</p>
+<p>$$(\omega_N^{0},X_0),(\omega_N^1,X_1),(\omega_N^2,X_2),…,(\omega_N^{N-1},X_{N-1})$$</p>
+<h3 id="Polynomial-interpolation-amp-IDFT"><a href="#Polynomial-interpolation-amp-IDFT" class="headerlink" title="Polynomial interpolation &amp; IDFT"></a>Polynomial interpolation &amp; IDFT</h3><p>According to E.q(1.2), IDFT is the polynomial interpolation (getting original polynomial coefficients).</p>
+<h2 id="Fast-Fourier-Transform-FFT-3"><a href="#Fast-Fourier-Transform-FFT-3" class="headerlink" title="Fast Fourier Transform (FFT) [3]"></a>Fast Fourier Transform (FFT) [3]</h2><p>The problem is to calculate the below<br>\[ \tag{2.1} X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot \omega_N^{kn}, \quad  k&#x3D; 0,1,…,N-1\]<br>A straightforward calculation using would require \(N^2\) operations where “operation” means, as it will throughout this note, a complex multiplication followed by a complex addition.<br>The FFT algorithm described here iterates on the array and yields the result in less than \( 2N log_2N \)</p>
+<p>To derive the algorithm, suppose \(N\) is a composite, i.e., \(N &#x3D; r_1\cdot r_2\). Then let the indices in (2.1) be expressed<br>\[ k &#x3D; k_1r_1 + k_0, \quad k_0 &#x3D; 0,1,…,r_1-1, \quad k_1 &#x3D; 0,1,…, r_2 -1 \]<br>\[ n &#x3D; n_1r_2 + n_0, \quad n_0 &#x3D; 0,1,…,r_2-1, \quad n_1 &#x3D; 0,1,…, r_1 -1 \]</p>
+<p>Since \(  n &#x3D; n_1r_2 + n_0\), we can write</p>
+<p>\[ \tag{2.2} X(k_1, k_0) &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn} &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn_1r_2}\omega_N^{kn_0}  \]<br><strong>note</strong> \( x(n_1,n_0)\) is same to \(x(n)\), just the indexing is transformed form 1D to 2D. You can think original 1D array of size N is resized to a matrix of size \( (r_2, r_1) \), \(r_1\) is number of cols, while \(r_2\) is number of rows</p>
+<p>Since \(k &#x3D; k_1r_1 + k_0\), we have<br>\[ \omega_N^{kn_1r_2} &#x3D;\omega_N^{(k_1r_1+k_0)n_1r_2} &#x3D; \omega_N^{(k_1r_1)n_1r_2} \cdot \omega_N^{k_0n_1r_2}\]<br>according to the property of Nth root of unity, \( \omega_N^{N} &#x3D; \omega_N^{r_1r_2} &#x3D;1 \), \( \omega_N^{(k_1r_1)n_1r_2}\) is also 1.<br>then we have<br>\[ \omega_N^{kn_1r_2} &#x3D;  \omega_N^{k_0n_1r_2}\]<br>substitute it into E.q 2.2, we get<br>\[ \tag{2.3} X(k_1, k_0) &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn} &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{k_0n_1r_2}\omega_N^{kn_0}  \]<br>Therefore, the inner sum, over \(n_1\), depends only on \(k_0\) and \(n_0\), and can be defined as a new array,<br>\[ \tag{2.4} x_1(k_0, n_0) &#x3D; \sum_{n_1} x(n_1, n_0) \cdot \omega_N^{k_0n_1r_2}\]<br>E.q(2.3) can be writtern as<br>\[ \tag{2.5} X(k_1, k_0) &#x3D; \sum_{n_0} x_1(k_0,n_0)\omega_N^{kn_0} &#x3D;  \sum_{n_0} x_1(k_0,n_0)\omega_N^{(k_1r_1 + k_0)n_0}  \]</p>
+<p>There are N elements in the matrix \(x_1\), each requiring \(r_1\) operations, giving a total of \(Nr_1\) operations. Similarly, it takes \(Nr_2\) operations to calculate \(X\) from \(x_1\). Therefore, the two-step algorithm, given by Eq(2.4) and Eq(2.5) requires a total of<br>\[ \tag{2.6} T &#x3D; N(r_1+r_2) \]</p>
+<p>it is easy to see how successive applications of the above procedure (recursively),  starting with its appliation to Eq(2.4) give an m-step algorihtm requiring<br>\[ \tag{2.7} T &#x3D; N(r_1+r_2 + … + r_m) \]<br>where<br>\[ N &#x3D; \prod_{j&#x3D;1}^{j&#x3D;m}r_j\]<br>if all \(r_j\) are equal to \(r\), i.e \(N &#x3D; r^m \), which gives \( m &#x3D; log_rN \)<br>E.q(2.7) becomes<br>\[ \tag{2.8} T &#x3D; N(m \cdot r)  &#x3D; rNm &#x3D; rN(log_rN) \]</p>
+<h2 id="radix-2-FFT"><a href="#radix-2-FFT" class="headerlink" title="radix-2 FFT"></a>radix-2 FFT</h2><p>The algorithm with \(r&#x3D;2\) is derived by expressing the indices in the form</p>
+<p>\[\tag{3.1} k&#x3D;k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0 \]<br>\[\tag{3.2} n&#x3D;n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0 \]<br>where \( k_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \), and \( n_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \)<br><strong>\(k_v\) and \(n_v\) are the contents of the respective bit positions in the binary representation of \(k\) and \(n\)</strong></p>
+<p>All arrays will now be written as functions of the bits of their indices. With this convention E.q(2.1) is written as<br>\[ \tag{3.3}<br>\displaylines{<br>  X(k_{m-1}, …, k_0) &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{k(n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0)} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn_{m-1} \cdot 2^{m-1} + … + kn_1 \cdot 2 + kn_0}<br>}<br>\]<br>where the sums are over \(n_v \in [0,1]\), for \(v &#x3D; 0,1,…,m-1\)</p>
+<p>Since \[ \displaylines{<br>  \omega_N^{kn_{m-1}\cdot 2^{m-1}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-1}\cdot 2^{m-1}} \\<br>  &#x3D; \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]<br>(it is easy to show that all other terms are 1 as \( \omega_N^{2^m} &#x3D; 1 \), so only \( k_0\) is kept)</p>
+<p>the innermost sum of E.q(3.3) over \(n_{m-1} \), depends only on \( k_0, n_{m-2}, …, n_0\) and can be writtern<br>\[ \displaylines{<br>x_1(k_0, n_{m-2}, …, n_1, n_0) &#x3D; \sum_{n_{m-1}} x(n_{m-1}, …, n_0) \cdot \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]</p>
+<p>proceeding to the next innermost sum, over \( n_{m-2} \), and so on, and using<br>\[ \displaylines{<br>  \omega_N^{kn_{m-l}\cdot 2^{m-l}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-l}\cdot 2^{m-l}} \\<br>  &#x3D; \omega_N^{(k_{l-1}\cdot 2^{l-1} + … + k_0) n_{m-l} \cdot 2^{m-1}}<br>}<br>  \]<br>one obtains successive arrays<br>\[\displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; \sum_{n_{m-l}}x_{l-1}(k_0, …, k_{l-2}, n_{m-l}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot n_{m-l} \cdot 2^{m-l}}<br>}\]<br>for \(l &#x3D; 1,2,…,m \)</p>
+<p>writing out the sum this appears as<br>\[  \tag{3.4} \displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 0 \cdot 2^{m-l}}   \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 1 \cdot 2^{m-l}}  \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + k_{l-2}\cdot 2^{l-2 }+k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{l-1} \cdot 2^{m-l} } \cdot \omega_N^{k_{l-2}\cdot 2^{l-2 } \cdot 2^{m-l}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{m-1} } \cdot \omega_N^{k_{l-2}\cdot 2^{m-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ (-1)^{k_{l-1} } \cdot i^{k_{l-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}}<br>}\]<br>according to the indexing convension, this is stored in a location whose index is<br>\[ k_0 \cdot 2^{m-1} + … + k_{l-1} \cdot 2 ^{m-l} + n_{m-l-1} \cdot 2^{m-l-1} + … + n_0 \]</p>
+<p>It can be seen in E.q(3.4) that only the two storage locations with indices having 0 and 1 in the \(2^{m-l}\) bit position are involved in the computation. Parallel computation is permitted since the operation described by E.q(3.4) can be carried out with all values of \(k_0, …, k_{l-2} \), and \( n_0, …, n_{m-l-1}\) simultaneously. In some applications it is convenient to use E.q(3.4) to express \(x_l\) in terms of \(x_{l-2}\), giving what is equivalent to an algorithm with \(r &#x3D; 4\).<br>the last array calculated gives the desired Fourier sums,</p>
+<p>\[\tag{3.5}<br>X(k_{m-1}, …, k_0) &#x3D; x_{m}(k_0, …, k_{m-1})<br>\]<br>in such an order that the index of an X must have its binary bits put in reverse order to yield its index in the array \(x_m\)</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=MB6XGQWLV04">youtube video by Steve Brunton, Fourier Series</a></li>
+<li>[2] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">DFT wikipedia</a></li>
+<li>[3] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm">Cooley–Tukey FFT algorithm wikipedia</a></li>
+<li>[4] <a target="_blank" rel="noopener" href="https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/S0025-5718-1965-0178586-1.pdf">1965, Cooley &amp; Turkey: an algorithm for the machine calculation of complex fourier series</a></li>
+<li>[5] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Split-radix_FFT_algorithm">Split-radix FFT algorithm wikipedia</a></li>
+<li>[6] <a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43870101/article/details/106095644?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_utm_term~default-2-106095644-blog-132357995.235%5Ev38%5Epc_relevant_sort_base1&spm=1001.2101.3001.4242.2&utm_relevant_index=5">csdn blog of FFT notes</a></li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/12/math/fourier-series/" data-id="clokyy8dv0021qwsjhghcad7b" data-title="fourier_series" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/10/12/math/fourier-series/" data-id="clokyy8dv0021qwsjhghcad7b" data-title="fourier series, DFT and FFT" class="article-share-link">Share</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-tools/markdown_and_latex" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/01/tools/markdown_and_latex/" class="article-date">
-  <time class="dt-published" datetime="2023-10-01T01:22:35.000Z" itemprop="datePublished">2023-10-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/01/tools/markdown_and_latex/">markdown &amp; latex</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="markdown-by-example"><a href="#markdown-by-example" class="headerlink" title="markdown by example"></a>markdown by example</h2><p><em>italic</em><br><span style="color:red">color</span></p>
-<h2 id="latex-by-example"><a href="#latex-by-example" class="headerlink" title="latex by example"></a>latex by example</h2><h2 id="symbol"><a href="#symbol" class="headerlink" title="symbol"></a>symbol</h2><p>\( \mu \)<br>\( \omega \)<br>\( \sigma \)<br>\( \epsilon \)<br>\( \zeta \)<br>\( \eta \)<br>\( \theta \)<br>\( \kappa \)<br>\( \nu \)<br>\( \omicron \)<br>\( \rho \)<br>\( \delta \)<br>\( \tau \)<br>\( \upsilon \)<br>\( \phi \)<br>\( \chi \)<br>\( \psi \)</p>
-<h2 id="font-amp-effects"><a href="#font-amp-effects" class="headerlink" title="font &amp; effects"></a>font &amp; effects</h2><p>\( \mathbb{G_{1}}\)<br>\( \boldsymbol{F}\)<br>\( \hat{h} \)</p>
-<h2 id="equation"><a href="#equation" class="headerlink" title="equation"></a>equation</h2><p>\[  \tag{1.1} X &#x3D; F \cdot x^{T}\]</p>
-<h2 id="blob"><a href="#blob" class="headerlink" title="blob"></a>blob</h2><p>\[<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/01/tools/markdown_and_latex/" data-id="clokyy8dv001zqwsj9hdfghdd" data-title="markdown &amp; latex" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tool/" rel="tag">tool</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/zkp-demystify-zokrates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" class="article-date">
-  <time class="dt-published" datetime="2023-07-14T06:29:26.000Z" itemprop="datePublished">2023-07-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><h3 id="source-file"><a href="#source-file" class="headerlink" title="source file"></a>source file</h3><p>an example, <code>square.zok</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def main(private field a, field b) &#123;</span><br><span class="line">    assert(a * a == b);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>The keyword private signals that we do not want to reveal this input, but still prove that we know its value.</li>
-</ul>
-<h3 id="compile"><a href="#compile" class="headerlink" title="compile"></a>compile</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates compile -i root.zok</span><br></pre></td></tr></table></figure>
-<p>after compile, it generates below files</p>
-<ul>
-<li>out</li>
-<li>out.r1cs</li>
-<li>abi.json</li>
-</ul>
-<h3 id="setup"><a href="#setup" class="headerlink" title="setup"></a>setup</h3><p>Performs a trusted setup for a given constraint system</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates setup</span><br></pre></td></tr></table></figure>
-<p>options </p>
-<ul>
-<li>-i, –input <FILE>                       Path of the binary [default: out]<br>it generates below two files</li>
-<li>proving.key</li>
-<li>verification.key</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" data-id="clokyy8e00039qwsjfxurcxan" data-title="zkp demystify zokrates" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
 
     </footer>
   </div>
@@ -701,7 +817,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 18.75px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
     </div>
   </div>
 
@@ -723,6 +839,14 @@
       <ul>
         
           <li>
+            <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
+          </li>
+        
+          <li>
             <a href="/2023/11/22/cuda/concepts_and_keywords/">key concepts in cuda</a>
           </li>
         
@@ -732,14 +856,6 @@
         
           <li>
             <a href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/22/arithmatic/tricks/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/21/cpp/generics_and_macros/">cpp generics</a>
           </li>
         
       </ul>
