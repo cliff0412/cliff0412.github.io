@@ -1,7 +1,7 @@
 ---
 title: goldilocks field
 date: 2023-11-18 11:06:53
-tags:
+tags: [arithmatic]
 ---
 
 
@@ -124,3 +124,4 @@ all bits of borrow will be set to 1 if underflow occurs
 - [The Goldilocks Prime by Remco Bloemem](https://xn--2-umb.com/22/goldilocks/)
 - [parameters of goldilocks field](https://cronokirby.com/notes/2022/09/the-goldilocks-field/)
 - [csdn blog](https://blog.csdn.net/mutourend/article/details/126407028)
+- [cuda implementation of GoldilocksNTT by yrrid](https://github.com/yrrid/GoldilocksNTT/tree/main)
