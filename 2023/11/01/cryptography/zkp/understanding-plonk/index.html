@@ -9,14 +9,24 @@
   <meta name="description" content="introductionPLONK, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateab">
 <meta property="og:type" content="article">
 <meta property="og:title" content="understanding plonk">
-<meta property="og:url" content="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/index.html">
+<meta property="og:url" content="https://cliff0412.github.io/2023/11/01/cryptography/zkp/understanding-plonk/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
 <meta property="og:description" content="introductionPLONK, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateab">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/zero_test.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/prod_check_lemma.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/prod_check_prove_verify.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/permutation_check.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/prescribed_perm_check_problem.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/prescribed_perm_check_problem_quadratic.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/prescribed_perm_check_problem_reduce.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/prescribed_perm_check_problem_prove_verify.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/prescribed_perm_check_problem_complete.png">
 <meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/plonk_circuit_to_trace.png">
-<meta property="article:published_time" content="2023-11-01T09:19:04.000Z">
-<meta property="article:modified_time" content="2023-11-11T02:17:40.225Z">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/gate_evaluation_zero_test.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/plonk/copy_constraint_example.png">
+<meta property="article:published_time" content="2023-11-01T17:19:04.000Z">
+<meta property="article:modified_time" content="2023-11-28T15:57:56.032Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta property="article:tag" content="zkp">
@@ -78,10 +88,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-zkp/understanding-plonk" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-cryptography/zkp/understanding-plonk" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/11/01/zkp/understanding-plonk/" class="article-date">
-  <time class="dt-published" datetime="2023-11-01T09:19:04.000Z" itemprop="datePublished">2023-11-01</time>
+    <a href="/2023/11/01/cryptography/zkp/understanding-plonk/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T17:19:04.000Z" itemprop="datePublished">2023-11-01</time>
 </a>
     
   </div>
@@ -106,27 +116,53 @@
 </script>
 
 <h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2019/953">PLONK</a>, standing for the unwieldy quasi-backronym “Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge”. PLONK still requires a “universal and updateable” trusted setup, meaning each program share the same setup. Secondly, there is a way for multiple parties to participate in the trusted setup such that it is secure as long as any one of them is honest.</p>
-<h1 id="preliminary"><a href="#preliminary" class="headerlink" title="preliminary"></a>preliminary</h1><h2 id="observation-1"><a href="#observation-1" class="headerlink" title="observation 1"></a>observation 1</h2><p>a key fact: for non-zero \( f \in \mathbb{F_p}^{\le d}[X]\) <br><br>for \( r  \leftarrow \mathbb{F_p}: Pr[f(r) &#x3D; 0] \le d&#x2F;p\)<br>understanding: polynomial \(f\) contains at most \(d\) roots of zeros. <br><br>suppose \( p \approx 2^{256}\) and  \( d \approx 2^{40}\) then \(d&#x2F;p\) is negligible. <br><br>Therefore, for \( r  \leftarrow \mathbb{F_p}\) if \(f(r) &#x3D; 0\) then \(f\) is identically zero w.h.p (with high probability)</p>
+<h1 id="preliminary"><a href="#preliminary" class="headerlink" title="preliminary"></a>preliminary</h1><h2 id="observation-1"><a href="#observation-1" class="headerlink" title="observation 1"></a>observation 1</h2><p>a key fact: for non-zero \( f \in \mathbb{F_p}^{\le d}[X]\) <br><br>for \( r  \leftarrow \mathbb{F_p}: Pr[f(r) &#x3D; 0] \le d&#x2F;p\)<br>understanding: polynomial \(f\) contains at most \(d\) roots of zeros. <br><br>suppose \( p \approx 2^{256}\) and  \( d \approx 2^{40}\) then \(d&#x2F;p\) is negligible. <br><br>Therefore, for random \( r  \leftarrow \mathbb{F_p}\) if \(f(r) &#x3D; 0\) then \(f\) is identically zero w.h.p (with high probability)</p>
 <p>&#x3D;&gt; a simple zero test for a committed polynomial<br><strong>Note</strong> SZDL lemma: this also holds for multivariate polynomials (where d is total degree of f) </p>
 <h2 id="observation-2"><a href="#observation-2" class="headerlink" title="observation 2"></a>observation 2</h2><p>let \(f,g \in \mathbb{F_p}^{\le d}[X]\).<br>for \( r  \leftarrow \mathbb{F_p}\), if \(f(r) &#x3D; g(r)\), then \(f &#x3D; g\) w.h.p <br><br>\(f(r)-g(r)&#x3D;0\) &#x3D;&gt; \(f-g&#x3D;0\) w.h.p <br></p>
 <p>&#x3D;&gt; a simple equality test for two committed polynomials</p>
-<h1 id="useful-proof-gadgets"><a href="#useful-proof-gadgets" class="headerlink" title="useful proof gadgets"></a>useful proof gadgets</h1><h2 id="zero-test"><a href="#zero-test" class="headerlink" title="zero test"></a>zero test</h2><p>let \( \omega \in \mathbb{F_p} \) be a primitive k-th root of unity \(( \omega ^{k} &#x3D; 1)\)<br>set \( H:&#x3D; \{1,\omega,\omega^2,\omega^3,…,\omega^{k-1}\}  \subseteq \mathbb{F_p} \)<br>let \( f \in \mathbb{F_p}^{\le d}[X]\) and \( b, c \in \mathbb{F_p}\)  \((d \ge k)\)</p>
+<h1 id="useful-proof-gadgets"><a href="#useful-proof-gadgets" class="headerlink" title="useful proof gadgets"></a>useful proof gadgets</h1><h2 id="1-zero-test"><a href="#1-zero-test" class="headerlink" title="1. zero test"></a>1. zero test</h2><p>let \( \omega \in \mathbb{F_p} \) be a primitive k-th root of unity \(( \omega ^{k} &#x3D; 1)\)<br>set \( H:&#x3D; \{1,\omega,\omega^2,\omega^3,…,\omega^{k-1}\}  \subseteq \mathbb{F_p} \)<br>let \( f \in \mathbb{F_p}^{\le d}[X]\) and \( b, c \in \mathbb{F_p}\)  \((d \ge k)\)</p>
 <p>task: prove that \(f\) is identically zero on \(H\)<br><img src="/images/zkp/plonk/zero_test.png" alt="zero test"></p>
 <p><strong>info</strong> the box of \(f\) means the commitment of polynomial \(f\), i.e \(com_f\)</p>
+<h2 id="2-product-check"><a href="#2-product-check" class="headerlink" title="2. product check"></a>2. product check</h2><p>product check on \(\Omega: \quad \prod_{a\in \Omega} f(a) &#x3D; 1\)<br>Set \( t \in \mathbb{F_p}^{\le k}[X]\) to be the degree-k polynomial:<br>\[ t(1) &#x3D; f(\omega^0) &#x3D; f(1), \quad t(\omega^s) &#x3D; \prod_{i&#x3D;0}^{s}f(\omega^{i}) \quad for \quad s &#x3D; 1,…, k-1\]<br>Then<br>\(t(\omega) &#x3D; f(1) \cdot f(\omega), \quad t(\omega^2) &#x3D; f(1) \cdot f(\omega) \cdot f(\omega^2), … \)<br>\(t( \omega^{k-1}) &#x3D; \prod_{a \in \Omega}f(a) &#x3D; 1\)<br>and \( t(\omega \cdot x) &#x3D; t(x) \cdot f(\omega \cdot x) \) for all \(x \in \Omega \) (including at \(x &#x3D; \omega^{k-1}\))<br><img src="/images/zkp/plonk/prod_check_lemma.png" alt="prod_check_lemma"><br><img src="/images/zkp/plonk/prod_check_prove_verify.png" alt="prod_check_prove_and_verify"></p>
+<p>Same works for rational functions: \( \prod_{a \in \Omega}{f&#x2F;g}(a) &#x3D;1 \)<br>The proof is similar</p>
+<h2 id="3-permutation-check"><a href="#3-permutation-check" class="headerlink" title="3. permutation check"></a>3. permutation check</h2><p>let \(f,g\) be polynomials in \(\mathbb{F_p}^{\le d}[X]\). Verifier has \(com_f, com_g\).<br>Prover wants to prove that \((f(1),f(\omega^1),f(\omega^2),…,f(\omega^{k-1})) \in \mathbb{F_p}^{\le k}[X]\) is a permutaion of \((g(1),g(\omega^1),g(\omega^2),…,g(\omega^{k-1})) \in \mathbb{F_p}^{\le k}[X]\)</p>
+<p><img src="/images/zkp/plonk/permutation_check.png" alt="permutation check"></p>
+<h2 id="4-prescribed-permutation-check"><a href="#4-prescribed-permutation-check" class="headerlink" title="4. prescribed permutation check"></a>4. prescribed permutation check</h2><p><img src="/images/zkp/plonk/prescribed_perm_check_problem.png"><br><img src="/images/zkp/plonk/prescribed_perm_check_problem_quadratic.png"><br><img src="/images/zkp/plonk/prescribed_perm_check_problem_reduce.png"><br><img src="/images/zkp/plonk/prescribed_perm_check_problem_prove_verify.png"><br><img src="/images/zkp/plonk/prescribed_perm_check_problem_complete.png"></p>
 <h1 id="PLONK-a-poly-IOP-for-a-general-circuit-C-x-w"><a href="#PLONK-a-poly-IOP-for-a-general-circuit-C-x-w" class="headerlink" title="PLONK: a poly-IOP for a general circuit C(x,w)"></a>PLONK: a poly-IOP for a general circuit C(x,w)</h1><h2 id="step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2"><a href="#step-1-compile-circuit-to-a-computation-trace-gate-fan-in-x3D-2" class="headerlink" title="step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)"></a>step 1: compile circuit to a computation trace (gate fan-in &#x3D; 2)</h2><p><img src="/images/zkp/plonk/plonk_circuit_to_trace.png" alt="circuit to trace"></p>
-<p>and encode the trace as polynomial</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<p>and encode the trace as polynomial<br>let \(|C|\) be the total number of gates, \(|I| :&#x3D; |I_x| + |I_w|\) be total number of inputs, where \(|I_x|\) is the number of public inputs, \(I_w\) is the number of private inputs.<br>Let \(d&#x3D;3*|C|+|I|\) and \( \Omega&#x3D;\{1,\omega,\omega^2,\omega^3,…,\omega^{d-1}\} \)</p>
+<p>prover interpolates \( T \in \mathbb{F_p}^{\le d}[X]\) such that</p>
+<ul>
+<li><strong>T encodes all inputs</strong>: \( T(\omega^{-j})  \)&#x3D; input #j, for j &#x3D; 1,…,|I|</li>
+<li><strong>T encodes all wires</strong>:<br>\(LeftInput&#x3D;f(\omega^{3l})\), \(  RightInput&#x3D;f(\omega^{3l+1})\), \(Output&#x3D;f(\omega^{3l+2})\), for \(l &#x3D; 0,1,…, |C| -1\)<br>For the example,<br><strong>inputs</strong><br>\(x_1&#x3D; 5 &#x3D; T(\omega^9)\), \(x_2&#x3D; 6 &#x3D; T(\omega^{10})\), and \(w_1 &#x3D; 1&#x3D;T(\omega^{11})\)<br><strong>wires</strong><br>\(5&#x3D;T(\omega^0)\), \(6&#x3D;T(\omega^{1})\), and \(11&#x3D;T(\omega^{2})\)<br>\(6&#x3D;T(\omega^3)\), \(1&#x3D;T(\omega^{4})\), and \(7&#x3D;T(\omega^{5})\)<br>\(11&#x3D;T(\omega^6)\), \(7&#x3D;T(\omega^{7})\), and \(77&#x3D;T(\omega^{8})\)</li>
+</ul>
+<h2 id="step-2-proving-validity-of-T"><a href="#step-2-proving-validity-of-T" class="headerlink" title="step 2: proving validity of T"></a>step 2: proving validity of T</h2><p>Prover needs to prove 4 things</p>
+<ol>
+<li><strong>\(T(x)\) encodes the correct public inputs</strong><br>Both prover and verifier interpolate a polynomial \( v(x) \in \mathbb{F_p}^{\le |I_x|}[X]\)<br>that encodes the \(x\)-inputs to the circuit:<br>\(v(\omega^{-j}) &#x3D;\) input #j, for \(j &#x3D; 1, …, |I_x|\)<br>In our example, \(v(\omega^{-1} &#x3D; 5), v(\omega^{-2} &#x3D; 6)\)<br>Let \( \Omega_{inp}&#x3D;\{\omega^{-1},\omega^{-2},…,\omega^{-|I_x|}\} \)<br>Prover proves by using a <strong>ZeroTest</strong> on \(\Omega_inp\) to prove that<br>\[T(y) - v(y) &#x3D;0 \quad \forall y \in \Omega_{inp}\]</li>
+<li><strong>every gate is evaluated correctly</strong><br><strong>Idea</strong> encode gate types using a selector polynomial \(S(X)\)<br>define \(S(X) \in  \mathbb{F_p}^{\le d}[X]\) such that \( \forall l &#x3D; 0, …, |C| -1\):</li>
+</ol>
+<ul>
+<li>\(S(\omega^{3l}) &#x3D;1\) if gate #l is an addition gate</li>
+<li>\(S(\omega^{3l}) &#x3D;0\) if gate #l is a multiplication gate</li>
+</ul>
+<p>Then, \( \forall y \in   \Omega_{gates} : &#x3D; \{1,\omega^{3},\omega^{6},…,\omega^{3(|C|-1)}\} \)<br>\(S(y) \cdot [T(y) + T(\omega y)] + (1-S(y))\cdot T(y) \cdot T(\omega y) &#x3D; T(\omega^2 y)\)<br><img src="/images/zkp/plonk/gate_evaluation_zero_test.png" alt="gate_evaluation_zero_test"></p>
+<ol start="3">
+<li><strong>the wiring is implemented correctly (coppy constraint)</strong><br><img src="/images/zkp/plonk/copy_constraint_example.png"></li>
+</ol>
+<p>  \(T(\omega^9,\omega^0)&#x3D;\sigma(\omega^0,\omega^9)\)<br>  \(T(\omega^{10},\omega^1,\omega^3)&#x3D;\sigma(\omega^1,\omega^3,\omega^{10})\)<br>  \(T(\omega^2,\omega^6)&#x3D;\sigma(\omega^6,\omega^2)\)<br>  \(T(\omega^{11},\omega^4)&#x3D;\sigma(\omega^4,\omega^{11})\)<br>    \(T(\omega^{5},\omega^7)&#x3D;\sigma(\omega^7,\omega^{5})\)<br><strong>note</strong>: 9 is actually -1, 10 is -2, 11 is -3<br>Define a polynomial \(W: \Omega -&gt; \Omega\) that implemnets a rotation<br>\( W(\omega^{10}, \omega^1, \omega^3) &#x3D;(\omega^1, \omega^3, \omega^{10}) \), \(W(\omega^{9}, \omega^0)&#x3D;(\omega^0, \omega^{9})\), …</p>
+<p><strong>Lemma</strong>: \(\forall y \in \Omega: T(y) &#x3D; T(W(y))\) &#x3D;&gt; wire constraints are satisfied<br>This could be proved using a prescribed permutation check</p>
+<ol start="4">
+<li><strong>the output of last gate is 0</strong><br>this is to prove \(T(\omega^8) -77 &#x3D; 0\)</li>
+</ol>
+<h1 id="custom-gate"><a href="#custom-gate" class="headerlink" title="custom gate"></a>custom gate</h1><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://hackmd.io/@learn-zkp/note-plonk-family">https://hackmd.io/@learn-zkp/note-plonk-family</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=A0oZVEXav24">ZKP MOOC Lecture 5: The Plonk SNARK</a></li>
 <li><a target="_blank" rel="noopener" href="https://cs251.stanford.edu/lectures/lecture15.pdf">CS251.stanford lecture</a></li>
 </ul>
-<p>\( \Omega&#x3D;{1,\omega,\omega^2,\omega^3,…,\omega^{d-1}} \)<br>\(d&#x3D;3*|Gate|+|PublicInput|+|Witness|\)<br>\(Selector*(Left+Right-Output)+(1-Selector)<em>(Left</em>Right-Output)&#x3D;0\)</p>
-<p>LeftInput&#x3D;f(\omega^{3l})<br>  RightInput&#x3D;f(\omega^{3l+1})<br>  Output&#x3D;f(\omega^{3l+2})<br>  x_1&#x3D;f(\omega^9)</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/01/zkp/understanding-plonk/" data-id="clokyy8du001wqwsj56sv3t4w" data-title="understanding plonk" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/zkp/understanding-plonk/" data-id="clphpvdok000baj7u3i3te2rg" data-title="understanding plonk" class="article-share-link">Share</a>
       
       
       
@@ -138,19 +174,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2023/11/01/cryptography/bls12-381/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2023/11/03/cryptography/zkp/stark-101/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          bls12_381
+          stark 101
         
       </div>
     </a>
   
   
-    <a href="/2023/10/16/cryptography/kzg-commitment/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/11/01/arithmatic/montgomery-multiplication/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">kzg_commitment</div>
+      <div class="article-nav-title">montgomery_multiplication</div>
     </a>
   
 </nav>
@@ -180,7 +216,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 10px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 11.43px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
     </div>
   </div>
 
