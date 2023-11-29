@@ -129,7 +129,25 @@ This could be proved using a prescribed permutation check
 this is to prove \\(T(\omega^8) -77 = 0\\)
 
 # custom gate
+![](/images/zkp/plonk/custom_gate.png)
+\\(u, v, w, t, r\\) are polynomials represent input variables (row number is the gate number). in the `Add`, `Mul` only circuits, there are only two inputs, namely `LeftInput` and `RightInput`. Hoever, here there are multiple inputs for custom gate. 
 
+In the above example, it is a constraint for \\( v_4 + w_3 \cdot t_3 - t_4 = 0 \\)
+
+
+# plonkup
+plonkup is to ensure some values are in a pre-defined list. for example
+
+| x1 | x2 | x3 | Output |
+| --- | --- | --- | --- |
+| \\(a_{1,1}\\) | \\(a_{1,2}\\) | \\(a_{1,3}\\) | \\(a_{1,4}\\) |
+| \\(a_{2,1}\\) | \\(a_{2,2}\\) | \\(a_{2,3}\\) | \\(a_{2,4}\\) |
+| ... | ... | ... | ... |
+| \\(a_{n,1}\\) | \\(a_{n,2}\\) | \\(a_{n,3}\\) | \\(a_{n,4}\\) |
+
+
+
+\\(n\\) is gate number. the task is to prove a vector 
 ## references
 - https://hackmd.io/@learn-zkp/note-plonk-family
 - [ZKP MOOC Lecture 5: The Plonk SNARK](https://www.youtube.com/watch?v=A0oZVEXav24)
