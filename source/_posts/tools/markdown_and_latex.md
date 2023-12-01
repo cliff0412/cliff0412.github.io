@@ -34,6 +34,7 @@ _italic_
 \\( \phi \\)
 \\( \chi \\)
 \\( \psi \\)
+\\(\mathcal O\\)
 
 ## font & effects
 \\( \mathbb{G_{1}}\\)
