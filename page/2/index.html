@@ -71,6 +71,86 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-arithmatic/goldilocks-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/18/arithmatic/goldilocks-field/" class="article-date">
+  <time class="dt-published" datetime="2023-11-18T03:06:53.000Z" itemprop="datePublished">2023-11-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/18/arithmatic/goldilocks-field/">goldilocks field</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h1 id="properties"><a href="#properties" class="headerlink" title="properties"></a>properties</h1><p>\( p &#x3D; \phi^2 - \phi + 1\)<br>\( \epsilon  &#x3D; \phi -1\)</p>
+<h2 id="Goldilocks-Addition"><a href="#Goldilocks-Addition" class="headerlink" title="Goldilocks Addition"></a>Goldilocks Addition</h2><p>let \( a &#x3D; a_0 + a_1 \cdot \phi, b &#x3D; b_0 + b_1 \cdot \phi\)</p>
+<p><code>(c, carry) = a + b</code>;</p>
+<ul>
+<li>if carry &#x3D; 0 &amp;&amp; c &gt; p, result should be <code>c -p</code></li>
+<li>if carry &#x3D; 0 &amp;&amp; c &lt; p, result should be <code>c</code></li>
+<li>if carry &#x3D; 1<br>let \( c &#x3D; c_0 + c_1 \cdot \phi + c_2 \cdot \phi^2\), and \(c_2 &#x3D; 1 \). let \( u &#x3D; c_0 + c_1 \cdot \phi \)<br>therefore \(a + b \mod p\) should be \( a + b - p &#x3D; c_0 + c_1 \cdot \phi + \phi^2 - (\phi^2 - \phi + 1) &#x3D;c_0 + c_1 \cdot \phi + \phi - 1 &#x3D; u + \phi - 1\) <ul>
+<li>if \( u  &lt;  p\), computationally, \( u  -  p\) will borrow from \( \phi^2\), which is equivalent to<br>\( \phi^2 + u - p &#x3D; u + \phi - 1  \), which is \( a - b \mod p\). therefore, the result is just \( u-p \)</li>
+<li>if \( u&gt; p\), this will unlikely occur, if u &gt;p, given by \( \phi^2 &gt; p \), so \( u + \phi^2 &gt; p + \phi^2 &gt; 2p\) that means a or b is not in canonical form. <span style="color:red"><strong>does not consider this case for now</strong></span></li>
+</ul>
+</li>
+</ul>
+<h2 id="Goldilocks-Subtraction"><a href="#Goldilocks-Subtraction" class="headerlink" title="Goldilocks Subtraction"></a>Goldilocks Subtraction</h2><p>\(a - b \mod MOD\)<br>if a &lt; b, a - b is negative, and the binary representation is 2’s complement of the negative value. therefore, it’s requied to add by MOD and treat the final binary representation as positive value.</p>
+<h2 id="Goldilocks-Multiplication"><a href="#Goldilocks-Multiplication" class="headerlink" title="Goldilocks Multiplication"></a>Goldilocks Multiplication</h2><p>let \(a &#x3D; a_0 + a_1 \cdot \phi\), and \(b&#x3D;b_0 + b_1 \cdot \phi\)<br>to compute \(c &#x3D; a \cdot b\)</p>
+<ul>
+<li>first, turn it into \( a_0 \cdot b_0 +(a_1\cdot b_0 +a_0\cdot b_1)\cdot \phi + a_1 \cdot b_1 \phi^2 \)<br>it may carry to \( \phi^2 \). so the results is a <code>u128</code> (<code>[u32;4]</code>)</li>
+<li>second, reduce the <code>[u32;4]</code> to <code>u64</code>, details to be described in the following section.</li>
+</ul>
+<h2 id="plonky2-Goldilocks-Fieldreduce128"><a href="#plonky2-Goldilocks-Fieldreduce128" class="headerlink" title="plonky2 Goldilocks Fieldreduce128"></a>plonky2 Goldilocks Fieldreduce128</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">reduce128</span>(x: <span class="type">u128</span>) <span class="punctuation">-&gt;</span> GoldilocksField &#123;</span><br><span class="line">    <span class="keyword">let</span> (x_lo, x_hi) = <span class="title function_ invoke__">split</span>(x); <span class="comment">// This is a no-op</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_hi</span> = x_hi &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_lo</span> = x_hi &amp; EPSILON;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> (<span class="keyword">mut</span> t0, borrow) = x_lo.<span class="title function_ invoke__">overflowing_sub</span>(x_hi_hi);</span><br><span class="line">    <span class="keyword">if</span> borrow &#123;</span><br><span class="line">        <span class="title function_ invoke__">branch_hint</span>(); <span class="comment">// A borrow is exceedingly rare. It is faster to branch.</span></span><br><span class="line">        t0 -= EPSILON; <span class="comment">// Cannot underflow.</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t1</span> = x_hi_lo * EPSILON;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t2</span> = <span class="keyword">unsafe</span> &#123; <span class="title function_ invoke__">add_no_canonicalize_trashing_input</span>(t0, t1) &#125;;</span><br><span class="line">    <span class="title function_ invoke__">GoldilocksField</span>(t2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>since, \(\phi^{3} &#x3D; -1\), \(n\) could be reduced to \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} - n_3  \),<br>which is line 6 in the above code snipet. when borrow occurs, it means it borrows \( \phi^2\) ( subtraction is of u64, so borrow 1 menas add \( \phi^2\), <code>1&lt;&lt;64</code>). therefore, needs to reduce \( \phi^2\). since \( \phi^2 &#x3D; \phi - 1\), which is reduce by \( \phi - 1\) (this is <code>EPSILON</code>).<br><strong>Note</strong> needs to consider line 23 could underflow</p>
+<p>next step is to reduce \( n_2 \cdot \phi^2 \), which is just \( n_2 \cdot (\phi -1)  \), which is \( n_2 \cdot EPSILON  \), line 11, <code>x_hi_lo * EPSILON</code></p>
+<h2 id="Sppark-reduce-uint32-t-temp-4"><a href="#Sppark-reduce-uint32-t-temp-4" class="headerlink" title="Sppark reduce(uint32_t temp[4])"></a>Sppark reduce(uint32_t temp[4])</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">reduce</span><span class="params">(<span class="type">uint32_t</span> temp[<span class="number">4</span>])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">uint32_t</span> carry;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;sub.cc.u32 %0, %0, %3; subc.cc.u32 %1, %1, %4; subc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;add.cc.u32 %0, %0, %2; addc.u32 %1, %1, %3;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;+r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %3, %4, %0; madc.hi.cc.u32 %1, %3, %4, %1; addc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(temp[<span class="number">2</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(carry), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mov.b64 %0, &#123;%1, %2&#125;;&quot;</span> : <span class="string">&quot;=l&quot;</span>(val) : <span class="string">&quot;r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">1</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>note</strong>: <code>W</code> is epsilon<br>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>\( n &#x3D; n_0 + n_2\cdot\phi^2 + \phi(n_1+n_3\cdot \phi^2)\).<br>since \( \phi^2 &#x3D; \phi - 1\)<br>\( n &#x3D; n_0 + n_2\cdot(\phi-1) + \phi(n_1+n_3\cdot(\phi-1))\).<br>\( n &#x3D; n_0 -n_2 +n_2\phi + \phi(n_1-n_3 + n_3\cdot\phi)\).<br>\( n &#x3D; n_0 -n_2 + \phi(n_1-n_3 +n_2) + n_3\cdot\phi^2\).<br>line 5 computes <code>n0 - n2</code> and set to temp[0]; &amp; computes <code>n1-n3</code> and sets to temp[1]<br>line 8 computes <code>n1- n3 + n2</code>; add n_3 with carry and put it to carry.</p>
+<p>let \(c\) be the carry, at \(\phi^2\), it is actually \( c \cdot \phi^2\). it could be further reduced to  \(c \cdot (\phi - 1) &#x3D; c \cdot W\)<br>line 12 is to reduce the carry part to temp[0], temp[1], and temp[2].<br>if temp[2] still exist. line 15 will reduce it to temp[0], temp[1] similar as above.<br>at this step. only temp[0] and temp[1] will contains value and return as the result</p>
+<h2 id="appendix"><a href="#appendix" class="headerlink" title="appendix"></a>appendix</h2><ul>
+<li>underflow<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uint64_t tmp;</span><br><span class="line">uint32_t borrow;</span><br><span class="line">asm(&quot;&#123; .reg.pred %top;&quot;);</span><br><span class="line">asm(&quot;sub.cc.u64 %0, %0, %2; subc.u32 %1, 0, 0;&quot;</span><br><span class="line">    : &quot;+l&quot;(val), &quot;=r&quot;(borrow)</span><br><span class="line">    : &quot;l&quot;(b.val));</span><br></pre></td></tr></table></figure>
+all bits of borrow will be set to 1 if underflow occurs</li>
+</ul>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://2π.com/22/goldilocks/">The Goldilocks Prime by Remco Bloemem</a></li>
+<li><a target="_blank" rel="noopener" href="https://cronokirby.com/notes/2022/09/the-goldilocks-field/">parameters of goldilocks field</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/126407028">csdn blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/yrrid/GoldilocksNTT/tree/main">cuda implementation of GoldilocksNTT by yrrid</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/18/arithmatic/goldilocks-field/" data-id="clpi1wlcr0000067ufpzn63zv" data-title="goldilocks field" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cuda/inline-ptx-assembly-in-cuda" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" class="article-date">
@@ -441,10 +521,55 @@
 
 
   
+    <article id="post-arithmatic/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/01/arithmatic/montgomery-multiplication/" class="article-date">
+  <time class="dt-published" datetime="2023-11-01T11:10:13.000Z" itemprop="datePublished">2023-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/01/arithmatic/montgomery-multiplication/">montgomery_multiplication</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>montgomery multiplciation</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/95613967">csdn blog on montgomery reduction</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/01/arithmatic/montgomery-multiplication/" data-id="clphpvdof0000aj7u9gaz5qfy" data-title="montgomery_multiplication" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cryptography/zkp/understanding-plonk" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/01/cryptography/zkp/understanding-plonk/" class="article-date">
-  <time class="dt-published" datetime="2023-11-01T17:19:04.000Z" itemprop="datePublished">2023-11-01</time>
+  <time class="dt-published" datetime="2023-11-01T09:19:04.000Z" itemprop="datePublished">2023-11-01</time>
 </a>
     
   </div>
@@ -558,94 +683,6 @@
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-arithmatic/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/01/arithmatic/montgomery-multiplication/" class="article-date">
-  <time class="dt-published" datetime="2023-11-01T11:10:13.000Z" itemprop="datePublished">2023-11-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/01/arithmatic/montgomery-multiplication/">montgomery_multiplication</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>montgomery multiplciation</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/95613967">csdn blog on montgomery reduction</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/01/arithmatic/montgomery-multiplication/" data-id="clphpvdof0000aj7u9gaz5qfy" data-title="montgomery_multiplication" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/bls12-381" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/01/cryptography/bls12-381/" class="article-date">
-  <time class="dt-published" datetime="2023-11-01T11:09:11.000Z" itemprop="datePublished">2023-11-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/01/cryptography/bls12-381/">bls12_381</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="bls12-381"><a href="#bls12-381" class="headerlink" title="bls12_381"></a>bls12_381</h1><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/01/cryptography/bls12-381/" data-id="clokyy8dm0007qwsj91hrcg9h" data-title="bls12_381" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
 
     </footer>
   </div>
@@ -849,7 +886,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -859,7 +896,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 11.43px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 11.43px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.43px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
     </div>
   </div>
 
@@ -868,7 +905,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -879,6 +916,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
+          </li>
         
           <li>
             <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
@@ -894,10 +935,6 @@
         
           <li>
             <a href="/2023/11/22/cuda/cuda_api_and_tools/">cuda standard api &amp; tools</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
           </li>
         
       </ul>

@@ -71,6 +71,96 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cryptography/elliptic_curve/bls12-381" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/" class="article-date">
+  <time class="dt-published" datetime="2023-12-01T19:09:11.000Z" itemprop="datePublished">2023-12-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>BLS12-381 is a pairing-friendly elliptic curve. Curve BLS12-381 was designed by <a target="_blank" rel="noopener" href="https://twitter.com/ebfull">Sean Bowe</a> in early 2017 as the foundation for an upgrade to the Zcash protocol. It is both pairing-friendly (making it efficient for digital signatures) and effective for constructing zkSnarks. BLS12-381 is part of a family of curves described by Barreto, Lynn, and Scott (BLS). The 12 is the embedding degree of the curve: neither too low, nor too high. The 381 is the number of bits needed to represent coordinates on the curve: the field modulus, \(q\). 381 is a fairly handy number as we can use 48 bytes per field element, with 3 bits left over for useful flags or arithmetic optimisations. This size of this number is guided both by security requirements and implementation efficiency.</p>
+<h2 id="curve-equation-and-parameters"><a href="#curve-equation-and-parameters" class="headerlink" title="curve equation and parameters"></a>curve equation and parameters</h2><p>The basic equation of the BLS12-381 curve is \( y^2 &#x3D; x^3 + 4\)<br>The key parameters for a BLS curve are set using a single parameter \(\mathbf{x}\) (different from the in the curve equation!). BLS12-381 is derived from the \( k \equiv 0 \mod 6\) case of Construction 6.6 in the <a target="_blank" rel="noopener" href="https://eprint.iacr.org/2006/372.pdf">taxonomy</a>.</p>
+<p>Specific design goals for BLS12-381 are:</p>
+<ul>
+<li>\(\mathbf{x}\) has “low hamming weight”, meaning that it has very few bits set to 1. This is particularly important for the efficiency of the algorithm that calculates pairings (the Miller loop).</li>
+<li>The field modulus \(q\) mentioned above is prime and has 383 bits or fewer, which makes 64-bit or 32-bit arithmetic on it more efficient.</li>
+<li>The order \(r\) of the subgroups we use is prime and has 255 bits or fewer, which is good for the same reason as above.</li>
+<li>To support zkSnark schemes, we want to have a large power of two root of unity in the field. This means we want \(2^n\) to be a factor of \(r-1\), for some biggish \(n\). (Making \(\mathbf{x}\) a multiple of \(2^{n&#x2F;2}\) will achieve this.) This property is key to being able to use fast Fourier transforms for interesting things like polynomial multiplication.</li>
+</ul>
+<p>The value \(\mathbf{x}\) &#x3D; -0xd201000000010000 (hexadecimal, note that it is negative) gives the largest and the lowest Hamming weight meeting these criteria. With this value we have,</p>
+<table>
+<thead>
+<tr>
+<th>parameters</th>
+<th align="center">equation</th>
+<th align="center">value(hex)</th>
+<th align="right">comments</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Field modulus \(q\)</td>
+<td align="center">\(\frac{1}{3}(\mathbf{x}-1)^2(\mathbf{x}^4-\mathbf{x}^2+1) + \mathbf{x}\)</td>
+<td align="center">0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f3<br>8512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab</td>
+<td align="right">381 bits, prime</td>
+</tr>
+<tr>
+<td>Subgroup size \(r\)</td>
+<td align="center">\((\mathbf{x}^4-\mathbf{x}^2+1)\)</td>
+<td align="center">0x73eda753299d7d483339d80809a1d80553<br>bda402fffe5bfeffffffff00000001</td>
+<td align="right">255 bits, prime</td>
+</tr>
+</tbody></table>
+<h2 id="Field-extensions"><a href="#Field-extensions" class="headerlink" title="Field extensions"></a>Field extensions</h2><p>Field extensions are fundamental to elliptic curve pairings. The “12” is BLS12-381 is not only the embedding degree, it is also (relatedly) the degree of field extension that we will need to use.<br>For example, The complex numbers are a quadratic extension of the real numbers (\(x^2 &#x3D; 1\)). Complex numbers can’t be extended any further because there are <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_algebra">no irreducible polynomials over the complex numbers</a>. But for finite fields, if we can find an irreducible \(k\)-degree polynomial in our field \(F_q\), and we often can, then we are able to extend the field to \(F_{q^k}\), , and represent the elements of the extended field as degree \(k-1\) polynomials, \(a_0 + a_1 x + … + a_{k-1}x^{k-1}\). we can represent this compactly as (\(a_0, a_1, …, a_{k-1}\))<br>In practice, large extension fields like \(F_{q^{12}}\)are implemented as towers of smaller extensions.</p>
+<h2 id="the-curves"><a href="#the-curves" class="headerlink" title="the curves"></a>the curves</h2><p>BLS12-381 is really dealing with two curves. Both curves share more-or-less the same curve equation, but are defined over different fields.<br>The simpler one is over the finite field \(F_q\), which is just the integers mod \(q\). So the curve has points only where the equation \(y^2 &#x3D; x^3 +4\) has solutions with \(x\) and \(y\) both integers less than \(q\). We shall call this curve \(E(F_q)\).<br>The other curve is defined over an extension of \(F_q\)to \(F_{q^2}\) (think complex numbers). In this case, the curve equation is slightly modified to be \(y^2 &#x3D; x^3+4(1+i)\), and we call the curve \(E’(F_{q^2})\)</p>
+<h2 id="the-subgroups"><a href="#the-subgroups" class="headerlink" title="the subgroups"></a>the subgroups</h2><p>A pairing is a bilinear map. This means that it takes as input two points, each from a group of the same order, \(r\). for rather technical reasons, these two groups need to be distinct. Let’s call them<br>\(G_1\) and \(G_2\).<br>Unfortunately, our simple curve \(E(F_q)\) has only a single large subgroup of order \(r\), so we can’t define a pairing based solely on \(E(F_q)\). However, if we keep extending the field over which<br>\(E\) is defined, it can be proved that we eventually find a curve that has more than one subgroup of order \(r\). that is, for some \(k\), \(E(F_{q^k})\) contains other subgroups of order \(r\) taht we can use. One of these subgroups contains only points having a trace of zero[1], and we choose that subgroup to be \(G_2\)</p>
+<p>This number \(k\), the amount that we need to extend the base field by to find the new group, is called the embedding degree of the curve, which in our case is the “12” in BLS12-381. For completeness, note that each of \(G_1\) and \(G_2\) shares with its containing curve the “point at infinity”. This is the identity element of the elliptic curve arithmetic group, often denoted \(\mathcal O\)<br>. For any point \(P\), \( P + \mathcal O &#x3D; \mathcal O + P &#x3D; P\). </p>
+<h2 id="Twists"><a href="#Twists" class="headerlink" title="Twists"></a>Twists</h2><p>But there’s another challenge. As discussed earlier, doing arithmetic in \(F_{q^{12}}\) is horribly complicated and inefficient. And curve operations need a lot of arithmetic. A <a target="_blank" rel="noopener" href="http://indigo.ie/~mscott/twists.pdf">twist</a> is something like a coordinate transformation. Rather wonderfully, this can be used to transform our \(E(F_{q^{12}})\) curve into a curve defined over a lower degree field that still has an order \(r\) subgroup.  Moreover, this subgroup has a simple mapping to and from our \(G_2\) group</p>
+<p>BLS12-381 uses a “sextic twist”. This means that it reduces the degree of the extension field by a factor of six. So \(G_2\) on the twisted curve can be defined over \(F_{q^2}\) instead of \(F_{q^{12}}\)<br>I haven’t seen this written down anywhere—but attempting to decode section 3 of <a target="_blank" rel="noopener" href="https://eprint.iacr.org/2005/133.pdf">this</a>—if we find a \(u\) such that \(u^6 &#x3D; (1+i)^{-1}\), then we can define our twisting transformation as \( (x,y) -&gt; (x&#x2F;u^2, y&#x2F;u^3)\). This transforms our original curve \(E: y^2 &#x3D; x^3 + 4\) into the curve \(E’: y^2 + 4&#x2F;u^6 &#x3D; x^3 + 4(1+i)\). <strong>\(E\) and \(E’\) look different, but are actually the same object presented with respect to coefficinets in different base fields</strong>.</p>
+<p>So these are the two groups we will be using:</p>
+<ul>
+<li>\(G_1 \subset E(F_q)\), where \(E: y^2 &#x3D; x^3 + 4\)</li>
+<li>\(G_2 \subset E(F_{q^2})\), where \(E: y^2 &#x3D; x^3 + 4(1+i)\)<br>Note that coordinates of points in the \(G_1\) group are pairs of integers, and coordinates of points in the \(G_2\) group are pairs of complex integers.</li>
+</ul>
+<h2 id="Parings"><a href="#Parings" class="headerlink" title="Parings"></a>Parings</h2><p>s far as BLS12-381 is concerned, a pairing simply takes a point \(P \in G_1 \subset E(F_q)\), and a point \(Q \in G_2 \subset E’(F_{q^2})\) and outputs a point from a group \(G_T \subset F_{q^{12}}\). That is, for a paring \(e\), \(e: G_1 \times G_2 \rightarrow G_T\)</p>
+<h2 id="Foot-notes"><a href="#Foot-notes" class="headerlink" title="Foot notes"></a>Foot notes</h2><p>[1] The “trace zero subgroup” qualifies as an obscure incantation. Basically, the trace of a point is \(\sum_{i&#x3D;0}^{k-1}(x^{q^i}, y^{q^i})\), where \(k&#x3D;12\) in our case. Understanding this involves stuff like the Frobenius endomorphism.</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a></li>
+<li><a target="_blank" rel="noopener" href="https://electriccoin.co/blog/new-snark-curve/">initial post of bls12-381</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/supranational/blst">implementation: blst</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/12/01/cryptography/elliptic_curve/bls12-381/" data-id="clpm1qei10000hpsj4saxbd96" data-title="bls12_381" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ec/" rel="tag">ec</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cryptography/zkp/sgx_multi_prover" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/" class="article-date">
@@ -562,86 +652,6 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
 
 
   
-    <article id="post-arithmatic/goldilocks-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/18/arithmatic/goldilocks-field/" class="article-date">
-  <time class="dt-published" datetime="2023-11-18T03:06:53.000Z" itemprop="datePublished">2023-11-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/18/arithmatic/goldilocks-field/">goldilocks field</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h1 id="properties"><a href="#properties" class="headerlink" title="properties"></a>properties</h1><p>\( p &#x3D; \phi^2 - \phi + 1\)<br>\( \epsilon  &#x3D; \phi -1\)</p>
-<h2 id="Goldilocks-Addition"><a href="#Goldilocks-Addition" class="headerlink" title="Goldilocks Addition"></a>Goldilocks Addition</h2><p>let \( a &#x3D; a_0 + a_1 \cdot \phi, b &#x3D; b_0 + b_1 \cdot \phi\)</p>
-<p><code>(c, carry) = a + b</code>;</p>
-<ul>
-<li>if carry &#x3D; 0 &amp;&amp; c &gt; p, result should be <code>c -p</code></li>
-<li>if carry &#x3D; 0 &amp;&amp; c &lt; p, result should be <code>c</code></li>
-<li>if carry &#x3D; 1<br>let \( c &#x3D; c_0 + c_1 \cdot \phi + c_2 \cdot \phi^2\), and \(c_2 &#x3D; 1 \). let \( u &#x3D; c_0 + c_1 \cdot \phi \)<br>therefore \(a + b \mod p\) should be \( a + b - p &#x3D; c_0 + c_1 \cdot \phi + \phi^2 - (\phi^2 - \phi + 1) &#x3D;c_0 + c_1 \cdot \phi + \phi - 1 &#x3D; u + \phi - 1\) <ul>
-<li>if \( u  &lt;  p\), computationally, \( u  -  p\) will borrow from \( \phi^2\), which is equivalent to<br>\( \phi^2 + u - p &#x3D; u + \phi - 1  \), which is \( a - b \mod p\). therefore, the result is just \( u-p \)</li>
-<li>if \( u&gt; p\), this will unlikely occur, if u &gt;p, given by \( \phi^2 &gt; p \), so \( u + \phi^2 &gt; p + \phi^2 &gt; 2p\) that means a or b is not in canonical form. <span style="color:red"><strong>does not consider this case for now</strong></span></li>
-</ul>
-</li>
-</ul>
-<h2 id="Goldilocks-Subtraction"><a href="#Goldilocks-Subtraction" class="headerlink" title="Goldilocks Subtraction"></a>Goldilocks Subtraction</h2><p>\(a - b \mod MOD\)<br>if a &lt; b, a - b is negative, and the binary representation is 2’s complement of the negative value. therefore, it’s requied to add by MOD and treat the final binary representation as positive value.</p>
-<h2 id="Goldilocks-Multiplication"><a href="#Goldilocks-Multiplication" class="headerlink" title="Goldilocks Multiplication"></a>Goldilocks Multiplication</h2><p>let \(a &#x3D; a_0 + a_1 \cdot \phi\), and \(b&#x3D;b_0 + b_1 \cdot \phi\)<br>to compute \(c &#x3D; a \cdot b\)</p>
-<ul>
-<li>first, turn it into \( a_0 \cdot b_0 +(a_1\cdot b_0 +a_0\cdot b_1)\cdot \phi + a_1 \cdot b_1 \phi^2 \)<br>it may carry to \( \phi^2 \). so the results is a <code>u128</code> (<code>[u32;4]</code>)</li>
-<li>second, reduce the <code>[u32;4]</code> to <code>u64</code>, details to be described in the following section.</li>
-</ul>
-<h2 id="plonky2-Goldilocks-Fieldreduce128"><a href="#plonky2-Goldilocks-Fieldreduce128" class="headerlink" title="plonky2 Goldilocks Fieldreduce128"></a>plonky2 Goldilocks Fieldreduce128</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">reduce128</span>(x: <span class="type">u128</span>) <span class="punctuation">-&gt;</span> GoldilocksField &#123;</span><br><span class="line">    <span class="keyword">let</span> (x_lo, x_hi) = <span class="title function_ invoke__">split</span>(x); <span class="comment">// This is a no-op</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_hi</span> = x_hi &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_lo</span> = x_hi &amp; EPSILON;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> (<span class="keyword">mut</span> t0, borrow) = x_lo.<span class="title function_ invoke__">overflowing_sub</span>(x_hi_hi);</span><br><span class="line">    <span class="keyword">if</span> borrow &#123;</span><br><span class="line">        <span class="title function_ invoke__">branch_hint</span>(); <span class="comment">// A borrow is exceedingly rare. It is faster to branch.</span></span><br><span class="line">        t0 -= EPSILON; <span class="comment">// Cannot underflow.</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t1</span> = x_hi_lo * EPSILON;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t2</span> = <span class="keyword">unsafe</span> &#123; <span class="title function_ invoke__">add_no_canonicalize_trashing_input</span>(t0, t1) &#125;;</span><br><span class="line">    <span class="title function_ invoke__">GoldilocksField</span>(t2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>since, \(\phi^{3} &#x3D; -1\), \(n\) could be reduced to \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} - n_3  \),<br>which is line 6 in the above code snipet. when borrow occurs, it means it borrows \( \phi^2\) ( subtraction is of u64, so borrow 1 menas add \( \phi^2\), <code>1&lt;&lt;64</code>). therefore, needs to reduce \( \phi^2\). since \( \phi^2 &#x3D; \phi - 1\), which is reduce by \( \phi - 1\) (this is <code>EPSILON</code>).<br><strong>Note</strong> needs to consider line 23 could underflow</p>
-<p>next step is to reduce \( n_2 \cdot \phi^2 \), which is just \( n_2 \cdot (\phi -1)  \), which is \( n_2 \cdot EPSILON  \), line 11, <code>x_hi_lo * EPSILON</code></p>
-<h2 id="Sppark-reduce-uint32-t-temp-4"><a href="#Sppark-reduce-uint32-t-temp-4" class="headerlink" title="Sppark reduce(uint32_t temp[4])"></a>Sppark reduce(uint32_t temp[4])</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">reduce</span><span class="params">(<span class="type">uint32_t</span> temp[<span class="number">4</span>])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">uint32_t</span> carry;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;sub.cc.u32 %0, %0, %3; subc.cc.u32 %1, %1, %4; subc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;add.cc.u32 %0, %0, %2; addc.u32 %1, %1, %3;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;+r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %3, %4, %0; madc.hi.cc.u32 %1, %3, %4, %1; addc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(temp[<span class="number">2</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(carry), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mov.b64 %0, &#123;%1, %2&#125;;&quot;</span> : <span class="string">&quot;=l&quot;</span>(val) : <span class="string">&quot;r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">1</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p><strong>note</strong>: <code>W</code> is epsilon<br>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>\( n &#x3D; n_0 + n_2\cdot\phi^2 + \phi(n_1+n_3\cdot \phi^2)\).<br>since \( \phi^2 &#x3D; \phi - 1\)<br>\( n &#x3D; n_0 + n_2\cdot(\phi-1) + \phi(n_1+n_3\cdot(\phi-1))\).<br>\( n &#x3D; n_0 -n_2 +n_2\phi + \phi(n_1-n_3 + n_3\cdot\phi)\).<br>\( n &#x3D; n_0 -n_2 + \phi(n_1-n_3 +n_2) + n_3\cdot\phi^2\).<br>line 5 computes <code>n0 - n2</code> and set to temp[0]; &amp; computes <code>n1-n3</code> and sets to temp[1]<br>line 8 computes <code>n1- n3 + n2</code>; add n_3 with carry and put it to carry.</p>
-<p>let \(c\) be the carry, at \(\phi^2\), it is actually \( c \cdot \phi^2\). it could be further reduced to  \(c \cdot (\phi - 1) &#x3D; c \cdot W\)<br>line 12 is to reduce the carry part to temp[0], temp[1], and temp[2].<br>if temp[2] still exist. line 15 will reduce it to temp[0], temp[1] similar as above.<br>at this step. only temp[0] and temp[1] will contains value and return as the result</p>
-<h2 id="appendix"><a href="#appendix" class="headerlink" title="appendix"></a>appendix</h2><ul>
-<li>underflow<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uint64_t tmp;</span><br><span class="line">uint32_t borrow;</span><br><span class="line">asm(&quot;&#123; .reg.pred %top;&quot;);</span><br><span class="line">asm(&quot;sub.cc.u64 %0, %0, %2; subc.u32 %1, 0, 0;&quot;</span><br><span class="line">    : &quot;+l&quot;(val), &quot;=r&quot;(borrow)</span><br><span class="line">    : &quot;l&quot;(b.val));</span><br></pre></td></tr></table></figure>
-all bits of borrow will be set to 1 if underflow occurs</li>
-</ul>
-<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://2π.com/22/goldilocks/">The Goldilocks Prime by Remco Bloemem</a></li>
-<li><a target="_blank" rel="noopener" href="https://cronokirby.com/notes/2022/09/the-goldilocks-field/">parameters of goldilocks field</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/126407028">csdn blog</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/yrrid/GoldilocksNTT/tree/main">cuda implementation of GoldilocksNTT by yrrid</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/18/arithmatic/goldilocks-field/" data-id="clpi1wlcr0000067ufpzn63zv" data-title="goldilocks field" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -660,7 +670,7 @@ all bits of borrow will be set to 1 if underflow occurs</li>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -670,7 +680,7 @@ all bits of borrow will be set to 1 if underflow occurs</li>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 11.43px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 11.43px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.43px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
     </div>
   </div>
 
@@ -679,7 +689,7 @@ all bits of borrow will be set to 1 if underflow occurs</li>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -690,6 +700,10 @@ all bits of borrow will be set to 1 if underflow occurs</li>
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
+          </li>
         
           <li>
             <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
@@ -705,10 +719,6 @@ all bits of borrow will be set to 1 if underflow occurs</li>
         
           <li>
             <a href="/2023/11/22/cuda/cuda_api_and_tools/">cuda standard api &amp; tools</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
           </li>
         
       </ul>
