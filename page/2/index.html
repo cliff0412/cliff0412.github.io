@@ -71,6 +71,68 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp/std" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/21/cpp/std/" class="article-date">
+  <time class="dt-published" datetime="2023-11-21T03:35:20.000Z" itemprop="datePublished">2023-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/21/cpp/std/">cpp std</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="snprintf"><a href="#snprintf" class="headerlink" title="snprintf"></a>snprintf</h1><p><code>snprintf</code> is a function that formats a string and writes the resulting characters to a character array.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">snprintf</span><span class="params">(<span class="type">char</span> *str, <span class="type">size_t</span> size, <span class="type">const</span> <span class="type">char</span> *format, ...)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>str</code>: A pointer to the destination buffer where the resulting string is stored.</li>
+<li><code>size</code>: The size of the destination buffer (including the null-terminating character).</li>
+<li><code>format</code>: A format string that specifies the desired format of the output.</li>
+<li><code>...</code>: Additional arguments corresponding to the placeholders in the format string.<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">size_t</span> n = std::<span class="built_in">snprintf</span>(<span class="literal">nullptr</span>, <span class="number">0</span>, <span class="string">&quot;%s&quot;</span>, <span class="string">&quot;hello, world&quot;</span>);</span><br><span class="line">    std::cout &lt;&lt; n &lt;&lt; std::endl;  <span class="comment">// print 12</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="string"><a href="#string" class="headerlink" title="string"></a>string</h1><h2 id="std-string-n-39-0-39"><a href="#std-string-n-39-0-39" class="headerlink" title="std::string(n, &#39;\0&#39;)"></a><code>std::string(n, &#39;\0&#39;)</code></h2><p>creates a string with a length of <code>n</code> and fills it with null characters (‘\0’).</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">size_t</span> n = <span class="number">10</span>;</span><br><span class="line"><span class="function">std::string <span class="title">myString</span><span class="params">(n, <span class="string">&#x27;\0&#x27;</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="strerror-r"><a href="#strerror-r" class="headerlink" title="strerror_r"></a><code>strerror_r</code></h2><p>is a function that is commonly used for thread-safe retrieval of error messages. The purpose of this function is to convert an error number (an integer typically set by a system call or library function to indicate an error) into a human-readable error message</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">strerror_r</span><span class="params">(<span class="type">int</span> errnum, <span class="type">char</span> *buf, <span class="type">size_t</span> buflen)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>errnum</code>: The error number for which you want to retrieve the error message.</li>
+<li><code>buf</code>: A pointer to the buffer where the error message will be stored.</li>
+<li><code>buflen</code>: The size of the buffer pointed to by buf.</li>
+</ul>
+<h2 id="others"><a href="#others" class="headerlink" title="others"></a>others</h2><ul>
+<li><code>strncpy</code>: Copy no more than N characters of SRC to DEST.</li>
+<li><code>std::strlen</code>: Return the length of String.</li>
+<li><code>std::strstr</code> is a standard C library function that is used to find the first occurrence of a substring within a string. The function returns a pointer to the first occurrence of the substring in the given string, or NULL if the substring is not found.</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/21/cpp/std/" data-id="clp8cm0w60004l57uckd04dmz" data-title="cpp std" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-arithmatic/goldilocks-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/18/arithmatic/goldilocks-field/" class="article-date">
@@ -692,45 +754,6 @@ all bits of borrow will be set to 1 if underflow occurs</li>
 
 
   
-    <article id="post-cryptography/kzg-commitment" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/16/cryptography/kzg-commitment/" class="article-date">
-  <time class="dt-published" datetime="2023-10-16T03:19:44.000Z" itemprop="datePublished">2023-10-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/16/cryptography/kzg-commitment/">kzg_commitment</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><img src="https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html" alt="Dankrad Feist Post"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/16/cryptography/kzg-commitment/" data-id="clokyy8dp000iqwsj738gcqvh" data-title="kzg_commitment" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-blockchain/danksharding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/10/12/blockchain/danksharding/" class="article-date">
@@ -896,7 +919,7 @@ all bits of borrow will be set to 1 if underflow occurs</li>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 11.43px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.71px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 14.29px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.86px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.43px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 17.14px;">geth</a> <a href="/tags/golang/" style="font-size: 11.43px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 14.29px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 18.57px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 11.25px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -918,6 +941,10 @@ all bits of borrow will be set to 1 if underflow occurs</li>
       <ul>
         
           <li>
+            <a href="/2023/12/03/cryptography/zkp/kzg-commitment/">kzg polynomial commitment</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
           </li>
         
@@ -931,10 +958,6 @@ all bits of borrow will be set to 1 if underflow occurs</li>
         
           <li>
             <a href="/2023/11/22/cuda/concepts_and_keywords/">key concepts in cuda</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/22/cuda/cuda_api_and_tools/">cuda standard api &amp; tools</a>
           </li>
         
       </ul>

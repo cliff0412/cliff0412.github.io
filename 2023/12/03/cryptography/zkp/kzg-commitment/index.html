@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   
   
-  <title>zk bench | cliff&#39;s personal blog</title>
+  <title>kzg polynomial commitment | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="references csdn blog on zkbench">
+  <meta name="description" content="introductionKZG polynomial commitments was introduced by Kate, Zaverucha and Goldberg. It is called a commitment, because having sent the commitment value (an elliptic curve point) to someone (the ver">
 <meta property="og:type" content="article">
-<meta property="og:title" content="zk bench">
-<meta property="og:url" content="https://cliff0412.github.io/2023/11/24/cryptography/zkp/zk-bench/index.html">
+<meta property="og:title" content="kzg polynomial commitment">
+<meta property="og:url" content="https://cliff0412.github.io/2023/12/03/cryptography/zkp/kzg-commitment/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="references csdn blog on zkbench">
+<meta property="og:description" content="introductionKZG polynomial commitments was introduced by Kate, Zaverucha and Goldberg. It is called a commitment, because having sent the commitment value (an elliptic curve point) to someone (the ver">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-11-24T06:29:26.000Z">
-<meta property="article:modified_time" content="2023-11-24T14:05:26.446Z">
+<meta property="article:published_time" content="2023-12-03T03:19:44.000Z">
+<meta property="article:modified_time" content="2023-12-04T05:51:29.868Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta property="article:tag" content="zkp">
@@ -75,10 +75,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-cryptography/zkp/zk-bench" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-cryptography/zkp/kzg-commitment" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/11/24/cryptography/zkp/zk-bench/" class="article-date">
-  <time class="dt-published" datetime="2023-11-24T06:29:26.000Z" itemprop="datePublished">2023-11-24</time>
+    <a href="/2023/12/03/cryptography/zkp/kzg-commitment/" class="article-date">
+  <time class="dt-published" datetime="2023-12-03T03:19:44.000Z" itemprop="datePublished">2023-12-03</time>
 </a>
     
   </div>
@@ -89,7 +89,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      zk bench
+      kzg polynomial commitment
     </h1>
   
 
@@ -97,20 +97,29 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/134050672?spm=1001.2014.3001.5502">csdn blog on zkbench</a></li>
-</ul>
+        <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>KZG polynomial commitments was introduced by Kate, Zaverucha and Goldberg. It is called a commitment, because having sent the commitment value (an elliptic curve point) to someone (the verifier), the prover cannot change the polynomial they are working with.</p>
+<h2 id="Comparison-to-Merkle-trees"><a href="#Comparison-to-Merkle-trees" class="headerlink" title="Comparison to Merkle trees"></a>Comparison to Merkle trees</h2><p>A Merkle tree is what cryptographers call a vector commitment: Using a Merkle tree of depth \(d\), you can compute a commitment to a vector. A polynomial commitment can be achived by making a merkle tree commitment of all polynomials coefficients. however, it is not efficient.</p>
+<h2 id="parings"><a href="#parings" class="headerlink" title="parings"></a>parings</h2><p>Let \(\mathbb{G_1}\) and \(\mathbb{G_2}\) be two elliptic curves wit a paring \(e: \mathbb{G_1} \times \mathbb{G_2} \rightarrow \mathbb{G_T}\). Let \(p\) be the order of \(\mathbb{G_1}\) and \(\mathbb{G_2}\), and \(G\) and \(H\) be generators of \(\mathbb{G_1}\) and \(\mathbb{G_2}\). We will use a very useful shorhand notation<br>\( [x]_1 &#x3D; xG \in \mathbb{G_1}\), and \([x]_2 &#x3D; xH \in \mathbb{G_2} \), for any \(x \in \mathbb{F_p}\)</p>
+<h2 id="Trusted-setup"><a href="#Trusted-setup" class="headerlink" title="Trusted setup"></a>Trusted setup</h2><p>Let’s assume we have a trusted setup, so that for some secret \(s\), the elements \([s^i]_1\) and \([s^i]_2\) are available to both prover and verifier for \(i&#x3D;0, …, n-1\). </p>
+<p>Let \(p(X) &#x3D; \sum_{i&#x3D;0}^{n}p_i X^i \) be a polynomial, the prover can compute</p>
+<p>\( \left[ p(s) \right]_1 &#x3D; p_0[s^0]_1 + p_1[s^1]_1 + … + p_n[s^n]_1 \)</p>
+<h2 id="Kate-commitment"><a href="#Kate-commitment" class="headerlink" title="Kate commitment"></a>Kate commitment</h2><p>In the Kate commitment scheme, the eleemnt \(C &#x3D; [p(s)]_1\) is the commitment to the polynomial \(p(X)\).  Could the prover (without knowing \(s\)) find another polynomial \(q(X) \neq p(X)\)  that has the same commitment. Let’s assume that this were the case. Then it would mean \([p(s) - q(s)]_1 &#x3D; 0\), implying \(p(s) - q(s) &#x3D; 0\).</p>
+<p>Now, \(r(X) &#x3D; p(X) - q(X)\) is itself a polynomial. we know that it’s not constant because \(p(X) \neq q(X) \).  It is a well-known fact that any non-constant polynomial of degree \(n\) can have at most \(n\) zeroes.<br>Since the prover doesn’t know \(s\), the only way they could achieve that \(p(s) - q(s) &#x3D; 0\)<br> is by making \( p(X) - q(X)&#x3D;0\) in as many places as possible. But since they can do that in at most \(n\)<br> places, as we’ve just proved, they are very unlikely to succeed: since \(n\) is much smaller than the order of the curve, \(p\). the probability that  \(s\) will be one of the points they chose to make \(p(X) &#x3D; q(X)\) will be vanishingly tiny.</p>
+<h2 id="Multiplying-polynomials"><a href="#Multiplying-polynomials" class="headerlink" title="Multiplying polynomials"></a>Multiplying polynomials</h2><p>While elliptic curves themselves don’t allow polynomial multiplication, luckily we can do it with pairings: We have that<br>\[ e([a]_1, [b]_2) &#x3D; e(G,H)^{(ab)} &#x3D; [ab]_T\]<br>while we unfortunately can’t just multiply two field elements inside an elliptic curve and get their product as an elliptic curve element, we can multiply two field elements if we commited to them in different curves (one in \(G_1\) and one in \(G_2\), and the output is a<br>\(G_T\) element.</p>
+<p>Noe let’s say we want to prove that \(p(z)&#x3D;y\). we will use the polynomial \(p(X) - y\). this polynomial is clearly zero at \(z\). Let \(q(X)\) be the polynomial \(p(X) - y\) divided by the linear factor \(X-z\), i.e<br>\[ q(X) &#x3D; \frac{p(X) - y}{X-z} \]<br>which is equivalent to saying that \(q(X)(X-z) &#x3D; p(X) - y\)</p>
+<h2 id="Kate-proofs"><a href="#Kate-proofs" class="headerlink" title="Kate proofs"></a>Kate proofs</h2><p>now a kate proof for the evaluation \(p(z) &#x3D; y\) is defined as \(\pi &#x3D; [q(s)]_1\). remember the commitment to the polynomial \(p(X)\) is defined as \(C&#x3D;[p(s)]_1\)<br>the verifier checks this proof using the following equation<br>\( e(\pi, [s-z]_2) &#x3D; e(C-[y]_1, H) \)</p>
+<p>Note that the verifier can compute \([s-z]_2\), because it is just a combination of the element \([s]_2\)<br> from the trusted setup and \(z\) is the point at which the polynomial is evaluated. </p>
+<h2 id="multiproofs"><a href="#multiproofs" class="headerlink" title="multiproofs"></a>multiproofs</h2><p>So far we have shown how to prove an evaluation of a polynomial at a single point. Note that this is already pretty amazing: You can show that some polynomial that could be any degree – say \(2^{28}\) – at some point takes a certain value, by only sending a single group element (that could be 48 bytes, for example in BLS12_381). The toy example of using Merkle trees as polynomial commitments would have needed to send \(2^{28}\) elements – all the coefficients of the polynomial.</p>
+<p>Let’s say we have a list of \(k\) points \((z_0, y_0),(z_1, y_1), …, (z_{k-1}, y_{k-1})\). Using lagrange interpolation, we can find polynomial \(I(X)\) goes through all of these points.</p>
+<p>Now let’s assume that we know \(p(X)\) goes through all these points. then the polynomial \(p(X) - I(X)\) will clearly be zero at each \(z_0, z_1, …, z_{k-1}\). the zero polynomial is<br>\(Z(X) &#x3D; (X-z_0)\cdot (X-z_1)…(X-z_{k-1})\)<br>Now, we can compute the quotient<br>\(q(X) &#x3D; \frac{p(X)-I(X)}{Z(X)}\)<br>We can now define the Kate multiproof for the evaluations \((z_0, y_0),(z_1, y_1),…, (z_{k-1}, y_{k-1})\): \(\pi &#x3D; [q(s)]_1\). note that this is still only one group element.</p>
+<p>Now, to check this, the verifier will also have to compute the interpolation polynomial \(I(X)\) and the zero polynomial Z(X). Using this, they can compute \([Z(s)]_2\) and \([I(s)]_1\), and thus verify the paring equation<br>\[ e(\pi, [Z(s)]_2) &#x3D; e(C-[I(s)]_1, H) \]</p>
+<h2 id="Kate-as-a-vector-commitment"><a href="#Kate-as-a-vector-commitment" class="headerlink" title="Kate as a vector commitment"></a>Kate as a vector commitment</h2><p>While the Kate commitment scheme is designed as a polynomial commitment, it actually also makes a really nice vector commitment. Remember that a vector commitment commits to a vector \(a_0, …, a_{n-1}\) and lets you prove that you committed to \(a_i\) for some \(i\). We can reproduce this using the Kate commitment scheme: Let \(p(X)\) be the polynomial that for all \(i\) evaluates as \(p(i)&#x3D;a_i\).<br>Now using this polynomial, we can prove any number of elements in the vector using just a single group element! Note how much more efficient (in terms of proof size) this is compared to Merkle trees</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html">Dankrad Feist Post</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/24/cryptography/zkp/zk-bench/" data-id="clphpvdok000caj7ubjq53ldn" data-title="zk bench" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/12/03/cryptography/zkp/kzg-commitment/" data-id="clpoya0gr0000pksj12ah1gzj" data-title="kzg polynomial commitment" class="article-share-link">Share</a>
       
       
       
@@ -122,19 +131,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          sgx multi prover
-        
-      </div>
-    </a>
   
-  
-    <a href="/2023/11/22/cuda/concepts_and_keywords/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">key concepts in cuda</div>
+      <div class="article-nav-title">bls12_381</div>
     </a>
   
 </nav>
