@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>montgomery multiplication | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="montgomery spaceMontgomery multiplication works by first transforming the multipliers into Montgomery space, where modular multiplication can be performed cheaply, and then transforming them back w">
+<meta property="og:type" content="article">
+<meta property="og:title" content="montgomery multiplication">
+<meta property="og:url" content="https://cliff0412.github.io/2023/12/07/arithmatic/montgomery-multiplication/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="montgomery spaceMontgomery multiplication works by first transforming the multipliers into Montgomery space, where modular multiplication can be performed cheaply, and then transforming them back w">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-12-07T11:10:13.000Z">
+<meta property="article:modified_time" content="2023-12-07T15:03:20.752Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="number_theory">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-arithmatic/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/07/arithmatic/montgomery-multiplication/" class="article-date">
+  <time class="dt-published" datetime="2023-12-07T11:10:13.000Z" itemprop="datePublished">2023-12-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      montgomery multiplication
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="montgomery-space"><a href="#montgomery-space" class="headerlink" title="montgomery space"></a>montgomery space</h2><p>Montgomery multiplication works by first transforming the multipliers into Montgomery space, where modular multiplication can be performed cheaply, and then transforming them back when their actual values are needed. Unlike general integer division methods, Montgomery multiplication is not efficient for performing just one modular reduction and only becomes worthwhile when there is a chain of modular operations. </p>
+<p>The space is defined by the modulo <code>n</code> and a positive integer <code>r ≥ n</code> coprime to <code>n</code>. The algorithm involves modulo and division by <code>r</code>, so in practice, <code>r</code> is chosen to be <code>2^32</code> or <code>2^64</code>, so that these operations can be done with a right-shift and a bitwise <code>AND</code> respectively.</p>
+<p>Definition. the representative \(\bar{x}\) of a number \(x\) in the Montgomery space is defined as<br>\[ \bar{x} &#x3D; x \cdot r \mod n \]</p>
+<p>Computing this transformation involves a multiplication and a modulo — an expensive operation that we wanted to optimize away in the first place — which is why we only use this method when the overhead of transforming numbers to and from the Montgomery space is worth it and not for general modular multiplication.</p>
+<p>Inside the Montgomery space, addition, substraction, and checking for equality is performed as usual:</p>
+<p>\[ x \cdot r + y \cdot r \equiv (x+y) \cdot r \mod n \]</p>
+<p>However, this is not the case for multiplication. Denoting multiplication in the Montgomery space as \(∗\) and the “normal” multiplication as \(\cdot\), we expect the result to be:<br>\[ \bar{x} * \bar{y} &#x3D; \overline{x\cdot y} &#x3D; (x\cdot y)\cdot r \mod n \]</p>
+<p>But the normal multiplication in the Montgomery space yields:<br>\[ \bar{x} \cdot \bar{y}&#x3D;(x\cdot y)\cdot r \cdot r \mod n  \]</p>
+<p>Therefore, the multiplication in the Montgomery space is defined as<br>\[ \bar{x} * \bar{y} &#x3D; \bar{x} \cdot \bar{y} \cdot r^{-1} \mod n \]</p>
+<p>This means that, after we normally multiply two numbers in the Montgomery space, we need to reduce the result by multiplying it by \(r^{-1}\)  and taking the modulo — and there is an efficent way to do this particular operation.</p>
+<h2 id="Montgomery-reduction"><a href="#Montgomery-reduction" class="headerlink" title="Montgomery reduction"></a>Montgomery reduction</h2><p>assume that \(r&#x3D;2^{32}\), the modulo \(n\) is 32-bit, and the number \(x\) we need to reduce is 64-bit(the product of two 32-bit numbers). The goal is to calculate \(y&#x3D;x\cdot r^{-1} \mod n\).</p>
+<p>Since \(r\) is coprime with \(n\), we know that there are two numbers \(r^{-1}\) and \(n’\) in the \([0, n)\) range such that<br>\[ r \cdot r^{-1} + n \cdot n’ &#x3D; 1 \]<br>both \(r^{-1} and \quad n’\) can be computed using extended Euclidean algorithm <strong>(\(n’ &#x3D; n^{-1} \mod r\))</strong>.<br>Using this identiy, we can express \(r \cdot r^{-1}\) as \(1-n\cdot n’\) and write \(x \cdot r^{-1}\) as</p>
+<p>\[<br>  \displaylines{<br>  x\cdot r^{-1} &#x3D; \frac{x \cdot r \cdot r^{-1}}{r} \\<br>  &#x3D; \frac{x \cdot (1-n\cdot n’)}{r} \\<br>  &#x3D; \frac{x - x \cdot n \cdot n’}{r} \\<br>  &#x3D; \frac{x - x \cdot n \cdot n’ + k\cdot r \cdot n}{r} \quad (\mod n) (for \hspace{0.2cm}any\hspace{0.2cm} integer\hspace{0.2cm} k) \\<br>  &#x3D; \frac{x - (x\cdot n’ - k\cdot r)\cdot n}{r}<br>}<br>  \]</p>
+<p>Now, if we choose \(k\) to be \(\lfloor x\cdot n’&#x2F;r\rfloor\) (the upper 64 bits of \(x\cdot n’\), giving \(x\) is 64 bits and \(n’\) is 32 bits ), it will cancel out, and \(k\cdot r - x\cdot n’\) will simply be equal to \(x \cdot n’ \mod r\) (the lower 32 bits of \(x\cdot n’\)), implying:<br>\[ x\cdot r^{-1} &#x3D; (x - (x\cdot n’ \mod r )\cdot n)&#x2F;r\]</p>
+<p>the algorithm itself just evaluates this formula, performing two multiplications to calculate \(q &#x3D; x\cdot n’ \mod r\) and \(m &#x3D; q\cdot n\), and then subtracts it from \(x\) and right shifts the result to divide it by r.</p>
+<p>The only remaining thing to handle is that the result may not be in the \([0,n)\) range; but since<br>\[x &lt; n\cdot n &lt; r\cdot n &#x3D;&gt; x&#x2F;r &lt; n \]<br>and<br>\[m &#x3D; q\cdot n &lt; r\cdot n &#x3D;&gt; m&#x2F;r &lt; n\]<br>it is guaranted that<br>\[ -n &lt; (x-m)&#x2F;r &lt; n \]</p>
+<p>Therefore, we can simply check if the result is negative and in that case, add \(n\) to it, giving the following algorithm:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">__uint32_t</span> u32;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">__uint64_t</span> u64;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> u32 n = <span class="number">1e9</span> + <span class="number">7</span>, nr = <span class="built_in">inverse</span>(n, <span class="number">1ull</span> &lt;&lt; <span class="number">32</span>); <span class="comment">// nr is n&#x27; in the above equations, r is 1&lt;&lt;32</span></span><br><span class="line"></span><br><span class="line"><span class="function">u32 <span class="title">reduce</span><span class="params">(u64 x)</span> </span>&#123;</span><br><span class="line">    u32 q = <span class="built_in">u32</span>(x) * nr;      <span class="comment">// q = x * n&#x27; mod r</span></span><br><span class="line">    u64 m = (u64) q * n;      <span class="comment">// m = q * n</span></span><br><span class="line">    u32 y = (x - m) &gt;&gt; <span class="number">32</span>;    <span class="comment">// y = (x - m) / r</span></span><br><span class="line">    <span class="keyword">return</span> x &lt; m ? y + n : y; <span class="comment">// if y &lt; 0, add n to make it be in the [0, n) range</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>This last check is relatively cheap, but it is still on the critical path. If we are fine with the result being in the \([0,2\cdot n−2]\) range instead of \([0, n)\), we can remove it and add \(n\) to the result unconditionally:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">u32 <span class="title">reduce</span><span class="params">(u64 x)</span> </span>&#123;</span><br><span class="line">    u32 q = <span class="built_in">u32</span>(x) * nr;</span><br><span class="line">    u64 m = (u64) q * n;</span><br><span class="line">    u32 y = (x - m) &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">return</span> y + n</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>We can also move the <code>&gt;&gt; 32</code> operation one step earlier in the computation graph and compute \(\lfloor x&#x2F;r \rfloor - \lfloor m&#x2F;r \rfloor\) instead of \( (x-m)&#x2F;r\). This is correct because the lower 32 bits of \(x\) and \(m\) are equal anyway since<br>\[ m &#x3D; x\cdot n’ \cdot n &#x3D; x \mod r\] (mod r is same as taking the lower 32 bits).</p>
+<p>But why would we voluntarily choose to perfom two right-shifts instead of just one? This is beneficial because for <code>((u64) q * n) &gt;&gt; 32</code> we need to do a 32-by-32 multiplication and take the upper 32 bits of the result (which the x86 mul instruction already writes in a separate register, so it doesn’t cost anything), and the other right-shift <code>x &gt;&gt; 32</code> is not on the critical path.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">u32 <span class="title">reduce</span><span class="params">(u64 x)</span> </span>&#123;</span><br><span class="line">    u32 q = <span class="built_in">u32</span>(x) * nr;</span><br><span class="line">    u32 m = ((u64) q * n) &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">return</span> (x &gt;&gt; <span class="number">32</span>) + n - m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>if to reduce a u128 number（u64 * u64). it is as below</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">__uint128_t</span> u128;</span><br><span class="line"></span><br><span class="line"><span class="function">u64 <span class="title">reduce</span><span class="params">(u128 x)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    u64 q = <span class="built_in">u64</span>(x) * nr;</span><br><span class="line">    u64 m = ((u128) q * n) &gt;&gt; <span class="number">64</span>;</span><br><span class="line">    <span class="keyword">return</span> (x &gt;&gt; <span class="number">64</span>) + n - m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/95613967">csdn blog on montgomery reduction</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nayuki.io/page/montgomery-reduction-algorithm">nayuki montgomery reduction</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/12/07/arithmatic/montgomery-multiplication/" data-id="clphpvdof0000aj7u9gaz5qfy" data-title="montgomery multiplication" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/12/03/cryptography/zkp/kzg-commitment/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">kzg polynomial commitment</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/arithmatic/" style="font-size: 11.25px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/03/cryptography/zkp/kzg-commitment/">kzg polynomial commitment</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
