@@ -115,6 +115,36 @@ u64 reduce(u128 x) const {
 }
 ```
 
+# Faster Inverse
+Montgomery multiplication itself is fast, but it requires some precomputation:
+- inverting \\(n\\) modulo \\(r\\) to compute \\(n'\\)
+- transforming a number to the Montgomery space,
+- transforming a number from the Montgomery space.
+
+The last operation is already efficiently performed with the reduce procedure we just implemented, but the first `inverting` can be slightly optimized.
+Computing the inverse \\(n' = n^{-1} \mod r\\) can be done faster than with the extended Euclidean algorith by taking advantage of the fact that \\(r\\) is a power of two and using the following identity:
+\\[ a\cdot x = 1 \mod 2^k => a\cdot x\cdot (2-a\cdot x) = 1 \mod 2^{2k} \\]
+Proof: 
+ \\[
+  \displaylines{
+ a\cdot x \cdot (2-a\cdot x) = 2\cdot a\cdot x - (a\cdot x)^2 \\\\
+ = 2\cdot(1+m\cdot 2^k) - (1+m\cdot 2^k)^2 \\\\
+ = 2 + 2\cdot m\cdot 2^k - 1-2\cdot m \cdot 2^k -m^2\cdot 2^{2k} \\\\
+ = 1-m^2\cdot 2^{2k} \\\\
+ = 1 \mod 2^{2k}
+}
+  \\]
+**note**
+- \\(a\cdot x \\) coudl be represented by \\(1+m\cdot 2^k\\) as \\(a\cdot x = 1 \mod 2^k\\)
+
+
+as for our case, \\(x\\) is \\(nr\\), \\(a\\) is \\(n\\). i.e \\(n\cdot nr = 1 \mod 2^k\\). Since \\(n \\) is an odd number, we can start with \\(nr=1\\) as the inverse of \\(n\\) modulo \\(2^1\\). then applying this identity one time, i.e \\(n\cdot 1 \cdot (2-n\cdot 1) = 1 \mod 2^2\\). Let \\(nr = 1\cdot(2-n\cdot 1) \\), we apply this identity again, and get \\(n\cdot nr \cdot (2-a\cdot nr) = 1 \mod 2^4\\). Following this approach, and apply this identity exactly \\(log_2^m\\) times, where \\(m\\) is the bit length of \\(r\\)
+
+## Complement Implementation
+```cpp
+
+
+```
 ## references
 - https://en.algorithmica.org/hpc/number-theory/montgomery/
 - [csdn blog on montgomery reduction](https://blog.csdn.net/mutourend/article/details/95613967)
