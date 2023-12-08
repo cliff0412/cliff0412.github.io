@@ -74,7 +74,7 @@
     <article id="post-arithmatic/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/12/07/arithmatic/montgomery-multiplication/" class="article-date">
-  <time class="dt-published" datetime="2023-12-07T11:10:13.000Z" itemprop="datePublished">2023-12-07</time>
+  <time class="dt-published" datetime="2023-12-07T19:10:13.000Z" itemprop="datePublished">2023-12-07</time>
 </a>
     
   </div>
@@ -125,6 +125,18 @@
 <p>if to reduce a u128 number（u64 * u64). it is as below</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">__uint128_t</span> u128;</span><br><span class="line"></span><br><span class="line"><span class="function">u64 <span class="title">reduce</span><span class="params">(u128 x)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    u64 q = <span class="built_in">u64</span>(x) * nr;</span><br><span class="line">    u64 m = ((u128) q * n) &gt;&gt; <span class="number">64</span>;</span><br><span class="line">    <span class="keyword">return</span> (x &gt;&gt; <span class="number">64</span>) + n - m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h1 id="Faster-Inverse"><a href="#Faster-Inverse" class="headerlink" title="Faster Inverse"></a>Faster Inverse</h1><p>Montgomery multiplication itself is fast, but it requires some precomputation:</p>
+<ul>
+<li>inverting \(n\) modulo \(r\) to compute \(n’\)</li>
+<li>transforming a number to the Montgomery space,</li>
+<li>transforming a number from the Montgomery space.</li>
+</ul>
+<p>The last operation is already efficiently performed with the reduce procedure we just implemented, but the first <code>inverting</code> can be slightly optimized.<br>Computing the inverse \(n’ &#x3D; n^{-1} \mod r\) can be done faster than with the extended Euclidean algorith by taking advantage of the fact that \(r\) is a power of two and using the following identity:<br>\[ a\cdot x &#x3D; 1 \mod 2^k &#x3D;&gt; a\cdot x\cdot (2-a\cdot x) &#x3D; 1 \mod 2^{2k} \]<br>Proof:<br> \[<br>  \displaylines{<br> a\cdot x \cdot (2-a\cdot x) &#x3D; 2\cdot a\cdot x - (a\cdot x)^2 \\<br> &#x3D; 2\cdot(1+m\cdot 2^k) - (1+m\cdot 2^k)^2 \\<br> &#x3D; 2 + 2\cdot m\cdot 2^k - 1-2\cdot m \cdot 2^k -m^2\cdot 2^{2k} \\<br> &#x3D; 1-m^2\cdot 2^{2k} \\<br> &#x3D; 1 \mod 2^{2k}<br>}<br>  \]<br><strong>note</strong></p>
+<ul>
+<li>\(a\cdot x \) coudl be represented by \(1+m\cdot 2^k\) as \(a\cdot x &#x3D; 1 \mod 2^k\)</li>
+</ul>
+<p>as for our case, \(x\) is \(nr\), \(a\) is \(n\). i.e \(n\cdot nr &#x3D; 1 \mod 2^k\). Since \(n \) is an odd number, we can start with \(nr&#x3D;1\) as the inverse of \(n\) modulo \(2^1\). then applying this identity one time, i.e \(n\cdot 1 \cdot (2-n\cdot 1) &#x3D; 1 \mod 2^2\). Let \(nr &#x3D; 1\cdot(2-n\cdot 1) \), we apply this identity again, and get \(n\cdot nr \cdot (2-a\cdot nr) &#x3D; 1 \mod 2^4\). Following this approach, and apply this identity exactly \(log_2^m\) times, where \(m\) is the bit length of \(r\)</p>
+<h2 id="Complement-Implementation"><a href="#Complement-Implementation" class="headerlink" title="Complement Implementation"></a>Complement Implementation</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/95613967">csdn blog on montgomery reduction</a></li>
