@@ -71,6 +71,63 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cryptography/zkp/polygon_zkevm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/" class="article-date">
+  <time class="dt-published" datetime="2023-12-11T05:24:03.000Z" itemprop="datePublished">2023-12-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="zkProver"><a href="#zkProver" class="headerlink" title="zkProver"></a>zkProver</h2><h3 id="State-Machines"><a href="#State-Machines" class="headerlink" title="State Machines"></a>State Machines</h3><p>The zkProver follows modularity of design to the extent that, except for a few components, it is mainly a cluster of State Machines. It has a total of thirteen (13) State Machines;</p>
+<ul>
+<li>The Main State Machine</li>
+<li>Secondary State Machines → Binary SM, Storage SM, Memory SM, Arithmetic SM, Keccak Function SM, PoseidonG SM,</li>
+<li>Auxiliary State Machines → Padding-PG SM, Padding-KK SM, Bits2Field SM, Memory Align SM, Byte4 SM, ROM SM.<br>Due to the modular design of zkProver, the Main State Machine can delegate as many of tasks as possible to other specialist State Machines. This heavily improves the efficiency of Main SM.<br><img src="/images/zkp/zkevm/polygon/state_machines.png"></li>
+</ul>
+<h3 id="Two-Novel-Languages-For-zkProver"><a href="#Two-Novel-Languages-For-zkProver" class="headerlink" title="Two Novel Languages For zkProver"></a>Two Novel Languages For zkProver</h3><h4 id="Zero-Knowledge-Assembly-zkASM"><a href="#Zero-Knowledge-Assembly-zkASM" class="headerlink" title="Zero-Knowledge Assembly(zkASM)"></a>Zero-Knowledge Assembly(zkASM)</h4><p>As an Assembly language, the Zero-Knowledge Assembly (or zkASM) language is specially designed to map instructions from the zkProver’s Main State Machine to other State Machines. In case of the State Machines with firmware, zkASM is the Interpreter for the firmware.</p>
+<h4 id="Polynomial-Identity-Language-PIL"><a href="#Polynomial-Identity-Language-PIL" class="headerlink" title="Polynomial Identity Language(PIL)"></a>Polynomial Identity Language(PIL)</h4><p>The Polynomial Identity Language (or PIL) is especially designed for the zkProver. Almost all state machines express computations in terms of polynomials. Therefore, state transitions in State Machines must satisfy computation-specific polynomial identities.</p>
+<h3 id="Microprocessor-State-Machines"><a href="#Microprocessor-State-Machines" class="headerlink" title="Microprocessor State Machines"></a>Microprocessor State Machines</h3><p>There are two microprocessor-type state machines; the Main SM and the Storage SM. These two State Machines have the Firmware and the Hardware part. It is worth noting that each of these Microprocessor SM has its own ROM.</p>
+<p>The Firmware part runs the zkASM language to set up the logic and rules, which are expressed in JSON format and stored in a ROM. The JSON-file is then parsed to the specific SM Executor, which executes Storage Actions in compliance with the rules and logic in the JSON-file.</p>
+<p>The Hardware component, which uses the Polynomial Identity Language (PIL), defines constraints (or polynomial identities), expresses them in JSON format, and stores them in the accompanying JSON-file. These constraints are parsed to the specific SM Executor, because all computations must be executed in conformance to the polynomial identities.</p>
+<p><img src="/images/zkp/zkevm/polygon/micro_processor.png"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/12/11/cryptography/zkp/polygon_zkevm/" data-id="clq0nd00w00024z7u843t2waw" data-title="polygon zkEVM" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-arithmatic/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/12/07/arithmatic/montgomery-multiplication/" class="article-date">
@@ -125,6 +182,18 @@
 <p>if to reduce a u128 number（u64 * u64). it is as below</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">__uint128_t</span> u128;</span><br><span class="line"></span><br><span class="line"><span class="function">u64 <span class="title">reduce</span><span class="params">(u128 x)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    u64 q = <span class="built_in">u64</span>(x) * nr;</span><br><span class="line">    u64 m = ((u128) q * n) &gt;&gt; <span class="number">64</span>;</span><br><span class="line">    <span class="keyword">return</span> (x &gt;&gt; <span class="number">64</span>) + n - m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h1 id="Faster-Inverse"><a href="#Faster-Inverse" class="headerlink" title="Faster Inverse"></a>Faster Inverse</h1><p>Montgomery multiplication itself is fast, but it requires some precomputation:</p>
+<ul>
+<li>inverting \(n\) modulo \(r\) to compute \(n’\)</li>
+<li>transforming a number to the Montgomery space,</li>
+<li>transforming a number from the Montgomery space.</li>
+</ul>
+<p>The last operation is already efficiently performed with the reduce procedure we just implemented, but the first <code>inverting</code> can be slightly optimized.<br>Computing the inverse \(n’ &#x3D; n^{-1} \mod r\) can be done faster than with the extended Euclidean algorith by taking advantage of the fact that \(r\) is a power of two and using the following identity:<br>\[ a\cdot x &#x3D; 1 \mod 2^k &#x3D;&gt; a\cdot x\cdot (2-a\cdot x) &#x3D; 1 \mod 2^{2k} \]<br>Proof:<br> \[<br>  \displaylines{<br> a\cdot x \cdot (2-a\cdot x) &#x3D; 2\cdot a\cdot x - (a\cdot x)^2 \\<br> &#x3D; 2\cdot(1+m\cdot 2^k) - (1+m\cdot 2^k)^2 \\<br> &#x3D; 2 + 2\cdot m\cdot 2^k - 1-2\cdot m \cdot 2^k -m^2\cdot 2^{2k} \\<br> &#x3D; 1-m^2\cdot 2^{2k} \\<br> &#x3D; 1 \mod 2^{2k}<br>}<br>  \]<br><strong>note</strong></p>
+<ul>
+<li>\(a\cdot x \) coudl be represented by \(1+m\cdot 2^k\) as \(a\cdot x &#x3D; 1 \mod 2^k\)</li>
+</ul>
+<p>as for our case, \(x\) is \(nr\), \(a\) is \(n\). i.e \(n\cdot nr &#x3D; 1 \mod 2^k\). Since \(n \) is an odd number, we can start with \(nr&#x3D;1\) as the inverse of \(n\) modulo \(2^1\). then applying this identity one time, i.e \(n\cdot 1 \cdot (2-n\cdot 1) &#x3D; 1 \mod 2^2\). Let \(nr &#x3D; 1\cdot(2-n\cdot 1) \), we apply this identity again, and get \(n\cdot nr \cdot (2-a\cdot nr) &#x3D; 1 \mod 2^4\). Following this approach, and apply this identity exactly \(log_2^m\) times, where \(m\) is the bit length of \(r\)</p>
+<h2 id="Complement-Implementation"><a href="#Complement-Implementation" class="headerlink" title="Complement Implementation"></a>Complement Implementation</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/95613967">csdn blog on montgomery reduction</a></li>
@@ -170,7 +239,12 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>KZG polynomial commitments was introduced by Kate, Zaverucha and Goldberg. It is called a commitment, because having sent the commitment value (an elliptic curve point) to someone (the verifier), the prover cannot change the polynomial they are working with.</p>
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>KZG polynomial commitments was introduced by Kate, Zaverucha and Goldberg. It is called a commitment, because having sent the commitment value (an elliptic curve point) to someone (the verifier), the prover cannot change the polynomial they are working with.</p>
 <h2 id="Comparison-to-Merkle-trees"><a href="#Comparison-to-Merkle-trees" class="headerlink" title="Comparison to Merkle trees"></a>Comparison to Merkle trees</h2><p>A Merkle tree is what cryptographers call a vector commitment: Using a Merkle tree of depth \(d\), you can compute a commitment to a vector. A polynomial commitment can be achived by making a merkle tree commitment of all polynomials coefficients. however, it is not efficient.</p>
 <h2 id="parings"><a href="#parings" class="headerlink" title="parings"></a>parings</h2><p>Let \(\mathbb{G_1}\) and \(\mathbb{G_2}\) be two elliptic curves wit a paring \(e: \mathbb{G_1} \times \mathbb{G_2} \rightarrow \mathbb{G_T}\). Let \(p\) be the order of \(\mathbb{G_1}\) and \(\mathbb{G_2}\), and \(G\) and \(H\) be generators of \(\mathbb{G_1}\) and \(\mathbb{G_2}\). We will use a very useful shorhand notation<br>\( [x]_1 &#x3D; xG \in \mathbb{G_1}\), and \([x]_2 &#x3D; xH \in \mathbb{G_2} \), for any \(x \in \mathbb{F_p}\)</p>
 <h2 id="Trusted-setup"><a href="#Trusted-setup" class="headerlink" title="Trusted setup"></a>Trusted setup</h2><p>Let’s assume we have a trusted setup, so that for some secret \(s\), the elements \([s^i]_1\) and \([s^i]_2\) are available to both prover and verifier for \(i&#x3D;0, …, n-1\). </p>
@@ -565,6 +639,56 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
 
 
   
+    <article id="post-arithmatic/tricks" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/22/arithmatic/tricks/" class="article-date">
+  <time class="dt-published" datetime="2023-11-22T06:47:28.000Z" itemprop="datePublished">2023-11-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/22/arithmatic/tricks/">cryptography arithmetic tricks</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<ul>
+<li>get the next m*SIZE<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># <span class="keyword">define</span> WARP_SZ 32</span></span><br><span class="line"><span class="type">size_t</span> n = (nelems+WARP_SZ<span class="number">-1</span>) &amp; ((<span class="type">size_t</span>)<span class="number">0</span>-WARP_SZ)</span><br></pre></td></tr></table></figure>
+0-WARP_SIZE &#x3D; 0xffffffffffffffe0<br>eo &#x3D; 0b11100000<br>it will select multiples of WARP_SZ<br>nelems+WARP_SZ-1 will counter for the removed numbers by 00000</li>
+</ul>
+<p>n will be [32, 64, 96, …]</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/22/arithmatic/tricks/" data-id="clp96plbb0006e37uei4tcdkw" data-title="cryptography arithmetic tricks" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-arithmatic/efficient_implementations" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/22/arithmatic/efficient_implementations/" class="article-date">
@@ -628,87 +752,6 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
 
 
   
-    <article id="post-arithmatic/tricks" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/22/arithmatic/tricks/" class="article-date">
-  <time class="dt-published" datetime="2023-11-22T03:07:51.402Z" itemprop="datePublished">2023-11-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <ul>
-<li>get the next m*SIZE<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># <span class="keyword">define</span> WARP_SZ 32</span></span><br><span class="line"><span class="type">size_t</span> n = (nelems+WARP_SZ<span class="number">-1</span>) &amp; ((<span class="type">size_t</span>)<span class="number">0</span>-WARP_SZ)</span><br></pre></td></tr></table></figure>
-0-WARP_SIZE &#x3D; 0xffffffffffffffe0<br>eo &#x3D; 0b11100000<br>it will select multiples of WARP_SZ<br>nelems+WARP_SZ-1 will counter for the removed numbers by 00000</li>
-</ul>
-<p>n will be [32, 64, 96, …]</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/22/arithmatic/tricks/" data-id="clp96plbb0006e37uei4tcdkw" data-title="" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cpp/generics_and_macros" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/21/cpp/generics_and_macros/" class="article-date">
-  <time class="dt-published" datetime="2023-11-21T03:35:20.000Z" itemprop="datePublished">2023-11-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/21/cpp/generics_and_macros/">cpp generics</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="generics"><a href="#generics" class="headerlink" title="generics"></a>generics</h1><h2 id="variadic-template-parameter"><a href="#variadic-template-parameter" class="headerlink" title="variadic template parameter"></a>variadic template parameter</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Types&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">printValues</span><span class="params">(<span class="type">const</span> Types&amp;... values)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Fold expression (C++17 and later) to print all values</span></span><br><span class="line">    (std::cout &lt;&lt; ... &lt;&lt; values) &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="macros"><a href="#macros" class="headerlink" title="macros"></a>macros</h1><h2 id="examples"><a href="#examples" class="headerlink" title="examples"></a>examples</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> defined(_WIN32)</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>__cplusplus</code> macro is a predefined macro in C++ that is used to indicate the version of the C++ standard being used by the compiler. The value of <code>__cplusplus</code> is an integer that represents the version.</li>
-<li><strong>FILE</strong><br><code>__FILE__</code> is a predefined macro in C and C++ that expands to the name of the current source file as a string literal.</li>
-<li><strong>LINE</strong><br><code>__LINE__</code> is a predefined macro in C and C++ that expands to the current line number in the source code.</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/21/cpp/generics_and_macros/" data-id="clp8cm0vx0000l57u7eqtbi6s" data-title="cpp generics" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -737,7 +780,7 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 11.25px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -759,6 +802,10 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
       <ul>
         
           <li>
+            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
           </li>
         
@@ -772,10 +819,6 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
         
           <li>
             <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
           </li>
         
       </ul>

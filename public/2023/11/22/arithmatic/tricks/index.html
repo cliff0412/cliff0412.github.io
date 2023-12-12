@@ -4,18 +4,19 @@
   <meta charset="utf-8">
   
   
-  <title>cliff&#39;s personal blog</title>
+  <title>cryptography arithmetic tricks | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="get the next m*SIZE12# define WARP_SZ 32size_t n &#x3D; (nelems+WARP_SZ-1) &amp; ((size_t)0-WARP_SZ) 0-WARP_SIZE &#x3D; 0xffffffffffffffe0eo &#x3D; 0b11100000it will select multiples of WARP_SZnelems+WARP">
+  <meta name="description" content="get the next m*SIZE12# define WARP_SZ 32size_t n &#x3D; (nelems+WARP_SZ-1) &amp; ((size_t)0-WARP_SZ) 0-WARP_SIZE &#x3D; 0xffffffffffffffe0eo &#x3D; 0b11100000it will select multiples of WARP_SZnelems+W">
 <meta property="og:type" content="article">
-<meta property="og:title" content="cliff&#39;s personal blog">
+<meta property="og:title" content="cryptography arithmetic tricks">
 <meta property="og:url" content="https://cliff0412.github.io/2023/11/22/arithmatic/tricks/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="get the next m*SIZE12# define WARP_SZ 32size_t n &#x3D; (nelems+WARP_SZ-1) &amp; ((size_t)0-WARP_SZ) 0-WARP_SIZE &#x3D; 0xffffffffffffffe0eo &#x3D; 0b11100000it will select multiples of WARP_SZnelems+WARP">
+<meta property="og:description" content="get the next m*SIZE12# define WARP_SZ 32size_t n &#x3D; (nelems+WARP_SZ-1) &amp; ((size_t)0-WARP_SZ) 0-WARP_SIZE &#x3D; 0xffffffffffffffe0eo &#x3D; 0b11100000it will select multiples of WARP_SZnelems+W">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-11-22T03:07:51.402Z">
-<meta property="article:modified_time" content="2023-11-22T03:14:27.763Z">
+<meta property="article:published_time" content="2023-11-22T06:47:28.000Z">
+<meta property="article:modified_time" content="2023-12-08T06:18:33.813Z">
 <meta property="article:author" content="cliff">
+<meta property="article:tag" content="arithmatic">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
@@ -76,16 +77,31 @@
         <section id="main"><article id="post-arithmatic/tricks" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/22/arithmatic/tricks/" class="article-date">
-  <time class="dt-published" datetime="2023-11-22T03:07:51.402Z" itemprop="datePublished">2023-11-22</time>
+  <time class="dt-published" datetime="2023-11-22T06:47:28.000Z" itemprop="datePublished">2023-11-22</time>
 </a>
     
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      cryptography arithmetic tricks
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <ul>
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<ul>
 <li>get the next m*SIZE<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># <span class="keyword">define</span> WARP_SZ 32</span></span><br><span class="line"><span class="type">size_t</span> n = (nelems+WARP_SZ<span class="number">-1</span>) &amp; ((<span class="type">size_t</span>)<span class="number">0</span>-WARP_SZ)</span><br></pre></td></tr></table></figure>
 0-WARP_SIZE &#x3D; 0xffffffffffffffe0<br>eo &#x3D; 0b11100000<br>it will select multiples of WARP_SZ<br>nelems+WARP_SZ-1 will counter for the removed numbers by 00000</li>
 </ul>
@@ -94,29 +110,31 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/22/arithmatic/tricks/" data-id="clp96plbb0006e37uei4tcdkw" data-title="" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/11/22/arithmatic/tricks/" data-id="clp96plbb0006e37uei4tcdkw" data-title="cryptography arithmetic tricks" class="article-share-link">Share</a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2023/11/22/arithmatic/efficient_implementations/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2023/11/22/cuda/cuda_api_and_tools/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          classic implementations of arithematic of multi precision big integers
+          cuda standard api &amp; tools
         
       </div>
     </a>
   
   
-    <a href="/2023/11/21/cpp/generics_and_macros/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/11/22/arithmatic/efficient_implementations/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">cpp generics</div>
+      <div class="article-nav-title">classic implementations of arithematic of multi precision big integers</div>
     </a>
   
 </nav>
@@ -146,7 +164,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 11.25px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -168,6 +186,10 @@
       <ul>
         
           <li>
+            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
           </li>
         
@@ -181,10 +203,6 @@
         
           <li>
             <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
           </li>
         
       </ul>

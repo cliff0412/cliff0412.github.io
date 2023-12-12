@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>plonky2 code analysis | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="ConfigCircuitConfigthe default config is Self::standard_recursion_config() with value as below 1234567891011121314151617Self &amp;#123;  num_wires: 135,  num_routed_wires: 80,   num_constants: 2,  use_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="plonky2 code analysis">
+<meta property="og:url" content="https://cliff0412.github.io/2023/11/06/cryptography/zkp/plonky2-code-analysis/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="ConfigCircuitConfigthe default config is Self::standard_recursion_config() with value as below 1234567891011121314151617Self &amp;#123;  num_wires: 135,  num_routed_wires: 80,   num_constants: 2,  use_">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-11-06T05:24:03.000Z">
+<meta property="article:modified_time" content="2023-12-12T07:06:44.541Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cryptography">
+<meta property="article:tag" content="zkp">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cryptography/zkp/plonky2-code-analysis" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/06/cryptography/zkp/plonky2-code-analysis/" class="article-date">
+  <time class="dt-published" datetime="2023-11-06T05:24:03.000Z" itemprop="datePublished">2023-11-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      plonky2 code analysis
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="Config"><a href="#Config" class="headerlink" title="Config"></a>Config</h2><h3 id="CircuitConfig"><a href="#CircuitConfig" class="headerlink" title="CircuitConfig"></a>CircuitConfig</h3><p>the default config is <code>Self::standard_recursion_config()</code> with value as below</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Self</span> &#123;</span><br><span class="line">  num_wires: <span class="number">135</span>,</span><br><span class="line">  num_routed_wires: <span class="number">80</span>, </span><br><span class="line">  num_constants: <span class="number">2</span>,</span><br><span class="line">  use_base_arithmetic_gate: <span class="literal">true</span>,</span><br><span class="line">  security_bits: <span class="number">100</span>,</span><br><span class="line">  num_challenges: <span class="number">2</span>,</span><br><span class="line">  zero_knowledge: <span class="literal">false</span>,</span><br><span class="line">  max_quotient_degree_factor: <span class="number">8</span>,</span><br><span class="line">  fri_config: FriConfig &#123;</span><br><span class="line">      rate_bits: <span class="number">3</span>,</span><br><span class="line">      cap_height: <span class="number">4</span>,</span><br><span class="line">      proof_of_work_bits: <span class="number">16</span>,</span><br><span class="line">      reduction_strategy: FriReductionStrategy::<span class="title function_ invoke__">ConstantArityBits</span>(<span class="number">4</span>, <span class="number">5</span>),</span><br><span class="line">      num_query_rounds: <span class="number">28</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>notes</strong></p>
+<ul>
+<li><p><em>routable wire</em> It’s a wire that can be connected to other gates’ wires, rather than an “advice” wire which is for internal state. For example if we had a gate for computing x^8, we’d have two routable wires for the input and output, x and x^8. But if we wanted lower-degree constraints, we could add advice wires for the intermediate results x^2 and x^4</p>
+</li>
+<li><p><em>num_routed_wires</em>, the default value is 80. For eample, for a arithmetic gate, it computes <code>const_0 * multiplicand_0 * multiplicand_1 + const_1 * addend</code>. i.e 2 wires for multiplicands and 1 wire for the addend and 1 for output. total is 4. therefore, the gate can have <code>num_routed_wires/4</code> operations, in this case, it is 20. the circuit builder will add gate when number of operations exceeds 20.</p>
+</li>
+</ul>
+<h3 id="FriConfig"><a href="#FriConfig" class="headerlink" title="FriConfig"></a>FriConfig</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">FriConfig</span> &#123;</span><br><span class="line"><span class="comment">/// `rate = 2^&#123;-rate_bits&#125;`. default is 3</span></span><br><span class="line"><span class="keyword">pub</span> rate_bits: <span class="type">usize</span>,  </span><br><span class="line"></span><br><span class="line"><span class="comment">/// Height of Merkle tree caps. default is 4</span></span><br><span class="line"><span class="keyword">pub</span> cap_height: <span class="type">usize</span>,</span><br><span class="line"><span class="comment">/// default is 16</span></span><br><span class="line"><span class="keyword">pub</span> proof_of_work_bits: <span class="type">u32</span>,</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> reduction_strategy: FriReductionStrategy,</span><br><span class="line"></span><br><span class="line"><span class="comment">/// Number of query rounds to perform. default is 28</span></span><br><span class="line"><span class="keyword">pub</span> num_query_rounds: <span class="type">usize</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Gates"><a href="#Gates" class="headerlink" title="Gates"></a>Gates</h2><h3 id="ArithmeticGate"><a href="#ArithmeticGate" class="headerlink" title="ArithmeticGate"></a>ArithmeticGate</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// A gate which can perform a weighted multiply-add, i.e. `result = c0 x y + c1 z`. If the config</span></span><br><span class="line"><span class="comment">/// supports enough routed wires, it can support several such operations in one gate.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">ArithmeticGate</span> &#123;</span><br><span class="line">    <span class="comment">/// Number of arithmetic operations performed by an arithmetic gate.</span></span><br><span class="line">    <span class="keyword">pub</span> num_ops: <span class="type">usize</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// A gate which takes a single constant parameter and outputs that value.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">ConstantGate</span> &#123;</span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">crate</span>) num_consts: <span class="type">usize</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Circuit-Builder"><a href="#Circuit-Builder" class="headerlink" title="Circuit Builder"></a>Circuit Builder</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">CircuitBuilder</span>&lt;F: RichField + Extendable&lt;D&gt;, <span class="keyword">const</span> D: <span class="type">usize</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">pub</span> config: CircuitConfig,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// A domain separator, which is included in the initial Fiat-Shamir seed. This is generally not</span></span><br><span class="line">    <span class="comment">/// needed, but can be used to ensure that proofs for one application are not valid for another.</span></span><br><span class="line">    <span class="comment">/// Defaults to the empty vector.</span></span><br><span class="line">    domain_separator: <span class="type">Option</span>&lt;<span class="type">Vec</span>&lt;F&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// The types of gates used in this circuit.</span></span><br><span class="line">    gates: HashSet&lt;GateRef&lt;F, D&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// The concrete placement of each gate.</span></span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">crate</span>) gate_instances: <span class="type">Vec</span>&lt;GateInstance&lt;F, D&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Targets to be made public.</span></span><br><span class="line">    public_inputs: <span class="type">Vec</span>&lt;Target&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// The next available index for a `VirtualTarget`.</span></span><br><span class="line">    virtual_target_index: <span class="type">usize</span>,</span><br><span class="line"></span><br><span class="line">    copy_constraints: <span class="type">Vec</span>&lt;CopyConstraint&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// A tree of named scopes, used for debugging.</span></span><br><span class="line">    context_log: ContextTree,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Generators used to generate the witness.</span></span><br><span class="line">    generators: <span class="type">Vec</span>&lt;WitnessGeneratorRef&lt;F, D&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// maps constant value -&gt; ConstantTarget(a virtual target)</span></span><br><span class="line">    constants_to_targets: HashMap&lt;F, Target&gt;,</span><br><span class="line">    targets_to_constants: HashMap&lt;Target, F&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Memoized results of `arithmetic` calls.</span></span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">crate</span>) base_arithmetic_results: HashMap&lt;BaseArithmeticOperation&lt;F&gt;, Target&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Memoized results of `arithmetic_extension` calls.</span></span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">crate</span>) arithmetic_results: HashMap&lt;ExtensionArithmeticOperation&lt;F, D&gt;, ExtensionTarget&lt;D&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Map between gate type and the current gate of this type with available slots.</span></span><br><span class="line">    current_slots: HashMap&lt;GateRef&lt;F, D&gt;, CurrentSlot&lt;F, D&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// List of constant generators used to fill the constant wires.</span></span><br><span class="line">    constant_generators: <span class="type">Vec</span>&lt;ConstantGenerator&lt;F&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Rows for each LUT: LookupWire contains: first `LookupGate`, first `LookupTableGate`, last `LookupTableGate`.</span></span><br><span class="line">    lookup_rows: <span class="type">Vec</span>&lt;LookupWire&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// For each LUT index, vector of `(looking_in, looking_out)` pairs.</span></span><br><span class="line">    lut_to_lookups: <span class="type">Vec</span>&lt;Lookup&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Lookup tables in the form of `Vec&lt;(input_value, output_value)&gt;`.</span></span><br><span class="line">    luts: <span class="type">Vec</span>&lt;LookupTable&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Optional common data. When it is `Some(goal_data)`, the `build` function panics if the resulting</span></span><br><span class="line">    <span class="comment">/// common data doesn&#x27;t equal `goal_data`.</span></span><br><span class="line">    <span class="comment">/// This is used in cyclic recursion.</span></span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">crate</span>) goal_common_data: <span class="type">Option</span>&lt;CommonCircuitData&lt;F, D&gt;&gt;,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Optional verifier data that is registered as public inputs.</span></span><br><span class="line">    <span class="comment">/// This is used in cyclic recursion to hold the circuit&#x27;s own verifier key.</span></span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">crate</span>) verifier_data_public_input: <span class="type">Option</span>&lt;VerifierCircuitTarget&gt;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>virtual_target</strong>:  This is not an actual wire in the witness, but just a target that help facilitate witness generation. In particular, a generator can assign a values to a virtual target, which can then be copied to other (virtual or concrete) targets. When we generate the final witness (a grid of wire values), these virtual targets will go away.</li>
+</ul>
+<h3 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * @param k_is, the coset shift, g^&#123;j&#125;, j \in [0,num_shifts - 1], num_shifts is equal to num_routed_wires (columns); e.q 100</span></span><br><span class="line"><span class="comment">  * @subgroup: the \Omega domain. \Omega^&#123;i&#125;, i \in [0, N-1], N is number of gates (rows); e.q 8 (2^3)</span></span><br><span class="line"><span class="comment">  * @return(0): vector of the sigma polynomial (sigma polynomial is the copy constraint permutation); the size is equal to the number of cols</span></span><br><span class="line"><span class="comment">  * @return(1): the forest is a data structure representing all wires copy constraint. the collected wires forms a unique partition</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">sigma_vecs</span>(&amp;<span class="keyword">self</span>, k_is: &amp;[F], subgroup: &amp;[F]) <span class="punctuation">-&gt;</span> (<span class="type">Vec</span>&lt;PolynomialValues&lt;F&gt;&gt;, Forest) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="functions"><a href="#functions" class="headerlink" title="functions"></a>functions</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Finds a set of shifts that result in unique cosets for the multiplicative subgroup of size `2^subgroup_bits`.</span></span><br><span class="line"><span class="comment">/// Let `g` be a generator of the entire multiplicative group. the result is just g^0, ..., g^(num_shifts - 1)</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">get_unique_coset_shifts</span>&lt;F: Field&gt;(subgroup_size: <span class="type">usize</span>, num_shifts: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Vec</span>&lt;F&gt; &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="permutation"><a href="#permutation" class="headerlink" title="permutation"></a>permutation</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">WirePartition</span> &#123;</span><br><span class="line">    <span class="comment">// each element of the vector is a vector of copy constraint</span></span><br><span class="line">    partition: <span class="type">Vec</span>&lt;<span class="type">Vec</span>&lt;Wire&gt;&gt;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// Disjoint Set Forest data-structure following &lt;https://en.wikipedia.org/wiki/Disjoint-set_data_structure&gt;.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">Forest</span> &#123;</span><br><span class="line">    <span class="comment">/// A map of parent pointers, stored as indices. the parent value is the partition it belongs to</span></span><br><span class="line">    <span class="comment">/// those node with same parent value, means they are in the copy constraint </span></span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">crate</span>) parents: <span class="type">Vec</span>&lt;<span class="type">usize</span>&gt;,</span><br><span class="line"></span><br><span class="line">    num_wires: <span class="type">usize</span>,</span><br><span class="line">    num_routed_wires: <span class="type">usize</span>, <span class="comment">// num_routed_wires is used to construct all wires</span></span><br><span class="line">    degree: <span class="type">usize</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="hash"><a href="#hash" class="headerlink" title="hash"></a>hash</h2><p>defined in <code>CircuitBuilder</code></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Hash function used for building Merkle trees.</span></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">Hasher</span>: Hasher&lt;<span class="keyword">Self</span>::F&gt;;</span><br><span class="line"><span class="comment">/// Algebraic hash function used for the challenger and hashing public inputs.</span></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">InnerHasher</span>: AlgebraicHasher&lt;<span class="keyword">Self</span>::F&gt;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// Trait for algebraic hash functions, built from a permutation using the sponge construction.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">trait</span> <span class="title class_">AlgebraicHasher</span>&lt;F: RichField&gt;: Hasher&lt;F, Hash = HashOut&lt;F&gt;&gt; &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">AlgebraicPermutation</span>: PlonkyPermutation&lt;Target&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Circuit to conditionally swap two chunks of the inputs (useful in verifying Merkle proofs),</span></span><br><span class="line">    <span class="comment">/// then apply the permutation.</span></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">permute_swapped</span>&lt;<span class="keyword">const</span> D: <span class="type">usize</span>&gt;(</span><br><span class="line">        inputs: <span class="keyword">Self</span>::AlgebraicPermutation,</span><br><span class="line">        swap: BoolTarget,</span><br><span class="line">        builder: &amp;<span class="keyword">mut</span> CircuitBuilder&lt;F, D&gt;,</span><br><span class="line">    ) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span>::AlgebraicPermutation</span><br><span class="line">    <span class="keyword">where</span></span><br><span class="line">        F: RichField + Extendable&lt;D&gt;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+<h2 id="Questions"><a href="#Questions" class="headerlink" title="Questions"></a>Questions</h2><ul>
+<li>CircuitBuilder: self.constant_generators</li>
+<li>Gate: extra_constant_wires</li>
+<li>Constant Gate<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fn eval_unfiltered(&amp;self, vars: EvaluationVars&lt;F, D&gt;) -&gt; Vec&lt;F::Extension&gt; &#123;</span><br><span class="line">    (0..self.num_consts)</span><br><span class="line">        .map(|i| &#123;</span><br><span class="line">            vars.local_constants[self.const_input(i)] - vars.local_wires[self.wire_output(i)]</span><br><span class="line">        &#125;)</span><br><span class="line">        .collect()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/06/cryptography/zkp/plonky2-code-analysis/" data-id="clq0nd00w00004z7u3a6ubwbd" data-title="plonky2 code analysis" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/11/15/cpp/types/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          cpp types
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/11/03/cryptography/zkp/stark-101/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">stark 101</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/03/cryptography/zkp/kzg-commitment/">kzg polynomial commitment</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
+          </li>
+        
+          <li>
+            <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
