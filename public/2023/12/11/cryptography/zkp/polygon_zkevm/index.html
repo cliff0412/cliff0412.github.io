@@ -4,19 +4,24 @@
   <meta charset="utf-8">
   
   
-  <title>plonky2 code analysis | cliff&#39;s personal blog</title>
+  <title>polygon zkEVM | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="article">
-<meta property="og:title" content="plonky2 code analysis">
-<meta property="og:url" content="https://cliff0412.github.io/2023/11/06/cryptography/zkp/plonky2/index.html">
+  <meta name="description" content="zkProverState MachinesThe zkProver follows modularity of design to the extent that, except for a few components, it is mainly a cluster of State Machines. It has a total of thirteen (13) State Mach">
+<meta property="og:type" content="article">
+<meta property="og:title" content="polygon zkEVM">
+<meta property="og:url" content="https://cliff0412.github.io/2023/12/11/cryptography/zkp/polygon_zkevm/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="zkProverState MachinesThe zkProver follows modularity of design to the extent that, except for a few components, it is mainly a cluster of State Machines. It has a total of thirteen (13) State Mach">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-11-06T05:24:03.000Z">
-<meta property="article:modified_time" content="2023-12-04T08:02:03.117Z">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/zkevm/polygon/state_machines.png">
+<meta property="og:image" content="https://cliff0412.github.io/images/zkp/zkevm/polygon/micro_processor.png">
+<meta property="article:published_time" content="2023-12-11T05:24:03.000Z">
+<meta property="article:modified_time" content="2023-12-11T08:34:59.530Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta property="article:tag" content="zkp">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cliff0412.github.io/images/zkp/zkevm/polygon/state_machines.png">
   
     <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
   
@@ -73,10 +78,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-cryptography/zkp/plonky2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-cryptography/zkp/polygon_zkevm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2023/11/06/cryptography/zkp/plonky2/" class="article-date">
-  <time class="dt-published" datetime="2023-11-06T05:24:03.000Z" itemprop="datePublished">2023-11-06</time>
+    <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/" class="article-date">
+  <time class="dt-published" datetime="2023-12-11T05:24:03.000Z" itemprop="datePublished">2023-12-11</time>
 </a>
     
   </div>
@@ -87,7 +92,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      plonky2 code analysis
+      polygon zkEVM
     </h1>
   
 
@@ -99,10 +104,24 @@
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
   type="text/javascript">
 </script>
+
+<h2 id="zkProver"><a href="#zkProver" class="headerlink" title="zkProver"></a>zkProver</h2><h3 id="State-Machines"><a href="#State-Machines" class="headerlink" title="State Machines"></a>State Machines</h3><p>The zkProver follows modularity of design to the extent that, except for a few components, it is mainly a cluster of State Machines. It has a total of thirteen (13) State Machines;</p>
+<ul>
+<li>The Main State Machine</li>
+<li>Secondary State Machines → Binary SM, Storage SM, Memory SM, Arithmetic SM, Keccak Function SM, PoseidonG SM,</li>
+<li>Auxiliary State Machines → Padding-PG SM, Padding-KK SM, Bits2Field SM, Memory Align SM, Byte4 SM, ROM SM.<br>Due to the modular design of zkProver, the Main State Machine can delegate as many of tasks as possible to other specialist State Machines. This heavily improves the efficiency of Main SM.<br><img src="/images/zkp/zkevm/polygon/state_machines.png"></li>
+</ul>
+<h3 id="Two-Novel-Languages-For-zkProver"><a href="#Two-Novel-Languages-For-zkProver" class="headerlink" title="Two Novel Languages For zkProver"></a>Two Novel Languages For zkProver</h3><h4 id="Zero-Knowledge-Assembly-zkASM"><a href="#Zero-Knowledge-Assembly-zkASM" class="headerlink" title="Zero-Knowledge Assembly(zkASM)"></a>Zero-Knowledge Assembly(zkASM)</h4><p>As an Assembly language, the Zero-Knowledge Assembly (or zkASM) language is specially designed to map instructions from the zkProver’s Main State Machine to other State Machines. In case of the State Machines with firmware, zkASM is the Interpreter for the firmware.</p>
+<h4 id="Polynomial-Identity-Language-PIL"><a href="#Polynomial-Identity-Language-PIL" class="headerlink" title="Polynomial Identity Language(PIL)"></a>Polynomial Identity Language(PIL)</h4><p>The Polynomial Identity Language (or PIL) is especially designed for the zkProver. Almost all state machines express computations in terms of polynomials. Therefore, state transitions in State Machines must satisfy computation-specific polynomial identities.</p>
+<h3 id="Microprocessor-State-Machines"><a href="#Microprocessor-State-Machines" class="headerlink" title="Microprocessor State Machines"></a>Microprocessor State Machines</h3><p>There are two microprocessor-type state machines; the Main SM and the Storage SM. These two State Machines have the Firmware and the Hardware part. It is worth noting that each of these Microprocessor SM has its own ROM.</p>
+<p>The Firmware part runs the zkASM language to set up the logic and rules, which are expressed in JSON format and stored in a ROM. The JSON-file is then parsed to the specific SM Executor, which executes Storage Actions in compliance with the rules and logic in the JSON-file.</p>
+<p>The Hardware component, which uses the Polynomial Identity Language (PIL), defines constraints (or polynomial identities), expresses them in JSON format, and stores them in the accompanying JSON-file. These constraints are parsed to the specific SM Executor, because all computations must be executed in conformance to the polynomial identities.</p>
+<p><img src="/images/zkp/zkevm/polygon/micro_processor.png"></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/06/cryptography/zkp/plonky2/" data-id="clphpvdoi0002aj7uc7oscro3" data-title="plonky2 code analysis" class="article-share-link">Share</a>
+      <a data-url="https://cliff0412.github.io/2023/12/11/cryptography/zkp/polygon_zkevm/" data-id="clq0nd00w00024z7u843t2waw" data-title="polygon zkEVM" class="article-share-link">Share</a>
       
       
       
@@ -114,19 +133,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2023/11/15/cpp/types/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          cpp types
-        
-      </div>
-    </a>
   
-  
-    <a href="/2023/11/03/cryptography/zkp/stark-101/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/12/07/arithmatic/montgomery-multiplication/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">stark 101</div>
+      <div class="article-nav-title">montgomery multiplication</div>
     </a>
   
 </nav>
@@ -156,7 +166,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 11.25px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -178,6 +188,10 @@
       <ul>
         
           <li>
+            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
           </li>
         
@@ -191,10 +205,6 @@
         
           <li>
             <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
           </li>
         
       </ul>

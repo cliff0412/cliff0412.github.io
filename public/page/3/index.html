@@ -71,6 +71,90 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-math/fourier-series" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/10/12/math/fourier-series/" class="article-date">
+  <time class="dt-published" datetime="2023-10-12T03:13:17.000Z" itemprop="datePublished">2023-10-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/10/12/math/fourier-series/">fourier series, DFT and FFT</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="Fourier-Series"><a href="#Fourier-Series" class="headerlink" title="Fourier Series"></a>Fourier Series</h2><h3 id="innter-product-of-two-functions"><a href="#innter-product-of-two-functions" class="headerlink" title="innter product of two functions"></a>innter product of two functions</h3><p>\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]<br>\(\bar{g}\) is the congugate of g on complex number system</p>
+<h3 id="Fourier-series-definition"><a href="#Fourier-series-definition" class="headerlink" title="Fourier series definition"></a>Fourier series definition</h3><p>let \(f(x)\) be a periodic function over a period of \([-\pi, +\pi]\)<br><img src="/images/math/fourier_series/f_x.png" alt="f(x)"></p>
+<p>\( f(x) \) can be transformed into below<br>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(kx) + B_{k}sin(kx)\],<br>where<br>\[ A_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)cos(kx)dx &#x3D; \frac{1}{||cos(kx)||^2}&lt;f(x),cos(kx)&gt; \]<br>\[ B_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)sin(kx)dx &#x3D; \frac{1}{||sin(kx)||^2}&lt;f(x),sin(kx)&gt; \]<br>where \(A_{k}, B_{k}\) is just the <strong>innver product</strong> of \(f(x)\), and \( cos(kx) \), \(sin(kx)\) respectively. intuitively, it is the <strong>projection</strong> of \(f(x)\) over \(sin(kx)\), or \(cos(kx)\). </p>
+<h3 id="if-period-is-L"><a href="#if-period-is-L" class="headerlink" title="if period is L"></a>if period is L</h3><p>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(\frac{2\pi kx}{L}) + B_{k}sin(\frac{2\pi kx}{L})\],<br>where<br>\[ A_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)cos(\frac{2\pi kx}{L})dx\]<br>\[ B_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)sin(\frac{2\pi kx}{L})dx\]</p>
+<h2 id="Complex-Fourier-Series"><a href="#Complex-Fourier-Series" class="headerlink" title="Complex Fourier Series"></a>Complex Fourier Series</h2><p>let’s define \[ \psi_k &#x3D; e^{ikx} &#x3D; cos(kx) + i \cdot sin(kx)\]<br>we can prove that \(\psi_k, and \psi_j\) are <strong>orthogonal</strong> as their inner product is zero<br><strong>proof</strong><br>\[ &lt;\psi_j, \psi_k&gt; &#x3D; \int_{-\pi}^{+\pi} e^{jkx}e^{-ikx}dx &#x3D;  \int_{-\pi}^{+\pi} e^{j(j-k)x}dx &#x3D; \frac{1}{i(j-k)}[e^{i(j-k)x}]_{-\pi}^{\pi}\]<br>it is 0 if \(j \ne k\) , \(2\pi \) if \(j&#x3D;k\)</p>
+<p><strong>note</strong> conjugate of \(\psi_k\) is \(e^{-ikx}\)</p>
+<p>\(f(x) &#x3D; \frac{1}{2\pi} \sum_{k&#x3D;-\infty}^{\infty} c_k \psi_k\), where \(c_k&#x3D;&lt;f(x), \psi_k&gt; &#x3D; \int_{-\pi}^{+\pi} f(x)e^{-ikx}dx\)</p>
+<h2 id="Discrete-Fourier-Transform-DFT"><a href="#Discrete-Fourier-Transform-DFT" class="headerlink" title="Discrete Fourier Transform (DFT)"></a>Discrete Fourier Transform (DFT)</h2><p>The discrete Fourier transform transforms a sequence of N complex numbers<br>\[\lbrace x_{n} \rbrace :&#x3D; x_0, x_1,…, x_{N-1} \] into another sequence of complex numbers,<br>\[\lbrace X_{k} \rbrace :&#x3D; X_0, X_1,…, X_{N-1} \] which is defined by<br>\[X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot e^{-\frac{i2\pi}{N}kn}\]</p>
+<p>let the n-th root of unity be \(\omega_N &#x3D; e^{-\frac{2\pi i}{N}}\), we have<br>\[ \tag{1.1} X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot \omega_N^{kn}\]</p>
+<h3 id="inverse-DFT"><a href="#inverse-DFT" class="headerlink" title="inverse DFT"></a>inverse DFT</h3><p>The inverse transform is given by<br>\[ \tag{1.2} x_{n} &#x3D; \frac{1}{N}\sum_{k&#x3D;0}^{N-1} X_{k} \cdot \omega_N^{-kn}\]</p>
+<h3 id="the-unitary-DFT"><a href="#the-unitary-DFT" class="headerlink" title="the unitary DFT"></a>the unitary DFT</h3><p>Another way of looking at the DFT is to note that the DFT can be expressed as the DFT matrix, a Vandermonde matrix, introduced by Sylvester in 1867.<br>\[<br>    \boldsymbol{F} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]<br>where \( \omega_{N} &#x3D; e^{-\frac{i2\pi}{N}}\) is a primitive Nth root of unity. (any complex number that yields 1 when raised to some positive integer power n)</p>
+<p>\[ X &#x3D; F \cdot x^{T}\]<br>\(x\) is a column vector</p>
+<h2 id="Polynomial-amp-DFT"><a href="#Polynomial-amp-DFT" class="headerlink" title="Polynomial &amp; DFT"></a>Polynomial &amp; DFT</h2><h3 id="Polynomial-evaluation-amp-DFT"><a href="#Polynomial-evaluation-amp-DFT" class="headerlink" title="Polynomial evaluation &amp; DFT"></a>Polynomial evaluation &amp; DFT</h3><p>let a polynomial be<br>$$f(x)&#x3D;\sum_{n&#x3D;0}^{N-1}x_nx^n$$<br>then,<br>$$f(\omega_N^{k})&#x3D;\sum_{n&#x3D;0}^{N-1}x_n\omega_N^{kn},\quad k&#x3D;0,1,2,…,N-1$$<br>compare this equation with E.q(1.1), we can know that DFT is the evaluations of a polynomial at N points of Nth root of unity, \(\omega_N^{0},\omega_N^1,\omega_N^2,…,\omega_N^{N-1}\)</p>
+<p>$$(\omega_N^{0},X_0),(\omega_N^1,X_1),(\omega_N^2,X_2),…,(\omega_N^{N-1},X_{N-1})$$</p>
+<h3 id="Polynomial-interpolation-amp-IDFT"><a href="#Polynomial-interpolation-amp-IDFT" class="headerlink" title="Polynomial interpolation &amp; IDFT"></a>Polynomial interpolation &amp; IDFT</h3><p>According to E.q(1.2), IDFT is the polynomial interpolation (getting original polynomial coefficients).</p>
+<h2 id="Fast-Fourier-Transform-FFT-3"><a href="#Fast-Fourier-Transform-FFT-3" class="headerlink" title="Fast Fourier Transform (FFT) [3]"></a>Fast Fourier Transform (FFT) [3]</h2><p>The problem is to calculate the below<br>\[ \tag{2.1} X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot \omega_N^{kn}, \quad  k&#x3D; 0,1,…,N-1\]<br>A straightforward calculation using would require \(N^2\) operations where “operation” means, as it will throughout this note, a complex multiplication followed by a complex addition.<br>The FFT algorithm described here iterates on the array and yields the result in less than \( 2N log_2N \)</p>
+<p>To derive the algorithm, suppose \(N\) is a composite, i.e., \(N &#x3D; r_1\cdot r_2\). Then let the indices in (2.1) be expressed<br>\[ k &#x3D; k_1r_1 + k_0, \quad k_0 &#x3D; 0,1,…,r_1-1, \quad k_1 &#x3D; 0,1,…, r_2 -1 \]<br>\[ n &#x3D; n_1r_2 + n_0, \quad n_0 &#x3D; 0,1,…,r_2-1, \quad n_1 &#x3D; 0,1,…, r_1 -1 \]</p>
+<p>Since \(  n &#x3D; n_1r_2 + n_0\), we can write</p>
+<p>\[ \tag{2.2} X(k_1, k_0) &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn} &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn_1r_2}\omega_N^{kn_0}  \]<br><strong>note</strong> \( x(n_1,n_0)\) is same to \(x(n)\), just the indexing is transformed form 1D to 2D. You can think original 1D array of size N is resized to a matrix of size \( (r_2, r_1) \), \(r_1\) is number of cols, while \(r_2\) is number of rows</p>
+<p>Since \(k &#x3D; k_1r_1 + k_0\), we have<br>\[ \omega_N^{kn_1r_2} &#x3D;\omega_N^{(k_1r_1+k_0)n_1r_2} &#x3D; \omega_N^{(k_1r_1)n_1r_2} \cdot \omega_N^{k_0n_1r_2}\]<br>according to the property of Nth root of unity, \( \omega_N^{N} &#x3D; \omega_N^{r_1r_2} &#x3D;1 \), \( \omega_N^{(k_1r_1)n_1r_2}\) is also 1.<br>then we have<br>\[ \omega_N^{kn_1r_2} &#x3D;  \omega_N^{k_0n_1r_2}\]<br>substitute it into E.q 2.2, we get<br>\[ \tag{2.3} X(k_1, k_0) &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn} &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{k_0n_1r_2}\omega_N^{kn_0}  \]<br>Therefore, the inner sum, over \(n_1\), depends only on \(k_0\) and \(n_0\), and can be defined as a new array,<br>\[ \tag{2.4} x_1(k_0, n_0) &#x3D; \sum_{n_1} x(n_1, n_0) \cdot \omega_N^{k_0n_1r_2}\]<br>E.q(2.3) can be writtern as<br>\[ \tag{2.5} X(k_1, k_0) &#x3D; \sum_{n_0} x_1(k_0,n_0)\omega_N^{kn_0} &#x3D;  \sum_{n_0} x_1(k_0,n_0)\omega_N^{(k_1r_1 + k_0)n_0}  \]</p>
+<p>There are N elements in the matrix \(x_1\), each requiring \(r_1\) operations, giving a total of \(Nr_1\) operations. Similarly, it takes \(Nr_2\) operations to calculate \(X\) from \(x_1\). Therefore, the two-step algorithm, given by Eq(2.4) and Eq(2.5) requires a total of<br>\[ \tag{2.6} T &#x3D; N(r_1+r_2) \]</p>
+<p>it is easy to see how successive applications of the above procedure (recursively),  starting with its appliation to Eq(2.4) give an m-step algorihtm requiring<br>\[ \tag{2.7} T &#x3D; N(r_1+r_2 + … + r_m) \]<br>where<br>\[ N &#x3D; \prod_{j&#x3D;1}^{j&#x3D;m}r_j\]<br>if all \(r_j\) are equal to \(r\), i.e \(N &#x3D; r^m \), which gives \( m &#x3D; log_rN \)<br>E.q(2.7) becomes<br>\[ \tag{2.8} T &#x3D; N(m \cdot r)  &#x3D; rNm &#x3D; rN(log_rN) \]</p>
+<h2 id="radix-2-FFT"><a href="#radix-2-FFT" class="headerlink" title="radix-2 FFT"></a>radix-2 FFT</h2><p>The algorithm with \(r&#x3D;2\) is derived by expressing the indices in the form</p>
+<p>\[\tag{3.1} k&#x3D;k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0 \]<br>\[\tag{3.2} n&#x3D;n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0 \]<br>where \( k_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \), and \( n_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \)<br><strong>\(k_v\) and \(n_v\) are the contents of the respective bit positions in the binary representation of \(k\) and \(n\)</strong></p>
+<p>All arrays will now be written as functions of the bits of their indices. With this convention E.q(2.1) is written as<br>\[ \tag{3.3}<br>\displaylines{<br>  X(k_{m-1}, …, k_0) &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{k(n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0)} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn_{m-1} \cdot 2^{m-1} + … + kn_1 \cdot 2 + kn_0}<br>}<br>\]<br>where the sums are over \(n_v \in [0,1]\), for \(v &#x3D; 0,1,…,m-1\)</p>
+<p>Since \[ \displaylines{<br>  \omega_N^{kn_{m-1}\cdot 2^{m-1}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-1}\cdot 2^{m-1}} \\<br>  &#x3D; \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]<br>(it is easy to show that all other terms are 1 as \( \omega_N^{2^m} &#x3D; 1 \), so only \( k_0\) is kept)</p>
+<p>the innermost sum of E.q(3.3) over \(n_{m-1} \), depends only on \( k_0, n_{m-2}, …, n_0\) and can be writtern<br>\[ \displaylines{<br>x_1(k_0, n_{m-2}, …, n_1, n_0) &#x3D; \sum_{n_{m-1}} x(n_{m-1}, …, n_0) \cdot \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]</p>
+<p>proceeding to the next innermost sum, over \( n_{m-2} \), and so on, and using<br>\[ \displaylines{<br>  \omega_N^{kn_{m-l}\cdot 2^{m-l}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-l}\cdot 2^{m-l}} \\<br>  &#x3D; \omega_N^{(k_{l-1}\cdot 2^{l-1} + … + k_0) n_{m-l} \cdot 2^{m-1}}<br>}<br>  \]<br>one obtains successive arrays<br>\[\displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; \sum_{n_{m-l}}x_{l-1}(k_0, …, k_{l-2}, n_{m-l}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot n_{m-l} \cdot 2^{m-l}}<br>}\]<br>for \(l &#x3D; 1,2,…,m \)</p>
+<p>writing out the sum this appears as<br>\[  \tag{3.4} \displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 0 \cdot 2^{m-l}}   \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 1 \cdot 2^{m-l}}  \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + k_{l-2}\cdot 2^{l-2 }+k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{l-1} \cdot 2^{m-l} } \cdot \omega_N^{k_{l-2}\cdot 2^{l-2 } \cdot 2^{m-l}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{m-1} } \cdot \omega_N^{k_{l-2}\cdot 2^{m-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ (-1)^{k_{l-1} } \cdot i^{k_{l-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}}<br>}\]<br>according to the indexing convension, this is stored in a location whose index is<br>\[ k_0 \cdot 2^{m-1} + … + k_{l-1} \cdot 2 ^{m-l} + n_{m-l-1} \cdot 2^{m-l-1} + … + n_0 \]</p>
+<p>It can be seen in E.q(3.4) that only the two storage locations with indices having 0 and 1 in the \(2^{m-l}\) bit position are involved in the computation. Parallel computation is permitted since the operation described by E.q(3.4) can be carried out with all values of \(k_0, …, k_{l-2} \), and \( n_0, …, n_{m-l-1}\) simultaneously. In some applications it is convenient to use E.q(3.4) to express \(x_l\) in terms of \(x_{l-2}\), giving what is equivalent to an algorithm with \(r &#x3D; 4\).<br>the last array calculated gives the desired Fourier sums,</p>
+<p>\[\tag{3.5}<br>X(k_{m-1}, …, k_0) &#x3D; x_{m}(k_0, …, k_{m-1})<br>\]<br>in such an order that the index of an X must have its binary bits put in reverse order to yield its index in the array \(x_m\)</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=MB6XGQWLV04">youtube video by Steve Brunton, Fourier Series</a></li>
+<li>[2] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">DFT wikipedia</a></li>
+<li>[3] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm">Cooley–Tukey FFT algorithm wikipedia</a></li>
+<li>[4] <a target="_blank" rel="noopener" href="https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/S0025-5718-1965-0178586-1.pdf">1965, Cooley &amp; Turkey: an algorithm for the machine calculation of complex fourier series</a></li>
+<li>[5] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Split-radix_FFT_algorithm">Split-radix FFT algorithm wikipedia</a></li>
+<li>[6] <a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43870101/article/details/106095644?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_utm_term~default-2-106095644-blog-132357995.235%5Ev38%5Epc_relevant_sort_base1&spm=1001.2101.3001.4242.2&utm_relevant_index=5">csdn blog of FFT notes</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/10/12/math/fourier-series/" data-id="clokyy8dv0021qwsjhghcad7b" data-title="fourier series, DFT and FFT" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-tools/markdown_and_latex" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/10/01/tools/markdown_and_latex/" class="article-date">
@@ -810,112 +894,6 @@
 
 
   
-    <article id="post-rust/rust_std/rust-std-sync" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/06/08/rust/rust_std/rust-std-sync/" class="article-date">
-  <time class="dt-published" datetime="2023-06-08T14:04:38.000Z" itemprop="datePublished">2023-06-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/06/08/rust/rust_std/rust-std-sync/">rust std sync</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="lock-free-amp-wait-free"><a href="#lock-free-amp-wait-free" class="headerlink" title="lock free &amp; wait free"></a><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">lock free &amp; wait free</a></h2><p>“Lock-free” and “wait-free” are two different approaches to designing concurrent algorithms and data structures. Both aim to provide efficient and non-blocking synchronization in concurrent environments.</p>
-<ul>
-<li><strong>lock-free</strong> A lock-free algorithm or data structure guarantees progress for at least one thread, regardless of the behavior or state of other threads. In a lock-free design, threads can independently perform their operations without being blocked by other threads. If one thread gets delayed or suspended, other threads can continue to make progress. Lock-free algorithms typically use low-level synchronization primitives such as atomic operations to ensure progress and prevent data races.</li>
-<li><strong>wait-free</strong> A wait-free algorithm or data structure guarantees progress for every thread, regardless of the behavior or state of other threads. In a wait-free design, every thread executing an operation completes its operation within a finite number of steps, without being delayed by other threads. Wait-free algorithms are more stringent in their requirements compared to lock-free algorithms and often require more complex synchronization mechanisms.</li>
-</ul>
-<p>It’s important to note that both lock-free and wait-free designs aim to avoid traditional locks or blocking synchronization mechanisms (such as mutexes or condition variables) that can lead to contention and thread blocking. Instead, they rely on techniques like atomic operations, compare-and-swap (CAS), or memory fences to ensure progress and prevent data races in concurrent execution.</p>
-<h2 id="atomic"><a href="#atomic" class="headerlink" title="atomic"></a><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/index.html">atomic</a></h2><p>Rust atomics currently follow the same rules as <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/atomic">C++20 atomics</a>, specifically <code>atomic_ref</code>. Basically, creating a shared reference to one of the Rust atomic types corresponds to creating an <code>atomic_ref</code> in C++; the atomic_ref is destroyed when the lifetime of the shared reference ends.<br>Each method takes an <code>Ordering</code> which represents the strength of the memory barrier for that operation. These orderings are the same as the <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/atomic/memory_order">C++20 atomic orderings</a>. For more information see the <a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/nomicon/atomics.html">nomicon</a><br>Atomic variables are safe to share between threads (they implement Sync) but they do not themselves provide the mechanism for sharing and follow the threading model of Rust. The most common way to share an atomic variable is to put it into an Arc (an atomically-reference-counted shared pointer).</p>
-<h3 id="Compiler-Reordering"><a href="#Compiler-Reordering" class="headerlink" title="Compiler Reordering"></a>Compiler Reordering</h3><p>Compilers may change the actual order of events, or make events never occur! If we write something like</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x = <span class="number">1</span>;</span><br><span class="line">y = <span class="number">3</span>;</span><br><span class="line">x = <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-<p>The compiler may conclude that it would be best if your program did:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = <span class="number">2</span>;</span><br><span class="line">y = <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
-<p>This has inverted the order of events and completely eliminated one event. But if our program is multi-threaded, we may have been relying on x to actually be assigned to 1 before y was assigned. </p>
-<h3 id="Hardware-Reordering"><a href="#Hardware-Reordering" class="headerlink" title="Hardware Reordering"></a>Hardware Reordering</h3><p>here is indeed a global shared memory space somewhere in your hardware, but from the perspective of each CPU core it is so very far away and so very slow. Each CPU would rather work with its local cache of the data and only go through all the anguish of talking to shared memory only when it doesn’t actually have that memory in cache. The end result is that the hardware doesn’t guarantee that events that occur in some order on one thread, occur in the same order on another thread. To guarantee this, we must issue special instructions to the CPU telling it to be a bit less smart.<br>For instance, say we convince the compiler to emit this logic:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">initial state: x = 0, y = 1</span><br><span class="line"></span><br><span class="line">THREAD 1        THREAD2</span><br><span class="line">y = 3;          if x == 1 &#123;</span><br><span class="line">x = 1;              y *= 2;</span><br><span class="line">                &#125;</span><br></pre></td></tr></table></figure>
-<p>Ideally this program has 2 possible final states:</p>
-<ul>
-<li>y &#x3D; 3: (thread 2 did the check before thread 1 completed)</li>
-<li>y &#x3D; 6: (thread 2 did the check after thread 1 completed)<br>However there’s a third potential state that the hardware enables:</li>
-<li>y &#x3D; 2: (thread 2 saw x &#x3D; 1, but not y &#x3D; 3, and then overwrote y &#x3D; 3)<br>It’s worth noting that different kinds of CPU provide different guarantees. It is common to separate hardware into two categories: strongly-ordered and weakly-ordered. Most notably x86&#x2F;64 provides strong ordering guarantees, while ARM provides weak ordering guarantees.</li>
-</ul>
-<h3 id="Data-Accesses"><a href="#Data-Accesses" class="headerlink" title="Data Accesses"></a>Data Accesses</h3><p>Atomic accesses are how we tell the hardware and compiler that our program is multi-threaded. Each atomic access can be marked with an ordering that specifies what kind of relationship it establishes with other accesses.  For the compiler, this largely revolves around re-ordering of instructions. For the hardware, this largely revolves around how writes are propagated to other threads. The set of orderings Rust exposes are:</p>
-<ul>
-<li>Sequentially Consistent (SeqCst)</li>
-<li>Release</li>
-<li>Acquire</li>
-<li>Relaxed</li>
-</ul>
-<h3 id="Sequentially-Consistent"><a href="#Sequentially-Consistent" class="headerlink" title="Sequentially Consistent"></a>Sequentially Consistent</h3><p>Sequentially Consistent is the most powerful of all, implying the restrictions of all other orderings. Intuitively, a sequentially consistent operation cannot be reordered: all accesses on one thread that happen before and after a SeqCst access stay before and after it.</p>
-<h3 id="Acquire-Release"><a href="#Acquire-Release" class="headerlink" title="Acquire-Release"></a>Acquire-Release</h3><p>Acquire and Release are largely intended to be paired. they’re perfectly suited for acquiring and releasing locks.<br>Intuitively, an acquire access ensures that every access after it stays after it. However operations that occur before an acquire are free to be reordered to occur after it. Similarly, a release access ensures that every access before it stays before it. However operations that occur after a release are free to be reordered to occur before it.</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::Arc;</span><br><span class="line"><span class="keyword">use</span> std::sync::atomic::&#123;AtomicBool, Ordering&#125;;</span><br><span class="line"><span class="keyword">use</span> std::thread;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">lock</span> = Arc::<span class="title function_ invoke__">new</span>(AtomicBool::<span class="title function_ invoke__">new</span>(<span class="literal">false</span>)); <span class="comment">// value answers &quot;am I locked?&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... distribute lock to threads somehow ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Try to acquire the lock by setting it to true</span></span><br><span class="line">    <span class="keyword">while</span> lock.<span class="title function_ invoke__">compare_and_swap</span>(<span class="literal">false</span>, <span class="literal">true</span>, Ordering::Acquire) &#123; &#125;</span><br><span class="line">    <span class="comment">// broke out of the loop, so we successfully acquired the lock!</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... scary data accesses ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ok we&#x27;re done, release the lock</span></span><br><span class="line">    lock.<span class="title function_ invoke__">store</span>(<span class="literal">false</span>, Ordering::Release);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Relaxed"><a href="#Relaxed" class="headerlink" title="Relaxed"></a>Relaxed</h3><p>Relaxed accesses are the absolute weakest. They can be freely re-ordered and provide no happens-before relationship. Still, relaxed operations are still atomic. That is, they don’t count as data accesses and any read-modify-write operations done to them occur atomically. For instance, incrementing a counter can be safely done by multiple threads using a relaxed <code>fetch_add</code> if you’re not using the counter to synchronize any other accesses.</p>
-<h2 id="an-example-spinlock"><a href="#an-example-spinlock" class="headerlink" title="an example (spinlock)"></a>an example (spinlock)</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::Arc;</span><br><span class="line"><span class="keyword">use</span> std::sync::atomic::&#123;AtomicUsize, Ordering&#125;;</span><br><span class="line"><span class="keyword">use</span> std::&#123;hint, thread&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">spinlock</span> = Arc::<span class="title function_ invoke__">new</span>(AtomicUsize::<span class="title function_ invoke__">new</span>(<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">spinlock_clone</span> = Arc::<span class="title function_ invoke__">clone</span>(&amp;spinlock);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">thread</span> = thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span>|| &#123;</span><br><span class="line">        spinlock_clone.<span class="title function_ invoke__">store</span>(<span class="number">0</span>, Ordering::SeqCst);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Wait for the other thread to release the lock</span></span><br><span class="line">    <span class="keyword">while</span> spinlock.<span class="title function_ invoke__">load</span>(Ordering::SeqCst) != <span class="number">0</span> &#123;</span><br><span class="line">        hint::<span class="title function_ invoke__">spin_loop</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Err</span>(panic) = thread.<span class="title function_ invoke__">join</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Thread had an error: &#123;panic:?&#125;&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="usual-structs"><a href="#usual-structs" class="headerlink" title="usual structs"></a>usual structs</h2><ol>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicBool.html">AtomicBool</a></li>
-</ol>
-<h3 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h3><ul>
-<li><code>fn get_mut(&amp;mut self) -&gt; &amp;mut bool</code></li>
-<li><code>fn into_inner(self) -&gt; bool</code></li>
-<li><code>fn load(&amp;self, order: Ordering) -&gt; bool</code></li>
-<li><code>fn store(&amp;self, val: bool, order: Ordering)</code></li>
-<li><code>fn compare_exchange(&amp;self, current: bool,new: bool,success: Ordering,failure: Ordering) -&gt; Result&lt;bool, bool&gt;</code><br>Stores a value into the bool if the current value is the same as the current value.<br>compare_exchange takes two Ordering arguments to describe the memory ordering of this operation. success describes the required ordering for the read-modify-write operation that takes place if the comparison with current succeeds. failure describes the required ordering for the load operation that takes place when the comparison fails. </li>
-<li><code>fn fetch_and(&amp;self, val: bool, order: Ordering) -&gt; bool</code><br>Logical “and” with a boolean value.<br>Performs a logical “and” operation on the current value and the argument val, and sets the new value to the result.</li>
-<li><code>const fn as_ptr(&amp;self) -&gt; *mut bool</code><br>Returns a mutable pointer to the underlying bool.<br>Doing non-atomic reads and writes on the resulting integer can be a data race. This method is mostly useful for FFI, where the function signature may use *mut bool instead of &amp;AtomicBool.</li>
-</ul>
-<ol start="2">
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicUsize.html">AtomicUsize</a></li>
-<li><a target="_blank" rel="noopener" href="https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicPtr.html">AtomicPtr</a><br>A raw pointer type which can be safely shared between threads.<br>This type has the same in-memory representation as a *mut T</li>
-</ol>
-<h2 id="Higher-level-synchronization-objects"><a href="#Higher-level-synchronization-objects" class="headerlink" title="Higher-level synchronization objects"></a>Higher-level synchronization objects</h2><p>Most of the low-level synchronization primitives are quite error-prone and inconvenient to use, which is why the standard library also exposes some higher-level synchronization objects.</p>
-<ul>
-<li><strong>Arc</strong>: Atomically Reference-Counted pointer, which can be used in multithreaded environments to prolong the lifetime of some data until all the threads have finished using it.</li>
-<li><strong>Barrier</strong>: Ensures multiple threads will wait for each other to reach a point in the program, before continuing execution all together.</li>
-<li><strong>Condvar</strong>: Condition Variable, providing the ability to block a thread while waiting for an event to occur.</li>
-<li><strong>mpsc</strong>: Multi-producer, single-consumer queues, used for message-based communication. Can provide a lightweight inter-thread synchronisation mechanism, at the cost of some extra memory.</li>
-<li><strong>Mutex</strong>: Mutual Exclusion mechanism, which ensures that at most one thread at a time is able to access some data.</li>
-<li><strong>Once</strong>: Used for a thread-safe, one-time global initialization routine</li>
-<li><strong>OnceLock</strong>: Used for thread-safe, one-time initialization of a global variable.</li>
-<li><strong>RwLock</strong>: Provides a mutual exclusion mechanism which allows multiple readers at the same time, while allowing only one writer at a time. In some cases, this can be more efficient than a mutex.</li>
-</ul>
-<h2 id="mpsc"><a href="#mpsc" class="headerlink" title="mpsc"></a>mpsc</h2><p>This module provides message-based communication over channels, concretely defined among three types:</p>
-<ul>
-<li>Sender</li>
-<li>SyncSender</li>
-<li>Receiver</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/06/08/rust/rust_std/rust-std-sync/" data-id="clokyy8e4003vqwsj77aj2fxl" data-title="rust std sync" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -944,7 +922,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 11.25px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -966,6 +944,10 @@
       <ul>
         
           <li>
+            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
           </li>
         
@@ -979,10 +961,6 @@
         
           <li>
             <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
           </li>
         
       </ul>
