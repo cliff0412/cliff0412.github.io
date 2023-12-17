@@ -71,6 +71,134 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-geth/code_analysis/geth.evm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/08/geth/code_analysis/geth.evm/" class="article-date">
+  <time class="dt-published" datetime="2023-01-08T08:24:54.000Z" itemprop="datePublished">2023-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/08/geth/code_analysis/geth.evm/">geth evm source analysis</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="overall"><a href="#overall" class="headerlink" title="overall"></a>overall</h1><p>the code is under path <code>core/vm</code><br>overview of the whole evm module <img src="/images/evm.drawio.google.png" alt="evm"></p>
+<p>the core is <code>EVM</code> struct (in evm.go), with main function in creating or call contract. a new <code>EVM</code> object is created every time when processing a transaction. inside the EVM struct, the main items are <code>Interpreter</code>, and <code>StateDB</code> (for state persistence). <code>Interpreter</code> loops through contract call instructions.Before each instruction is executed, some checks are performed to ensure sufficient gas and stack space. actual instruction execution code is recorded in <code>JumpTable</code> (256 sized array of <code>operation</code>)</p>
+<p>depending on the version of Ethereum, JumpTable may point to four different instruction sets: constantinopleInstructionSet, byzantiumInstructionSet, homesteadInstructionSet, frontierInstructionSet. Most of the instructions of these four sets of instruction sets are the same, but as the version is updated, the new version supports more instruction sets than the old version.</p>
+<h1 id="evm"><a href="#evm" class="headerlink" title="evm"></a>evm</h1><p>The <code>EVM</code> object is the most important object exported by the evm module, which represents an Ethereum virtual machine</p>
+<h2 id="creating-evm"><a href="#creating-evm" class="headerlink" title="creating evm"></a>creating evm</h2><p>Every time a transaction is processed, an EVM is created to execute the transaction. This is reflected in the function <code>ApplyTransaction</code> (core&#x2F;state_processor.go)</p>
+<h2 id="creating-contract"><a href="#creating-contract" class="headerlink" title="creating contract"></a>creating contract</h2><p>If the <code>to</code> of the transaction is empty, it means that this transaction is to create a contract, so call <code>EVM.Create</code> to perform related functions</p>
+<ul>
+<li>CREATE<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))</span><br></pre></td></tr></table></figure></li>
+<li>CREATE2<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">codeAndHash := &amp;codeAndHash&#123;code: code&#125;</span><br><span class="line">	contractAddr = crypto.CreateAddress2(caller.Address(), salt.Bytes32(), codeAndHash.Hash().Bytes())</span><br></pre></td></tr></table></figure>
+during create contract, an object <code>Contract</code> is created. A Contract object contains and maintains the necessary information during the execution of the contract, such as the contract creator, the address of the contract itself, the remaining gas of the contract, the contract code and the <code>jumpdests</code> record of the code.</li>
+</ul>
+<p>then, it invokes below method to create contract</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ret, err := evm.interpreter.Run(contract, nil, false)</span><br><span class="line">evm.StateDB.SetCode(address, ret)</span><br></pre></td></tr></table></figure>
+<p>If the operation is successful and the contract code does not exceed the length limit, call StateDB.SetCode to store the contract code in the contract account of the Ethereum state database. Of course, the storage needs to consume a certain amount of gas.</p>
+<p>You may wonder why the stored contract code is the return code after the contract runs, not the data in the original transaction (ie Transaction.data.Payload). This is because when the contract source code is compiled into binary data, in addition to the original code of the contract, the compiler also inserts some codes to perform related functions. For creation, the compiler inserts code that executes the contract’s “constructor” (that is, the contract object’s constructor method). Therefore, when the binary compiled by the compiler is submitted to the Ethereum node to create a contract, the EVM executes this binary code, in fact, it mainly executes the constructor method of the contract, and then returns other codes of the contract, so there is a <code>ret</code> variable here Stored in the state database as the actual code of the contract</p>
+<h2 id="call-contract"><a href="#call-contract" class="headerlink" title="call contract"></a>call contract</h2><p>The EVM object has three methods to implement the call of the contract, they are:</p>
+<ul>
+<li>EVM. Call</li>
+<li>EVM. CallCode</li>
+<li>EVM. DelegateCall</li>
+<li>EVM.StaticCall<br>The basic contract call function implemented by EVM.Call is nothing special. The following three calling methods are the differences compared with EVM.Call. So here we only introduce the particularity of the last three calling methods</li>
+</ul>
+<h3 id="EVM-CallCode-amp-EVM-DelegateCall"><a href="#EVM-CallCode-amp-EVM-DelegateCall" class="headerlink" title="EVM.CallCode &amp; EVM.DelegateCall"></a>EVM.CallCode &amp; EVM.DelegateCall</h3><p>The existence of EVM.CallCode and EVM.DelegateCall is to realize the characteristics of the “library” of the contract. If the code written by solidity is to be called as a library, it must be deployed on the blockchain to obtain a fixed address like a normal contract. , other contracts can call the method provided by this “library contract”. But the contract also involves some unique attributes, such as the caller of the contract, contract address, the amount of ether it owns, etc. If we directly call the code of the “library contract”, these properties must be the properties of the “library contract” itself, but this may not be what we want</p>
+<p>as an example</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A -&gt; contractB - delegateCall -&gt; libC</span><br></pre></td></tr></table></figure>
+<p><code>EVM.DelegateCall</code> sets the caller (msg.sender) of the “library contract” (libC) to A, rather than contractB; sets the address of the “library contract” (libC) to contractB.<br><code>EVM.CallCode</code> is similar to <code>EVM.DelegateCall</code>. the only difference is that <code>EVM.CallCode</code> only change the address of the “library contract” (libC) to contractB, without chanding the caller to A.<br><code>EVM.StaticCall</code> is similar to <code>EVM.Call</code>, the only difference is that EVM.StaticCall does not allow execution of instructions that modify permanently stored data</p>
+<p>during contract call, it first check whether it is precompiled contract. some precompiled contracts are</p>
+<ul>
+<li>common.BytesToAddress([]byte{1}): &amp;ecrecover{},</li>
+<li>common.BytesToAddress([]byte{2}): &amp;sha256hash{},</li>
+<li>common.BytesToAddress([]byte{3}): &amp;ripemd160hash{},</li>
+<li>common.BytesToAddress([]byte{4}): &amp;dataCopy{},</li>
+</ul>
+<h1 id="EVMInterpreter"><a href="#EVMInterpreter" class="headerlink" title="EVMInterpreter"></a>EVMInterpreter</h1><p>The interpreter object EVMInterpreter is used to interpret and execute specified contract instructions. However, note that the actual instruction interpretation and execution is not really completed by the interpreter object, but by the operation object JumpTable. The interpreter object is only responsible for parsing instruction codes one by one, and then obtains the corresponding operation object, and check objects such as the stack before calling the operation.execute function that actually executre the instruction. It can also be said that the interpreter object is only responsible for the scheduling of interpretation.</p>
+<h2 id="execution-layout"><a href="#execution-layout" class="headerlink" title="execution layout"></a>execution layout</h2><p><img src="/images/evm.layout.png" alt="layout"></p>
+<h2 id="intrinsic-gas"><a href="#intrinsic-gas" class="headerlink" title="intrinsic gas"></a>intrinsic gas</h2><p>The intrinsic gas for a transaction is the amount of gas that the transaction uses before any code runs. It is a constant transaction fee (currently 21000 gas) plus a fee for every byte of data supplied with the transaction (4 gas for a zero byte, 68 gas for non-zeros). These constants are all currently defined for geth in params&#x2F;protocol_params.go.</p>
+<h2 id="gas-cost"><a href="#gas-cost" class="headerlink" title="gas cost"></a>gas cost</h2><p>the gas cost of each instruction is stored in <code>JumpTable.operation.dynamicGas</code> or <code>JumpTable.operation.constantGas</code>. constantGas means the operation gas cost is a fixed constant. dynamicGas is a function which will return gas during runtime.</p>
+<p>In fact, not only the interpretation and execution of the instruction itself consumes gas, but also consumes gas when using memory storage and StateDB permanent storage. For most instructions, the latter two are not used (memory &amp; storage), but for some instructions (such as CODECOPY or SSTORE), their gasCost function will take memory and StateDB usage into account.</p>
+<p>a method <code>memoryGasCost</code>is used to calculate the gas consumption of memory usage. only when the required space size exceeds the current space size, the excess part needs to consume gas.</p>
+<h1 id="JumpTable"><a href="#JumpTable" class="headerlink" title="JumpTable"></a>JumpTable</h1><p>jumptable is 256 sized array of <code>operation</code></p>
+<h2 id="jump-instruction"><a href="#jump-instruction" class="headerlink" title="jump instruction"></a>jump instruction</h2><p>Among the instructions of the contract, there are two jump instructions (excluding CALL): JUMP and JUMPI. Their special feature is that the first instruction of the target address after the jump must be JUMPDEST</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">func opJump(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) &#123;</span><br><span class="line">    pos := stack.pop()</span><br><span class="line">    if !contract.validJumpdest(pos) &#123;</span><br><span class="line">        nop := contract.GetOp(pos.Uint64())</span><br><span class="line">        return nil, fmt.Errorf(&quot;invalid jump destination (%v) %v&quot;, nop, pos)</span><br><span class="line">    &#125;</span><br><span class="line">    *pc = pos.Uint64()</span><br><span class="line"></span><br><span class="line">    interpreter.intPool.put(pos)</span><br><span class="line">    return nil, nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>A function interprets and executes the JUMP instruction. The code first fetches a value from the stack as the jump destination. This value is actually an offset relative to field 0 of the contract code. Then the code will call Contract.validJumpdest to determine whether the first instruction of this destination is JUMPDEST, if it is not, an error will occur.</p>
+<p>To judge whether the first instruction of the destination is JUMPDEST, two points must be guaranteed: first, its value is the value of the opcode of the JUMPDEST instruction; second, it is an instruction, not ordinary data.</p>
+<p>Let’s introduce how Contract.validJumpdest works. In addition to comparing opcode (this is very simple), Contract will also create a bit vector object (ie bitvec, bit vector). This object will analyze the contract instructions from the beginning to the end. If the byte at a certain offset of the contract belongs to ordinary data, the “bit” corresponding to the offset value in bitvec is set to 1, and if it is an instruction, it is set to 0. In Contract.validJumpdest, it is judged whether this is a normal instruction by checking whether the “bit” of the offset value of the jump destination in this bit vector object is 0</p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://yangzhe.me/2019/08/12/ethereum-evm/#%E8%A7%A3%E9%87%8A%E5%99%A8%E5%AF%B9%E8%B1%A1evminterpreter">yangzhe_blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.evm.codes/?fork=shanghai">op code manual</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/08/geth/code_analysis/geth.evm/" data-id="clokyy8dw0028qwsj2vul70i7" data-title="geth evm source analysis" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-geth-fine-tune" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/01/01/geth-fine-tune/" class="article-date">
+  <time class="dt-published" datetime="2023-01-01T08:29:43.000Z" itemprop="datePublished">2023-01-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/01/01/geth-fine-tune/">geth_fine_tune</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>If we’re a full node on mainnet without –cache specified, bump default cache allowance<br>ctx.Set(utils.CacheFlag.Name, strconv.Itoa(4096))</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/01/01/geth-fine-tune/" data-id="clokyy8dl0003qwsj0la65sux" data-title="geth_fine_tune" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rust/rust-07-macro" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/12/28/rust/rust-07-macro/" class="article-date">
@@ -555,145 +683,6 @@
 
 
   
-    <article id="post-geth/code_analysis/geth.1.rpc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/08/geth/code_analysis/geth.1.rpc/" class="article-date">
-  <time class="dt-published" datetime="2022-11-08T06:23:08.000Z" itemprop="datePublished">2022-11-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/08/geth/code_analysis/geth.1.rpc/">rpc</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>package rpc implements bi-directional JSON-RPC 2.0 on multiple transports (http, ws, ipc). After creating a server or client instance, objects can be registered to make them visible as ‘services’. Exported methods that follow specific conventions can be called remotely. It also has support for the publish&#x2F;subscribe pattern.</p>
-<h2 id="methods"><a href="#methods" class="headerlink" title="methods"></a>methods</h2><h3 id="rpc-endpoints-callback"><a href="#rpc-endpoints-callback" class="headerlink" title="rpc endpoints (callback)"></a>rpc endpoints (callback)</h3><p>Methods that satisfy the following criteria are made available for remote access:</p>
-<ul>
-<li>method must be exported</li>
-<li>method returns 0, 1 (response or error) or 2 (response and error) values</li>
-</ul>
-<p>The server offers the ServeCodec method which accepts a ServerCodec instance. It will read requests from the codec, process the request and sends the response back to the client using the codec. The server can execute requests concurrently. Responses can be sent back to the client out of order.</p>
-<p>An example server which uses the JSON codec:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> CalculatorService <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Add(a, b <span class="type">int</span>) <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *CalculatorService)</span></span> Div(a, b <span class="type">int</span>) (<span class="type">int</span>, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> b == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>, errors.New(<span class="string">&quot;divide by zero&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> a/b, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">calculator := <span class="built_in">new</span>(CalculatorService)</span><br><span class="line">server := NewServer()</span><br><span class="line">server.RegisterName(<span class="string">&quot;calculator&quot;</span>, calculator)</span><br><span class="line">l, _ := net.ListenUnix(<span class="string">&quot;unix&quot;</span>, &amp;net.UnixAddr&#123;Net: <span class="string">&quot;unix&quot;</span>, Name: <span class="string">&quot;/tmp/calculator.sock&quot;</span>&#125;)</span><br><span class="line">server.ServeListener(l)</span><br></pre></td></tr></table></figure>
-
-<h3 id="subscriptions"><a href="#subscriptions" class="headerlink" title="subscriptions"></a>subscriptions</h3><p>The package also supports the publish subscribe pattern through the use of subscriptions.<br>A method that is considered eligible for notifications must satisfy the following<br>criteria:</p>
-<ul>
-<li>method must be exported</li>
-<li>first method argument type must be context.Context</li>
-<li>method must have return types (rpc.Subscription, error)</li>
-</ul>
-<p>An example method:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *BlockChainService)</span></span> NewBlocks(ctx context.Context) (rpc.Subscription, <span class="type">error</span>) &#123;</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="Reverse-Calls"><a href="#Reverse-Calls" class="headerlink" title="Reverse Calls"></a>Reverse Calls</h3><p>In any method handler, an instance of rpc.Client can be accessed through the <code>ClientFromContext</code> method. Using this client instance, server-to-client method calls can be performed on the RPC connection.</p>
-<h2 id="server"><a href="#server" class="headerlink" title="server"></a>server</h2><p>to start rpc service, the invoking chain is as below</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node/node.go[func (n *Node) Start()] -&gt; node/node.go[func (n *Node) openEndpoints()] -&gt; node/node.go[func (n *Node) startRPC()]</span><br></pre></td></tr></table></figure>
-
-<h3 id="API-registration"><a href="#API-registration" class="headerlink" title="API registration"></a>API registration</h3>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/08/geth/code_analysis/geth.1.rpc/" data-id="clokyy8dv0025qwsjg5vzbwcu" data-title="rpc" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geth/" rel="tag">geth</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-08-project-management" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/06/rust/rust-08-project-management/" class="article-date">
-  <time class="dt-published" datetime="2022-11-06T07:33:55.000Z" itemprop="datePublished">2022-11-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/06/rust/rust-08-project-management/">rust project management</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="basic-concepts"><a href="#basic-concepts" class="headerlink" title="basic concepts"></a>basic concepts</h2><ul>
-<li><strong>Packages</strong>: A Cargo feature that lets you build, test, and share crates</li>
-<li><strong>Crates</strong>: A tree of modules that produces a library or executable</li>
-<li><strong>Modules and use</strong>: Let you control the organization, scope, and privacy of paths</li>
-<li><strong>Paths</strong>: A way of naming an item, such as a struct, function, or module</li>
-</ul>
-<h3 id="package"><a href="#package" class="headerlink" title="package"></a>package</h3><ol>
-<li>one package can only has one library Crate. default is src&#x2F;lib.rs</li>
-<li>one package can have multiple binary Crates (under src&#x2F;bin). default src&#x2F;main.rs</li>
-<li>one package has at least one crate，no matter lib or bin。</li>
-<li>one package could simultaneously have src&#x2F;main.rs and src&#x2F;lib.rs (crate name same to package name)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cargo new my-project --lib  ## create a library project</span><br></pre></td></tr></table></figure></li>
-</ol>
-<h3 id="crate"><a href="#crate" class="headerlink" title="crate"></a>crate</h3><ul>
-<li>binary or library</li>
-<li>The crate root is a source file that the Rust compiler starts from and makes up the root module of your crate</li>
-</ul>
-<h3 id="module"><a href="#module" class="headerlink" title="module"></a>module</h3><ul>
-<li>keyword <code>mod</code> </li>
-<li>module could be nested。</li>
-<li>module includes(struct、enum、const、trait、func, etc)</li>
-</ul>
-<h3 id="path"><a href="#path" class="headerlink" title="path"></a>path</h3><ul>
-<li>absolute path: use crate name or <code>crate</code></li>
-<li>relative path:，use self, super etc<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">serve_order</span>() &#123;&#125;</span><br><span class="line"><span class="keyword">mod</span> back_of_house &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">fix_incorrect_order</span>() &#123;</span><br><span class="line">        <span class="title function_ invoke__">cook_order</span>();</span><br><span class="line">        super::<span class="title function_ invoke__">serve_order</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">cook_order</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> front_of_house &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">mod</span> hosting &#123;</span><br><span class="line">        <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add_to_waitlist</span>() &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">eat_at_restaurant</span>() &#123;</span><br><span class="line">    <span class="comment">// Absolute path</span></span><br><span class="line">    crate::front_of_house::hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">    <span class="comment">// Relative path</span></span><br><span class="line">    front_of_house::hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="Bringing-Paths-into-Scope-with-the-use-Keyword"><a href="#Bringing-Paths-into-Scope-with-the-use-Keyword" class="headerlink" title="Bringing Paths into Scope with the use Keyword"></a>Bringing Paths into Scope with the use Keyword</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::io;</span><br><span class="line"><span class="keyword">use</span> std::io::Write;</span><br><span class="line"><span class="keyword">use</span> std::io:: &#123; <span class="keyword">self</span>, Write&#125; ;</span><br><span class="line"><span class="keyword">use</span> std::&#123;cmp::Ordering, io&#125;;</span><br><span class="line"><span class="keyword">use</span> std::fmt::<span class="type">Result</span>;</span><br><span class="line"><span class="keyword">use</span> std::io::<span class="type">Result</span> <span class="keyword">as</span> IoResult;</span><br><span class="line"><span class="keyword">use</span> std::collections::*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">use</span> crate::front_of_house::hosting; <span class="comment">// re-exporting names with pub use</span></span><br></pre></td></tr></table></figure>
-<h3 id="Separating-Modules-into-Different-Files"><a href="#Separating-Modules-into-Different-Files" class="headerlink" title="Separating Modules into Different Files"></a>Separating Modules into Different Files</h3><p>Filename: src&#x2F;lib.rs</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> front_of_house;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">use</span> crate::front_of_house::hosting;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">eat_at_restaurant</span>() &#123;</span><br><span class="line">    hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">    hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">    hosting::<span class="title function_ invoke__">add_to_waitlist</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Filename: src&#x2F;front_of_house.rs</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">mod</span> hosting &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add_to_waitlist</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="profile"><a href="#profile" class="headerlink" title="profile"></a>profile</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo build ## dev: [unoptimized + debuginfo]</span><br><span class="line">cargo build --release ## [optimized]</span><br></pre></td></tr></table></figure>
-<ul>
-<li>config<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[profile.dev]</span><br><span class="line">opt-level = 0</span><br><span class="line"></span><br><span class="line">[profile.release]</span><br><span class="line">opt-level = 3</span><br><span class="line"></span><br><span class="line"># profile for the wasm example (from project ethers-rs)</span><br><span class="line">[profile.release.package.ethers-wasm]</span><br><span class="line">opt-level = &quot;s&quot;  # Tell `rustc` to optimize for small code size.</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/06/rust/rust-08-project-management/" data-id="clokyy8ds0018qwsj3eer6n3l" data-title="rust project management" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -712,7 +701,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -722,7 +711,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 10px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/cpp/" style="font-size: 13.75px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.5px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -744,6 +733,14 @@
       <ul>
         
           <li>
+            <a href="/2023/12/17/math/galois-theory/">Galois Theory</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/15/cryptography/field/field/">field</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
           </li>
         
@@ -753,14 +750,6 @@
         
           <li>
             <a href="/2023/12/03/cryptography/zkp/kzg-commitment/">kzg polynomial commitment</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
-          </li>
-        
-          <li>
-            <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
           </li>
         
       </ul>
