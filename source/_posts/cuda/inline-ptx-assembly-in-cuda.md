@@ -100,6 +100,19 @@ In PTX, a variable declaration describes both the variable’s type and its stat
 .shared .v2 .u16 uv;  // a length-2 vector of unsigned ints
 .global .v4 .b8  v;   // a length-4 vector of bytes
 ```
+## examples
+```cpp
+uint32_t a, b;
+uint32_t carry;
+asm("add.cc.u32 %0, %0, %1;": "+r"(a):"r"(b));
+asm("addc.u32 %0, 0, 0;": "=r"(carry)); // carry will hold the carry in value of last operation. it is either 1 or 0
+```
+```cpp
+uint32_t a, b;
+uint32_t borrow;
+asm("sub.cc.u32 %0, %0, %1;": "+r"(a):"r"(b));
+asm("subc.u32 %0, 0, 0;": "=r"(borrow)); // borrow will hold the borrow out value of last operation. it is either -1 or 0; -1 is actually 0xFFFFFFFF
+```
 
 # references
 - [nvidia docs inlline ptx assembly](https://docs.nvidia.com/cuda/inline-ptx-assembly/index.html)
