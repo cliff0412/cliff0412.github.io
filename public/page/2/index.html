@@ -71,181 +71,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-cryptography/elliptic_curve/bls12-381" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/" class="article-date">
-  <time class="dt-published" datetime="2023-12-01T11:09:11.000Z" itemprop="datePublished">2023-12-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>BLS12-381 is a pairing-friendly elliptic curve. Curve BLS12-381 was designed by <a target="_blank" rel="noopener" href="https://twitter.com/ebfull">Sean Bowe</a> in early 2017 as the foundation for an upgrade to the Zcash protocol. It is both pairing-friendly (making it efficient for digital signatures) and effective for constructing zkSnarks. BLS12-381 is part of a family of curves described by Barreto, Lynn, and Scott (BLS). The 12 is the embedding degree of the curve: neither too low, nor too high. The 381 is the number of bits needed to represent coordinates on the curve: the field modulus, \(q\). 381 is a fairly handy number as we can use 48 bytes per field element, with 3 bits left over for useful flags or arithmetic optimisations. This size of this number is guided both by security requirements and implementation efficiency.</p>
-<h2 id="curve-equation-and-parameters"><a href="#curve-equation-and-parameters" class="headerlink" title="curve equation and parameters"></a>curve equation and parameters</h2><p>The basic equation of the BLS12-381 curve is \( y^2 &#x3D; x^3 + 4\)<br>The key parameters for a BLS curve are set using a single parameter \(\mathbf{x}\) (different from the in the curve equation!). BLS12-381 is derived from the \( k \equiv 0 \mod 6\) case of Construction 6.6 in the <a target="_blank" rel="noopener" href="https://eprint.iacr.org/2006/372.pdf">taxonomy</a>.</p>
-<p>Specific design goals for BLS12-381 are:</p>
-<ul>
-<li>\(\mathbf{x}\) has “low hamming weight”, meaning that it has very few bits set to 1. This is particularly important for the efficiency of the algorithm that calculates pairings (the Miller loop).</li>
-<li>The field modulus \(q\) mentioned above is prime and has 383 bits or fewer, which makes 64-bit or 32-bit arithmetic on it more efficient.</li>
-<li>The order \(r\) of the subgroups we use is prime and has 255 bits or fewer, which is good for the same reason as above.</li>
-<li>To support zkSnark schemes, we want to have a large power of two root of unity in the field. This means we want <strong>\(2^n\) to be a factor of \(r-1\)</strong>, for some biggish \(n\). (Making \(\mathbf{x}\) a multiple of \(2^{n&#x2F;2}\) will achieve this.) This property is key to being able to use fast Fourier transforms for interesting things like polynomial multiplication.</li>
-</ul>
-<p>The value \(\mathbf{x}\) &#x3D; -0xd201000000010000 (hexadecimal, note that it is negative) gives the largest and the lowest Hamming weight meeting these criteria. With this value we have,</p>
-<table>
-<thead>
-<tr>
-<th>parameters</th>
-<th align="center">equation</th>
-<th align="center">value(hex)</th>
-<th align="right">comments</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Field modulus \(q\)</td>
-<td align="center">\(\frac{1}{3}(\mathbf{x}-1)^2(\mathbf{x}^4-\mathbf{x}^2+1) + \mathbf{x}\)</td>
-<td align="center">0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f3<br>8512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab</td>
-<td align="right">381 bits, prime</td>
-</tr>
-<tr>
-<td>Subgroup size \(r\)</td>
-<td align="center">\((\mathbf{x}^4-\mathbf{x}^2+1)\)</td>
-<td align="center">0x73eda753299d7d483339d80809a1d80553<br>bda402fffe5bfeffffffff00000001</td>
-<td align="right">255 bits, prime</td>
-</tr>
-</tbody></table>
-<h2 id="Field-extensions"><a href="#Field-extensions" class="headerlink" title="Field extensions"></a>Field extensions</h2><p>Field extensions are fundamental to elliptic curve pairings. The “12” is BLS12-381 is not only the embedding degree, it is also (relatedly) the degree of field extension that we will need to use.<br>For example, The complex numbers are a quadratic extension of the real numbers (\(x^2 &#x3D; 1\)). Complex numbers can’t be extended any further because there are <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_algebra">no irreducible polynomials over the complex numbers</a>. But for finite fields, if we can find an irreducible \(k\)-degree polynomial in our field \(F_q\), and we often can, then we are able to extend the field to \(F_{q^k}\), , and represent the elements of the extended field as degree \(k-1\) polynomials, \(a_0 + a_1 x + … + a_{k-1}x^{k-1}\). we can represent this compactly as (\(a_0, a_1, …, a_{k-1}\))<br>In practice, large extension fields like \(F_{q^{12}}\)are implemented as towers of smaller extensions.</p>
-<h2 id="the-curves"><a href="#the-curves" class="headerlink" title="the curves"></a>the curves</h2><p>BLS12-381 is really dealing with two curves. Both curves share more-or-less the same curve equation, but are defined over different fields.<br>The simpler one is over the finite field \(F_q\), which is just the integers mod \(q\). So the curve has points only where the equation \(y^2 &#x3D; x^3 +4\) has solutions with \(x\) and \(y\) both integers less than \(q\). We shall call this curve \(E(F_q)\).<br>The other curve is defined over an extension of \(F_q\)to \(F_{q^2}\) (think complex numbers). In this case, the curve equation is slightly modified to be \(y^2 &#x3D; x^3+4(1+i)\), and we call the curve \(E’(F_{q^2})\)</p>
-<h2 id="the-subgroups"><a href="#the-subgroups" class="headerlink" title="the subgroups"></a>the subgroups</h2><p>A pairing is a bilinear map. This means that it takes as input two points, each from a group of the same order, \(r\). for rather technical reasons, these two groups need to be distinct. Let’s call them<br>\(G_1\) and \(G_2\).<br>Unfortunately, our simple curve \(E(F_q)\) <strong>has only a single large subgroup of order \(r\)</strong>, so we can’t define a pairing based solely on \(E(F_q)\). However, if we keep extending the field over which<br>\(E\) is defined, it can be proved that we eventually find a curve that has more than one subgroup of order \(r\). that is, for some \(k\), <strong>\(E(F_{q^k})\) contains other subgroups of order \(r\) that we can use</strong>. One of these subgroups contains only points having a <strong>trace of zero</strong>[1], and we choose that subgroup to be \(G_2\)</p>
-<p>This number \(k\), the amount that we need to extend the base field by to find the new group, is called the embedding degree of the curve, which in our case is the “12” in BLS12-381. For completeness, note that each of \(G_1\) and \(G_2\) shares with its containing curve the “point at infinity”. This is the identity element of the elliptic curve arithmetic group, often denoted \(\mathcal O\)<br>. For any point \(P\), \( P + \mathcal O &#x3D; \mathcal O + P &#x3D; P\). </p>
-<h2 id="Twists"><a href="#Twists" class="headerlink" title="Twists"></a>Twists</h2><p>But there’s another challenge. As discussed earlier, doing arithmetic in \(F_{q^{12}}\) is horribly complicated and inefficient. And curve operations need a lot of arithmetic. A <a target="_blank" rel="noopener" href="http://indigo.ie/~mscott/twists.pdf">twist</a> is something like a coordinate transformation. Rather wonderfully, this can be used to transform our \(E(F_{q^{12}})\) curve into a curve defined over a lower degree field that still has an order \(r\) subgroup.  Moreover, this subgroup has a simple mapping to and from our \(G_2\) group</p>
-<p>BLS12-381 uses a “sextic twist”. This means that it reduces the degree of the extension field by a factor of six. So \(G_2\) on the twisted curve can be defined over \(F_{q^2}\) instead of \(F_{q^{12}}\)<br>I haven’t seen this written down anywhere—but attempting to decode section 3 of <a target="_blank" rel="noopener" href="https://eprint.iacr.org/2005/133.pdf">this</a>—if we find a \(u\) such that \(u^6 &#x3D; (1+i)^{-1}\), then we can define our twisting transformation as \( (x,y) -&gt; (x&#x2F;u^2, y&#x2F;u^3)\). This transforms our original curve \(E: y^2 &#x3D; x^3 + 4\) into the curve \(E’: y^2 + 4&#x2F;u^6 &#x3D; x^3 + 4(1+i)\). <strong>\(E\) and \(E’\) look different, but are actually the same object presented with respect to coefficinets in different base fields</strong>.</p>
-<p>So these are the two groups we will be using:</p>
-<ul>
-<li>\(G_1 \subset E(F_q)\), where \(E: y^2 &#x3D; x^3 + 4\)</li>
-<li>\(G_2 \subset E(F_{q^2})\), where \(E: y^2 &#x3D; x^3 + 4(1+i)\)<br>Note that coordinates of points in the \(G_1\) group are pairs of integers, and coordinates of points in the \(G_2\) group are pairs of complex integers.</li>
-</ul>
-<h2 id="Parings"><a href="#Parings" class="headerlink" title="Parings"></a>Parings</h2><p>s far as BLS12-381 is concerned, a pairing simply takes a point \(P \in G_1 \subset E(F_q)\), and a point \(Q \in G_2 \subset E’(F_{q^2})\) and outputs a point from a group \(G_T \subset F_{q^{12}}\). That is, for a paring \(e\), \(e: G_1 \times G_2 \rightarrow G_T\)</p>
-<p>properties of pairing<br>\( e(P, Q+R) &#x3D; e(P,Q) \cdot e(P,R) \),<br><strong>note</strong> as a way of memory, can think it as \(P^{Q+R} &#x3D; P^Q \cdot P^R\)<br>\( e(P+S, R) &#x3D; e(P,R) \cdot e(S,R)\)<br>From this, we can deduce that all of the following identities hold:<br>\(e([a]P, [b]Q) &#x3D; e(P, [b]Q)^a &#x3D; e(P,Q)^{ab} &#x3D; e(P, [a]Q)^b &#x3D; e([b]P, [a]Q)\)</p>
-<h2 id="Embedding-degree"><a href="#Embedding-degree" class="headerlink" title="Embedding degree"></a>Embedding degree</h2><p>The embedding degree, \(k\), is calculated as the smallest positive integer such that \(r\) divides \(q^k -1\). So, in the case of BLS12-381, \(r\) is a factor of \(q^{12} -1\), but not of any lower power.<br>The choice of an embedding degree is a balance between security and efficiency (as ever). On the security front, the embedding degree is also known as the security multiplier: a higher embedding degree makes the discrete logarithm problem harder to solve in<br>. However, a high embedding degree means we have to do field operations in high-degree extensions, which is clunky and inefficient. </p>
-<h2 id="cofactor"><a href="#cofactor" class="headerlink" title="cofactor"></a>cofactor</h2><p>A subgroup’s cofactor is the ratio of the size of the whole group to the size of the subgroup. </p>
-<table>
-<thead>
-<tr>
-<th>Group</th>
-<th align="center">Cofactor</th>
-<th align="center">Equation</th>
-<th align="right">value(hex)</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>\(G_1\)</td>
-<td align="center">\(h_1\)</td>
-<td align="center">\(\frac{\mathbf{x-1}^2}{3}\)</td>
-<td align="right">0x396c8c005555e<br>1568c00aaab0000aaab</td>
-</tr>
-<tr>
-<td>\(G_2\)</td>
-<td align="center">\(h_2\)</td>
-<td align="center">\(\frac{\mathbf{x}^8 -4\mathbf{x}^7+5\mathbf{x}^6-4\mathbf{x}^4+6\mathbf{x}^3-4\mathbf{x}^2-4\mathbf{x}+13}{9}\)</td>
-<td align="right">0x5d543a95414e7f1091d50792876a202cd91de<br>4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef2<br>1537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5</td>
-</tr>
-</tbody></table>
-<p><strong>note</strong> multiplying by the cofactor turns out to be a straightforward way to map any arbitrary point on the elliptic curve into the respective subgroup \(G_1\) or \(G_2\)</p>
-<h2 id="Generators"><a href="#Generators" class="headerlink" title="Generators"></a>Generators</h2><p>\(G_1\) and \(G_2\) are cyclic groups of prime order, so any point (except the identity&#x2F;point at infinity) is a generator. Thus, picking generators is just a matter of convention.<br>Generator points \(G_1\) and \(G_2\) are specified in decimal <a target="_blank" rel="noopener" href="https://github.com/zcash/librustzcash/blob/6e0364cd42a2b3d2b958a54771ef51a8db79dd29/pairing/src/bls12_381/README.md#generators">here</a></p>
-<p>These were chosen as follows:</p>
-<blockquote>
-<p>The generators of \(G_1\) and \(G_2\)  are computed by finding the lexicographically smallest valid x-coordinate, and its lexicographically smallest &gt; y-coordinate and scaling it by the cofactor such that the result is not the point at infinity.</p>
-</blockquote>
-<h2 id="Foot-notes"><a href="#Foot-notes" class="headerlink" title="Foot notes"></a>Foot notes</h2><p>[1] The “trace zero subgroup” qualifies as an obscure incantation. Basically, the trace of a point is \(\sum_{i&#x3D;0}^{k-1}(x^{q^i}, y^{q^i})\), where \(k&#x3D;12\) in our case. Understanding this involves stuff like the Frobenius endomorphism.</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a></li>
-<li><a target="_blank" rel="noopener" href="https://electriccoin.co/blog/new-snark-curve/">initial post of bls12-381</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/supranational/blst">implementation: blst</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/01/cryptography/elliptic_curve/bls12-381/" data-id="clpm1qei10000hpsj4saxbd96" data-title="bls12_381" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ec/" rel="tag">ec</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/sgx_multi_prover" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/" class="article-date">
-  <time class="dt-published" datetime="2023-11-24T06:29:26.000Z" itemprop="datePublished">2023-11-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/133586549?spm=1001.2014.3001.5502">https://blog.csdn.net/mutourend/article/details/133586549?spm=1001.2014.3001.5502</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/24/cryptography/zkp/sgx_multi_prover/" data-id="clphpvdoj0003aj7ugctear78" data-title="sgx multi prover" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-cryptography/zkp/zk-bench" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/24/cryptography/zkp/zk-bench/" class="article-date">
@@ -716,6 +541,225 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
 
 
   
+    <article id="post-arithmatic/goldilocks-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/18/arithmatic/goldilocks-field/" class="article-date">
+  <time class="dt-published" datetime="2023-11-18T03:06:53.000Z" itemprop="datePublished">2023-11-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/18/arithmatic/goldilocks-field/">goldilocks field</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h1 id="properties"><a href="#properties" class="headerlink" title="properties"></a>properties</h1><p>\( p &#x3D; \phi^2 - \phi + 1\)<br>\( \epsilon  &#x3D; \phi -1\)</p>
+<h2 id="Goldilocks-Addition"><a href="#Goldilocks-Addition" class="headerlink" title="Goldilocks Addition"></a>Goldilocks Addition</h2><p>let \( a &#x3D; a_0 + a_1 \cdot \phi, b &#x3D; b_0 + b_1 \cdot \phi\)</p>
+<p><code>(c, carry) = a + b</code>;</p>
+<ul>
+<li>if carry &#x3D; 0 &amp;&amp; c &gt; p, result should be <code>c -p</code></li>
+<li>if carry &#x3D; 0 &amp;&amp; c &lt; p, result should be <code>c</code></li>
+<li>if carry &#x3D; 1<br>let \( c &#x3D; c_0 + c_1 \cdot \phi + c_2 \cdot \phi^2\), and \(c_2 &#x3D; 1 \). let \( u &#x3D; c_0 + c_1 \cdot \phi \)<br>therefore \(a + b \mod p\) should be \( a + b - p &#x3D; c_0 + c_1 \cdot \phi + \phi^2 - (\phi^2 - \phi + 1) &#x3D;c_0 + c_1 \cdot \phi + \phi - 1 &#x3D; u + \phi - 1\) <ul>
+<li>if \( u  &lt;  p\), computationally, \( u  -  p\) will borrow from \( \phi^2\), which is equivalent to<br>\( \phi^2 + u - p &#x3D; u + \phi - 1  \), which is \( a - b \mod p\). therefore, the result is just \( u-p \)</li>
+<li>if \( u&gt; p\), this will unlikely occur, if u &gt;p, given by \( \phi^2 &gt; p \), so \( u + \phi^2 &gt; p + \phi^2 &gt; 2p\) that means a or b is not in canonical form. <span style="color:red"><strong>does not consider this case for now</strong></span></li>
+</ul>
+</li>
+</ul>
+<h2 id="Goldilocks-Subtraction"><a href="#Goldilocks-Subtraction" class="headerlink" title="Goldilocks Subtraction"></a>Goldilocks Subtraction</h2><p>\(a - b \mod MOD\)<br>if a &lt; b, a - b is negative, and the binary representation is 2’s complement of the negative value. therefore, it’s requied to add by MOD and treat the final binary representation as positive value.</p>
+<h2 id="Goldilocks-Multiplication"><a href="#Goldilocks-Multiplication" class="headerlink" title="Goldilocks Multiplication"></a>Goldilocks Multiplication</h2><p>let \(a &#x3D; a_0 + a_1 \cdot \phi\), and \(b&#x3D;b_0 + b_1 \cdot \phi\)<br>to compute \(c &#x3D; a \cdot b\)</p>
+<ul>
+<li>first, turn it into \( a_0 \cdot b_0 +(a_1\cdot b_0 +a_0\cdot b_1)\cdot \phi + a_1 \cdot b_1 \phi^2 \)<br>it may carry to \( \phi^2 \). so the results is a <code>u128</code> (<code>[u32;4]</code>)</li>
+<li>second, reduce the <code>[u32;4]</code> to <code>u64</code>, details to be described in the following section.</li>
+</ul>
+<h2 id="plonky2-Goldilocks-Fieldreduce128"><a href="#plonky2-Goldilocks-Fieldreduce128" class="headerlink" title="plonky2 Goldilocks Fieldreduce128"></a>plonky2 Goldilocks Fieldreduce128</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">reduce128</span>(x: <span class="type">u128</span>) <span class="punctuation">-&gt;</span> GoldilocksField &#123;</span><br><span class="line">    <span class="keyword">let</span> (x_lo, x_hi) = <span class="title function_ invoke__">split</span>(x); <span class="comment">// This is a no-op</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_hi</span> = x_hi &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x_hi_lo</span> = x_hi &amp; EPSILON;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> (<span class="keyword">mut</span> t0, borrow) = x_lo.<span class="title function_ invoke__">overflowing_sub</span>(x_hi_hi);</span><br><span class="line">    <span class="keyword">if</span> borrow &#123;</span><br><span class="line">        <span class="title function_ invoke__">branch_hint</span>(); <span class="comment">// A borrow is exceedingly rare. It is faster to branch.</span></span><br><span class="line">        t0 -= EPSILON; <span class="comment">// Cannot underflow.</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t1</span> = x_hi_lo * EPSILON;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">t2</span> = <span class="keyword">unsafe</span> &#123; <span class="title function_ invoke__">add_no_canonicalize_trashing_input</span>(t0, t1) &#125;;</span><br><span class="line">    <span class="title function_ invoke__">GoldilocksField</span>(t2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>since, \(\phi^{3} &#x3D; -1\), \(n\) could be reduced to \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} - n_3  \),<br>which is line 6 in the above code snipet. when borrow occurs, it means it borrows \( \phi^2\) ( subtraction is of u64, so borrow 1 menas add \( \phi^2\), <code>1&lt;&lt;64</code>). therefore, needs to reduce \( \phi^2\). since \( \phi^2 &#x3D; \phi - 1\), which is reduce by \( \phi - 1\) (this is <code>EPSILON</code>).<br><strong>Note</strong> needs to consider line 23 could underflow</p>
+<p>next step is to reduce \( n_2 \cdot \phi^2 \), which is just \( n_2 \cdot (\phi -1)  \), which is \( n_2 \cdot EPSILON  \), line 11, <code>x_hi_lo * EPSILON</code></p>
+<h2 id="Sppark-reduce-uint32-t-temp-4"><a href="#Sppark-reduce-uint32-t-temp-4" class="headerlink" title="Sppark reduce(uint32_t temp[4])"></a>Sppark reduce(uint32_t temp[4])</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">reduce</span><span class="params">(<span class="type">uint32_t</span> temp[<span class="number">4</span>])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">uint32_t</span> carry;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;sub.cc.u32 %0, %0, %3; subc.cc.u32 %1, %1, %4; subc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;add.cc.u32 %0, %0, %2; addc.u32 %1, %1, %3;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;+r&quot;</span>(carry)</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">3</span>]));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %3, %4, %0; madc.hi.cc.u32 %1, %3, %4, %1; addc.u32 %2, 0, 0;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>]), <span class="string">&quot;=r&quot;</span>(temp[<span class="number">2</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(carry), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mad.lo.cc.u32 %0, %2, %3, %0; madc.hi.u32 %1, %2, %3, %1;&quot;</span></span><br><span class="line">        : <span class="string">&quot;+r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;+r&quot;</span>(temp[<span class="number">1</span>])</span><br><span class="line">        : <span class="string">&quot;r&quot;</span>(temp[<span class="number">2</span>]), <span class="string">&quot;r&quot;</span>(gl64_device::W));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">asm</span>(<span class="string">&quot;mov.b64 %0, &#123;%1, %2&#125;;&quot;</span> : <span class="string">&quot;=l&quot;</span>(val) : <span class="string">&quot;r&quot;</span>(temp[<span class="number">0</span>]), <span class="string">&quot;r&quot;</span>(temp[<span class="number">1</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>note</strong>: <code>W</code> is epsilon<br>let \( n &#x3D; n_0 + n_1 \cdot \phi + n_2 \cdot \phi^{2} + n_3 \cdot \phi^{3}\)<br>\( n &#x3D; n_0 + n_2\cdot\phi^2 + \phi(n_1+n_3\cdot \phi^2)\).<br>since \( \phi^2 &#x3D; \phi - 1\)<br>\( n &#x3D; n_0 + n_2\cdot(\phi-1) + \phi(n_1+n_3\cdot(\phi-1))\).<br>\( n &#x3D; n_0 -n_2 +n_2\phi + \phi(n_1-n_3 + n_3\cdot\phi)\).<br>\( n &#x3D; n_0 -n_2 + \phi(n_1-n_3 +n_2) + n_3\cdot\phi^2\).<br>line 5 computes <code>n0 - n2</code> and set to temp[0]; &amp; computes <code>n1-n3</code> and sets to temp[1]<br>line 8 computes <code>n1- n3 + n2</code>; add n_3 with carry and put it to carry.</p>
+<p>let \(c\) be the carry, at \(\phi^2\), it is actually \( c \cdot \phi^2\). it could be further reduced to  \(c \cdot (\phi - 1) &#x3D; c \cdot W\)<br>line 12 is to reduce the carry part to temp[0], temp[1], and temp[2].<br>if temp[2] still exist. line 15 will reduce it to temp[0], temp[1] similar as above.<br>at this step. only temp[0] and temp[1] will contains value and return as the result</p>
+<h2 id="appendix"><a href="#appendix" class="headerlink" title="appendix"></a>appendix</h2><ul>
+<li>underflow<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uint64_t tmp;</span><br><span class="line">uint32_t borrow;</span><br><span class="line">asm(&quot;&#123; .reg.pred %top;&quot;);</span><br><span class="line">asm(&quot;sub.cc.u64 %0, %0, %2; subc.u32 %1, 0, 0;&quot;</span><br><span class="line">    : &quot;+l&quot;(val), &quot;=r&quot;(borrow)</span><br><span class="line">    : &quot;l&quot;(b.val));</span><br></pre></td></tr></table></figure>
+all bits of borrow will be set to 1 if underflow occurs</li>
+</ul>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://2π.com/22/goldilocks/">The Goldilocks Prime by Remco Bloemem</a></li>
+<li><a target="_blank" rel="noopener" href="https://cronokirby.com/notes/2022/09/the-goldilocks-field/">parameters of goldilocks field</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/126407028">csdn blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/yrrid/GoldilocksNTT/tree/main">cuda implementation of GoldilocksNTT by yrrid</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/18/arithmatic/goldilocks-field/" data-id="clpi1wlcr0000067ufpzn63zv" data-title="goldilocks field" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cuda/inline-ptx-assembly-in-cuda" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" class="article-date">
+  <time class="dt-published" datetime="2023-11-15T06:47:28.000Z" itemprop="datePublished">2023-11-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/15/cuda/inline-ptx-assembly-in-cuda/">inline ptx assembly in cuda</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h1><p>PTX, a low-level parallel thread execution virtual machine and instruction set architecture (ISA). PTX exposes the GPU as a data-parallel computing device.<br>The PTX Instruction Set Architecture (ISA) is lower-level compared to CUDA C++, but the programming model is entirely the same, with only some terminology differences. For example: CTA (Cooperative Thread Array): Equivalent to the Block in the CUDA thread model.</p>
+<h1 id="assembler-statements"><a href="#assembler-statements" class="headerlink" title="assembler statements"></a>assembler statements</h1><h2 id="parameters"><a href="#parameters" class="headerlink" title="parameters"></a>parameters</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;template-string&quot;</span> : <span class="string">&quot;constraint&quot;</span>(output) : <span class="string">&quot;constraint&quot;</span>(input));</span><br></pre></td></tr></table></figure>
+<p>an example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(j), <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>Each <code>%n</code> in the template string is an index into the following list of operands, in text order. So <code>%0</code> refers to the first operand, <code>%1</code> to the second operand, and so on. Since the output operands are always listed ahead of the input operands, they are assigned the smallest indices.<br>Note that the numbered references in the string can be in arbitrary order. The following is equivalent to the above example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %2, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k), <span class="string">&quot;r&quot;</span>(j));</span><br></pre></td></tr></table></figure>
+<p>You can also repeat a reference, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.s32 %0, %1, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i) : <span class="string">&quot;r&quot;</span>(k));</span><br></pre></td></tr></table></figure>
+<p>If there is no input operand, you can drop the final colon, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 %0, 2;&quot;</span> : <span class="string">&quot;=r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+
+<p>If there is no output operand, the colon separators are adjacent, e.g.:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;mov.s32 r1, %0;&quot;</span> :: <span class="string">&quot;r&quot;</span>(i));</span><br></pre></td></tr></table></figure>
+<p>the “r” constraint refers to a 32bit integer register. The “&#x3D;” modifier in “&#x3D;r” specifies that the register is written to.  There is also available a “+” modifier that specifies the register is both read and written</p>
+<p>Multiple instructions can be combined into a single asm() statement;<br>am example</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__device__ <span class="type">int</span> <span class="title">cube</span> <span class="params">(<span class="type">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> y;</span><br><span class="line">  <span class="built_in">asm</span>(<span class="string">&quot;.reg .u32 t1;\n\t&quot;</span>              <span class="comment">// temp reg t1</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 t1, %1, %1;\n\t&quot;</span>    <span class="comment">// t1 = x * x</span></span><br><span class="line">      <span class="string">&quot; mul.lo.u32 %0, t1, %1;&quot;</span>        <span class="comment">// y = t1 * x</span></span><br><span class="line">      : <span class="string">&quot;=r&quot;</span>(y) : <span class="string">&quot;r&quot;</span> (x));</span><br><span class="line">  <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="constraints"><a href="#constraints" class="headerlink" title="constraints"></a>constraints</h2><p>There is a separate constraint letter for each PTX register type:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;h&quot;</span> = .u16 reg</span><br><span class="line"><span class="string">&quot;r&quot;</span> = .u32 reg</span><br><span class="line"><span class="string">&quot;l&quot;</span> = .u64 reg</span><br><span class="line"><span class="string">&quot;f&quot;</span> = .f32 reg</span><br><span class="line"><span class="string">&quot;d&quot;</span> = .f64 reg</span><br></pre></td></tr></table></figure>
+<p>The constraint “n” may be used for immediate integer operands with a known value. Example:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.u32 %0, %0, %1;&quot;</span> : <span class="string">&quot;=r&quot;</span>(x) : <span class="string">&quot;n&quot;</span>(<span class="number">42</span>));</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="State-Space-Type-Identifier"><a href="#State-Space-Type-Identifier" class="headerlink" title="State Space + Type + Identifier"></a>State Space + Type + Identifier</h1><h2 id="state-spaces"><a href="#state-spaces" class="headerlink" title="state spaces"></a>state spaces</h2><p>A state space is a storage area with particular characteristics. All variables reside in some state space. </p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>.reg</td>
+<td>Registers, fast.</td>
+</tr>
+<tr>
+<td>.sreg</td>
+<td>Special registers. Read-only; pre-defined; platform-specific.</td>
+</tr>
+<tr>
+<td>.const</td>
+<td>Shared, read-only memory.</td>
+</tr>
+<tr>
+<td>.global</td>
+<td>Global memory, shared by all threads.</td>
+</tr>
+<tr>
+<td>.local</td>
+<td>Local memory, private to each thread.</td>
+</tr>
+<tr>
+<td>.param</td>
+<td>Kernel parameters, defined per-grid; or Function or local parameters, defined per-thread.</td>
+</tr>
+<tr>
+<td>.shared</td>
+<td>Addressable memory, defined per CTA, accessible to all threads in the cluster throughout the lifetime of the CTA that defines it.</td>
+</tr>
+</tbody></table>
+<h2 id="types"><a href="#types" class="headerlink" title="types"></a>types</h2><h3 id="fundamental-types"><a href="#fundamental-types" class="headerlink" title="fundamental types"></a>fundamental types</h3><p>In PTX, the fundamental types reflect the native data types supported by the target architectures.</p>
+<table>
+<thead>
+<tr>
+<th>Basic Type</th>
+<th>Fundamental Type Specifiers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Signed integer</td>
+<td>.s8, .s16, .s32, .s64</td>
+</tr>
+<tr>
+<td>Unsigned integer</td>
+<td>.u8, .u16, .u32, .u64</td>
+</tr>
+<tr>
+<td>Floating-point</td>
+<td>.f16, .f16x2, .f32, .f64</td>
+</tr>
+<tr>
+<td>Bits (untyped)</td>
+<td>.b8, .b16, .b32, .b64, .b128</td>
+</tr>
+<tr>
+<td>Predicate</td>
+<td>.pred</td>
+</tr>
+</tbody></table>
+<h2 id="variables"><a href="#variables" class="headerlink" title="variables"></a>variables</h2><p>In PTX, a variable declaration describes both the variable’s type and its state space. In addition to fundamental types, PTX supports types for simple aggregate objects such as vectors and arrays.<br><strong>examples</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.global .v4 .f32 V;   <span class="comment">// a length-4 vector of floats</span></span><br><span class="line">.shared .v2 .u16 uv;  <span class="comment">// a length-2 vector of unsigned ints</span></span><br><span class="line">.global .v4 .b8  v;   <span class="comment">// a length-4 vector of bytes</span></span><br></pre></td></tr></table></figure>
+<h2 id="examples"><a href="#examples" class="headerlink" title="examples"></a>examples</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">uint32_t</span> a, b;</span><br><span class="line"><span class="type">uint32_t</span> carry;</span><br><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;add.cc.u32 %0, %0, %1;&quot;</span>: <span class="string">&quot;+r&quot;</span>(a):<span class="string">&quot;r&quot;</span>(b));</span><br><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;addc.u32 %0, 0, 0;&quot;</span>: <span class="string">&quot;=r&quot;</span>(carry)); <span class="comment">// carry will hold the carry in value of last operation. it is either 1 or 0</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">uint32_t</span> a, b;</span><br><span class="line"><span class="type">uint32_t</span> borrow;</span><br><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;sub.cc.u32 %0, %0, %1;&quot;</span>: <span class="string">&quot;+r&quot;</span>(a):<span class="string">&quot;r&quot;</span>(b));</span><br><span class="line"><span class="built_in">asm</span>(<span class="string">&quot;subc.u32 %0, 0, 0;&quot;</span>: <span class="string">&quot;=r&quot;</span>(borrow)); <span class="comment">// borrow will hold the borrow out value of last operation. it is either -1 or 0; -1 is actually 0xFFFFFFFF</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/inline-ptx-assembly/index.html">nvidia docs inlline ptx assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=features-inline-assembly-statements">IBM Open XL C&#x2F;C++ Inline Assembly</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#">parallel thread execution ISA guide</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/15/cuda/inline-ptx-assembly-in-cuda/" data-id="clp3h29tl0000p97ug63eajx3" data-title="inline ptx assembly in cuda" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
 
 
   <nav id="page-nav">
@@ -744,7 +788,7 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 11.11px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
     </div>
   </div>
 
@@ -770,10 +814,6 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
           </li>
         
           <li>
-            <a href="/2024/01/03/rust/rust_build/">(no title)</a>
-          </li>
-        
-          <li>
             <a href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
           </li>
         
@@ -782,7 +822,11 @@ This function call makes the CPU wait until the GPU has completed all tasks asso
           </li>
         
           <li>
-            <a href="/2023/12/17/math/galois-theory/">Galois Theory</a>
+            <a href="/2023/12/15/cryptography/field/field/">field</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
           </li>
         
       </ul>
