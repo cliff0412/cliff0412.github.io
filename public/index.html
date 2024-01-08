@@ -71,6 +71,147 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-math/multi-scalar-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/01/08/math/multi-scalar-multiplication/" class="article-date">
+  <time class="dt-published" datetime="2024-01-08T03:13:17.000Z" itemprop="datePublished">2024-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>Let \( \mathbb{G}\) be a group of order \(p&#x3D;2^{\lambda}\)(\(\lambda\) would be the number of bits of the prime).  Give \(n\) scalars \(e_i\) and \(n\) EC points \(P_i\), calculate \(P\) such that<br>\[ P &#x3D; \sum_{i&#x3D;0}^{n}e_i P_i \]</p>
+<h2 id="naive-approach"><a href="#naive-approach" class="headerlink" title="naive approach"></a>naive approach</h2><p>Let \(e_i &#x3D; e_{i,\lambda -1} e_{i,\lambda -2} …e_{i,0} \), where each \(e_{i,j} \in 0,1\).<br>We have<br>\[ e_i &#x3D; e_{i,\lambda-1}\cdot2^{\lambda-1} + e_{i, \lambda-2}\cdot2^{\lambda-2} + …+e_{i,0}\cdot2^0\]<br>To compute \(e_i \cdot p_i\), we can compute \(2^0 \cdot p_i,2^1 \cdot p_i,…,2^{\lambda-1} \cdot p_i  \). Then, we simply add them up to get \(e_i \cdot p_i\). Here, we need \(\lambda -1\) squarings (multiplication by 2) and \(\lambda-1\) additions.<br>To computing \(e_1\cdot p_1, e_2 \cdot p_2, …, e_{N-1}\cdot p_{N-1}\), we need \(N\cdot(\lambda-1)\) squarings and \(N\cdot(\lambda-1)\) additions.</p>
+<p>We additionally need \(N-1\) additions to sum \(e_i\cdot p_i\) into \(P\).<br>In total, weed \(N\cdot(\lambda-1)\) squarings and \(N\cdot\lambda&#x3D;1\) additions</p>
+<h2 id="pippenger-approach"><a href="#pippenger-approach" class="headerlink" title="pippenger approach"></a>pippenger approach</h2><p>at a high level, Pippenger approach divides \(\lambda\) bits into <code>num_window</code> (\(&#x3D;\frac{\lambda}{c}\)) bit windows where each bit window has \(c\) bits. \(c\) is also called “window size”.</p>
+<h3 id="Part-I-computation-for-each-window"><a href="#Part-I-computation-for-each-window" class="headerlink" title="Part I (computation for each window)"></a>Part I (computation for each window)</h3><p>Initialize a vector <code>window_res = [0,0,...,0]</code> of length <code>num_window</code>.<br>For the w-th window:</p>
+<ul>
+<li>Initialize a vector <code>buckets=[0,0,...,0]</code> of length <code>num_buckets</code> &#x3D; \( 2^c -1 \).</li>
+<li>Get the <code>start_idx</code> of the current window, say \(M\). Remember that we are considering a <code>c-bit</code> window out of \(\lambda\)-bit fields</li>
+<li>for each pair of \((e_i, g_i)\)<ul>
+<li>Get the bits in scalar \(e_i\) correspondign to the current window. Formally, we have <code>scalar</code> &#x3D; \((e_i &gt;&gt; M) \mod 2^c\).</li>
+<li>If <code>scalar</code> \(\ne 0\), we have buckets[scalar-1] +&#x3D; \(p_i\)</li>
+</ul>
+</li>
+<li>Initialize <code>tmp = 0</code></li>
+<li>For <code>j</code> in \(2^c-1\) to 1:<br><code>tmp= tmp+buckets[j]</code></li>
+<li><code>window_res[w] = tmp</code></li>
+</ul>
+<h3 id="Part-II-sum-over-all-windows"><a href="#Part-II-sum-over-all-windows" class="headerlink" title="Part II (sum over all windows)"></a>Part II (sum over all windows)</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">lowest = window_res[0]</span><br><span class="line">total = 0</span><br><span class="line">for w in num_window -1 to 1:</span><br><span class="line">  total += window_res[w]</span><br><span class="line">  for _ in 0..c:</span><br><span class="line">    total = total + total // shift left c bits.</span><br><span class="line">total = total + lowest</span><br></pre></td></tr></table></figure>
+<p><code>total</code> is the final result</p>
+<p>In Part I, for each window, we need \(N+2^c\) additions. Since we have \(\frac{\lambda}{c}\) windows, we need \((N+2^{\lambda}*\frac{\lambda}{c})\) additions.</p>
+<p>In Part II, we need 1 addition and <code>c</code> squarings for each window.<br>In total, we need \(\frac{\lambda}{c}\cdot(N+2^c+1)\) additions and \(\lambda\) squarings.</p>
+<p>In Arkworks implementation, <code>c</code> is set to be \(ln(N)+2\).<br>For notation simplicity, let’s set <code>c</code> to be \(log2(N)\). Then, the computation complexity of Pippenger’s algorithm is \(\frac{2N\lambda}{log2(N)}+1\) additions and \(\lambda\) squarings<br>Since \(\lambda\) is a constant for a elliptic curve, people usually say that pippenger has a time complexity of \(O(\frac{N}{log(N)})\)</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@drouyang/SyYwhWIso">pippenger MSM</a></li>
+<li><a target="_blank" rel="noopener" href="https://hackmd.io/@tazAymRSQCGXTUKkbh1BAg/Sk27liTW9">MSM</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/01/08/math/multi-scalar-multiplication/" data-id="clqvsqlmv0001r47uaciz8xrp" data-title="multi scalar multiplication (MSM)" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust/rust_build" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/01/03/rust/rust_build/" class="article-date">
+  <time class="dt-published" datetime="2024-01-03T15:38:56.884Z" itemprop="datePublished">2024-01-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>files:</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/01/03/rust/rust_build/" data-id="clr4nauj30000p47u1kfwgcnu" data-title="" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rust/rust_analyzer" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/01/01/rust/rust_analyzer/" class="article-date">
+  <time class="dt-published" datetime="2024-01-01T09:14:05.000Z" itemprop="datePublished">2024-01-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="config"><a href="#config" class="headerlink" title="config"></a>config</h2><p>under <code>.vscode/settings.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="attr">&quot;rust-analyzer.linkedProjects&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">	<span class="string">&quot;$&#123;path_to_toml.file&quot;</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/01/01/rust/rust_analyzer/" data-id="clqvsqlmv0000r47ufd56e3qu" data-title="rust analyzer" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-cpp/build" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/12/20/cpp/build/" class="article-date">
@@ -93,11 +234,20 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="system"><a href="#system" class="headerlink" title="system"></a>system</h2><ul>
+        <h2 id="cmake"><a href="#cmake" class="headerlink" title="cmake"></a>cmake</h2><h3 id="environment-variables"><a href="#environment-variables" class="headerlink" title="environment variables"></a>environment variables</h3><ul>
+<li>CMAKE_SOURCE_DIR: the root directory of the source tree for the project. This variable holds the full path to the directory where the top-level CMakeLists.txt file is located.</li>
+</ul>
+<h3 id="cuda-related"><a href="#cuda-related" class="headerlink" title="cuda related"></a>cuda related</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="system-config"><a href="#system-config" class="headerlink" title="system config"></a>system config</h2><ul>
 <li><code>/etc/ld.so.conf</code><br>The file &#x2F;etc&#x2F;ld.so.conf is a configuration file used by the dynamic linker&#x2F;loader on Unix-like systems, including Linux. Its purpose is to specify additional directories where the linker should search for shared libraries at runtime.<br>When a program starts, the dynamic linker&#x2F;loader is responsible for resolving and loading shared libraries (also known as dynamic libraries or shared objects). The paths specified in &#x2F;etc&#x2F;ld.so.conf help the linker locate these libraries.<br>On some systems, you might also find additional configuration files in the <code>/etc/ld.so.conf.d/</code> directory, each containing a list of directories.<br>After modifying the file, you need to run the <code>ldconfig</code> command to update the dynamic linker’s cache and apply the changes.</li>
 </ul>
 <p><strong>note</strong>: <code>ld</code> stands for linker</p>
-<h2 id="environment-variables"><a href="#environment-variables" class="headerlink" title="environment variables"></a>environment variables</h2><ul>
+<h2 id="tools"><a href="#tools" class="headerlink" title="tools"></a>tools</h2><h3 id="nm"><a href="#nm" class="headerlink" title="nm"></a>nm</h3><p>nm is a command-line utility on Unix-like operating systems that displays information about the symbols (e.g., functions, variables) contained in object files, executables, and shared libraries. The name “nm” stands for “name list.”</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nm -D $&#123;path_to_dynamic_library&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="objdump"><a href="#objdump" class="headerlink" title="objdump"></a>objdump</h3><h2 id="environment-variables-1"><a href="#environment-variables-1" class="headerlink" title="environment variables"></a>environment variables</h2><ul>
 <li><code>LD_LIBRARY_PATH</code><br>The <code>LD_LIBRARY_PATH</code> environment variable is used in Unix-like operating systems (including Linux) to specify a list of directories where the system should look for shared libraries before searching the default system locations. This variable is particularly useful when you want to run an executable that depends on shared libraries that are not in standard library paths.</li>
 </ul>
 <ol>
@@ -484,230 +634,6 @@
 
 
   
-    <article id="post-cryptography/elliptic_curve/bls12-381" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/01/cryptography/elliptic_curve/bls12-381/" class="article-date">
-  <time class="dt-published" datetime="2023-12-01T11:09:11.000Z" itemprop="datePublished">2023-12-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/01/cryptography/elliptic_curve/bls12-381/">bls12_381</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>BLS12-381 is a pairing-friendly elliptic curve. Curve BLS12-381 was designed by <a target="_blank" rel="noopener" href="https://twitter.com/ebfull">Sean Bowe</a> in early 2017 as the foundation for an upgrade to the Zcash protocol. It is both pairing-friendly (making it efficient for digital signatures) and effective for constructing zkSnarks. BLS12-381 is part of a family of curves described by Barreto, Lynn, and Scott (BLS). The 12 is the embedding degree of the curve: neither too low, nor too high. The 381 is the number of bits needed to represent coordinates on the curve: the field modulus, \(q\). 381 is a fairly handy number as we can use 48 bytes per field element, with 3 bits left over for useful flags or arithmetic optimisations. This size of this number is guided both by security requirements and implementation efficiency.</p>
-<h2 id="curve-equation-and-parameters"><a href="#curve-equation-and-parameters" class="headerlink" title="curve equation and parameters"></a>curve equation and parameters</h2><p>The basic equation of the BLS12-381 curve is \( y^2 &#x3D; x^3 + 4\)<br>The key parameters for a BLS curve are set using a single parameter \(\mathbf{x}\) (different from the in the curve equation!). BLS12-381 is derived from the \( k \equiv 0 \mod 6\) case of Construction 6.6 in the <a target="_blank" rel="noopener" href="https://eprint.iacr.org/2006/372.pdf">taxonomy</a>.</p>
-<p>Specific design goals for BLS12-381 are:</p>
-<ul>
-<li>\(\mathbf{x}\) has “low hamming weight”, meaning that it has very few bits set to 1. This is particularly important for the efficiency of the algorithm that calculates pairings (the Miller loop).</li>
-<li>The field modulus \(q\) mentioned above is prime and has 383 bits or fewer, which makes 64-bit or 32-bit arithmetic on it more efficient.</li>
-<li>The order \(r\) of the subgroups we use is prime and has 255 bits or fewer, which is good for the same reason as above.</li>
-<li>To support zkSnark schemes, we want to have a large power of two root of unity in the field. This means we want <strong>\(2^n\) to be a factor of \(r-1\)</strong>, for some biggish \(n\). (Making \(\mathbf{x}\) a multiple of \(2^{n&#x2F;2}\) will achieve this.) This property is key to being able to use fast Fourier transforms for interesting things like polynomial multiplication.</li>
-</ul>
-<p>The value \(\mathbf{x}\) &#x3D; -0xd201000000010000 (hexadecimal, note that it is negative) gives the largest and the lowest Hamming weight meeting these criteria. With this value we have,</p>
-<table>
-<thead>
-<tr>
-<th>parameters</th>
-<th align="center">equation</th>
-<th align="center">value(hex)</th>
-<th align="right">comments</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Field modulus \(q\)</td>
-<td align="center">\(\frac{1}{3}(\mathbf{x}-1)^2(\mathbf{x}^4-\mathbf{x}^2+1) + \mathbf{x}\)</td>
-<td align="center">0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f3<br>8512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab</td>
-<td align="right">381 bits, prime</td>
-</tr>
-<tr>
-<td>Subgroup size \(r\)</td>
-<td align="center">\((\mathbf{x}^4-\mathbf{x}^2+1)\)</td>
-<td align="center">0x73eda753299d7d483339d80809a1d80553<br>bda402fffe5bfeffffffff00000001</td>
-<td align="right">255 bits, prime</td>
-</tr>
-</tbody></table>
-<h2 id="Field-extensions"><a href="#Field-extensions" class="headerlink" title="Field extensions"></a>Field extensions</h2><p>Field extensions are fundamental to elliptic curve pairings. The “12” is BLS12-381 is not only the embedding degree, it is also (relatedly) the degree of field extension that we will need to use.<br>For example, The complex numbers are a quadratic extension of the real numbers (\(x^2 &#x3D; 1\)). Complex numbers can’t be extended any further because there are <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_algebra">no irreducible polynomials over the complex numbers</a>. But for finite fields, if we can find an irreducible \(k\)-degree polynomial in our field \(F_q\), and we often can, then we are able to extend the field to \(F_{q^k}\), , and represent the elements of the extended field as degree \(k-1\) polynomials, \(a_0 + a_1 x + … + a_{k-1}x^{k-1}\). we can represent this compactly as (\(a_0, a_1, …, a_{k-1}\))<br>In practice, large extension fields like \(F_{q^{12}}\)are implemented as towers of smaller extensions.</p>
-<h2 id="the-curves"><a href="#the-curves" class="headerlink" title="the curves"></a>the curves</h2><p>BLS12-381 is really dealing with two curves. Both curves share more-or-less the same curve equation, but are defined over different fields.<br>The simpler one is over the finite field \(F_q\), which is just the integers mod \(q\). So the curve has points only where the equation \(y^2 &#x3D; x^3 +4\) has solutions with \(x\) and \(y\) both integers less than \(q\). We shall call this curve \(E(F_q)\).<br>The other curve is defined over an extension of \(F_q\)to \(F_{q^2}\) (think complex numbers). In this case, the curve equation is slightly modified to be \(y^2 &#x3D; x^3+4(1+i)\), and we call the curve \(E’(F_{q^2})\)</p>
-<h2 id="the-subgroups"><a href="#the-subgroups" class="headerlink" title="the subgroups"></a>the subgroups</h2><p>A pairing is a bilinear map. This means that it takes as input two points, each from a group of the same order, \(r\). for rather technical reasons, these two groups need to be distinct. Let’s call them<br>\(G_1\) and \(G_2\).<br>Unfortunately, our simple curve \(E(F_q)\) <strong>has only a single large subgroup of order \(r\)</strong>, so we can’t define a pairing based solely on \(E(F_q)\). However, if we keep extending the field over which<br>\(E\) is defined, it can be proved that we eventually find a curve that has more than one subgroup of order \(r\). that is, for some \(k\), <strong>\(E(F_{q^k})\) contains other subgroups of order \(r\) that we can use</strong>. One of these subgroups contains only points having a <strong>trace of zero</strong>[1], and we choose that subgroup to be \(G_2\)</p>
-<p>This number \(k\), the amount that we need to extend the base field by to find the new group, is called the embedding degree of the curve, which in our case is the “12” in BLS12-381. For completeness, note that each of \(G_1\) and \(G_2\) shares with its containing curve the “point at infinity”. This is the identity element of the elliptic curve arithmetic group, often denoted \(\mathcal O\)<br>. For any point \(P\), \( P + \mathcal O &#x3D; \mathcal O + P &#x3D; P\). </p>
-<h2 id="Twists"><a href="#Twists" class="headerlink" title="Twists"></a>Twists</h2><p>But there’s another challenge. As discussed earlier, doing arithmetic in \(F_{q^{12}}\) is horribly complicated and inefficient. And curve operations need a lot of arithmetic. A <a target="_blank" rel="noopener" href="http://indigo.ie/~mscott/twists.pdf">twist</a> is something like a coordinate transformation. Rather wonderfully, this can be used to transform our \(E(F_{q^{12}})\) curve into a curve defined over a lower degree field that still has an order \(r\) subgroup.  Moreover, this subgroup has a simple mapping to and from our \(G_2\) group</p>
-<p>BLS12-381 uses a “sextic twist”. This means that it reduces the degree of the extension field by a factor of six. So \(G_2\) on the twisted curve can be defined over \(F_{q^2}\) instead of \(F_{q^{12}}\)<br>I haven’t seen this written down anywhere—but attempting to decode section 3 of <a target="_blank" rel="noopener" href="https://eprint.iacr.org/2005/133.pdf">this</a>—if we find a \(u\) such that \(u^6 &#x3D; (1+i)^{-1}\), then we can define our twisting transformation as \( (x,y) -&gt; (x&#x2F;u^2, y&#x2F;u^3)\). This transforms our original curve \(E: y^2 &#x3D; x^3 + 4\) into the curve \(E’: y^2 + 4&#x2F;u^6 &#x3D; x^3 + 4(1+i)\). <strong>\(E\) and \(E’\) look different, but are actually the same object presented with respect to coefficinets in different base fields</strong>.</p>
-<p>So these are the two groups we will be using:</p>
-<ul>
-<li>\(G_1 \subset E(F_q)\), where \(E: y^2 &#x3D; x^3 + 4\)</li>
-<li>\(G_2 \subset E(F_{q^2})\), where \(E: y^2 &#x3D; x^3 + 4(1+i)\)<br>Note that coordinates of points in the \(G_1\) group are pairs of integers, and coordinates of points in the \(G_2\) group are pairs of complex integers.</li>
-</ul>
-<h2 id="Parings"><a href="#Parings" class="headerlink" title="Parings"></a>Parings</h2><p>s far as BLS12-381 is concerned, a pairing simply takes a point \(P \in G_1 \subset E(F_q)\), and a point \(Q \in G_2 \subset E’(F_{q^2})\) and outputs a point from a group \(G_T \subset F_{q^{12}}\). That is, for a paring \(e\), \(e: G_1 \times G_2 \rightarrow G_T\)</p>
-<p>properties of pairing<br>\( e(P, Q+R) &#x3D; e(P,Q) \cdot e(P,R) \),<br><strong>note</strong> as a way of memory, can think it as \(P^{Q+R} &#x3D; P^Q \cdot P^R\)<br>\( e(P+S, R) &#x3D; e(P,R) \cdot e(S,R)\)<br>From this, we can deduce that all of the following identities hold:<br>\(e([a]P, [b]Q) &#x3D; e(P, [b]Q)^a &#x3D; e(P,Q)^{ab} &#x3D; e(P, [a]Q)^b &#x3D; e([b]P, [a]Q)\)</p>
-<h2 id="Embedding-degree"><a href="#Embedding-degree" class="headerlink" title="Embedding degree"></a>Embedding degree</h2><p>The embedding degree, \(k\), is calculated as the smallest positive integer such that \(r\) divides \(q^k -1\). So, in the case of BLS12-381, \(r\) is a factor of \(q^{12} -1\), but not of any lower power.<br>The choice of an embedding degree is a balance between security and efficiency (as ever). On the security front, the embedding degree is also known as the security multiplier: a higher embedding degree makes the discrete logarithm problem harder to solve in<br>. However, a high embedding degree means we have to do field operations in high-degree extensions, which is clunky and inefficient. </p>
-<h2 id="cofactor"><a href="#cofactor" class="headerlink" title="cofactor"></a>cofactor</h2><p>A subgroup’s cofactor is the ratio of the size of the whole group to the size of the subgroup. </p>
-<table>
-<thead>
-<tr>
-<th>Group</th>
-<th align="center">Cofactor</th>
-<th align="center">Equation</th>
-<th align="right">value(hex)</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>\(G_1\)</td>
-<td align="center">\(h_1\)</td>
-<td align="center">\(\frac{\mathbf{x-1}^2}{3}\)</td>
-<td align="right">0x396c8c005555e<br>1568c00aaab0000aaab</td>
-</tr>
-<tr>
-<td>\(G_2\)</td>
-<td align="center">\(h_2\)</td>
-<td align="center">\(\frac{\mathbf{x}^8 -4\mathbf{x}^7+5\mathbf{x}^6-4\mathbf{x}^4+6\mathbf{x}^3-4\mathbf{x}^2-4\mathbf{x}+13}{9}\)</td>
-<td align="right">0x5d543a95414e7f1091d50792876a202cd91de<br>4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef2<br>1537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5</td>
-</tr>
-</tbody></table>
-<p><strong>note</strong> multiplying by the cofactor turns out to be a straightforward way to map any arbitrary point on the elliptic curve into the respective subgroup \(G_1\) or \(G_2\)</p>
-<h2 id="Generators"><a href="#Generators" class="headerlink" title="Generators"></a>Generators</h2><p>\(G_1\) and \(G_2\) are cyclic groups of prime order, so any point (except the identity&#x2F;point at infinity) is a generator. Thus, picking generators is just a matter of convention.<br>Generator points \(G_1\) and \(G_2\) are specified in decimal <a target="_blank" rel="noopener" href="https://github.com/zcash/librustzcash/blob/6e0364cd42a2b3d2b958a54771ef51a8db79dd29/pairing/src/bls12_381/README.md#generators">here</a></p>
-<p>These were chosen as follows:</p>
-<blockquote>
-<p>The generators of \(G_1\) and \(G_2\)  are computed by finding the lexicographically smallest valid x-coordinate, and its lexicographically smallest &gt; y-coordinate and scaling it by the cofactor such that the result is not the point at infinity.</p>
-</blockquote>
-<h2 id="Foot-notes"><a href="#Foot-notes" class="headerlink" title="Foot notes"></a>Foot notes</h2><p>[1] The “trace zero subgroup” qualifies as an obscure incantation. Basically, the trace of a point is \(\sum_{i&#x3D;0}^{k-1}(x^{q^i}, y^{q^i})\), where \(k&#x3D;12\) in our case. Understanding this involves stuff like the Frobenius endomorphism.</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a></li>
-<li><a target="_blank" rel="noopener" href="https://electriccoin.co/blog/new-snark-curve/">initial post of bls12-381</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/supranational/blst">implementation: blst</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/01/cryptography/elliptic_curve/bls12-381/" data-id="clpm1qei10000hpsj4saxbd96" data-title="bls12_381" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ec/" rel="tag">ec</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/sgx_multi_prover" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/24/cryptography/zkp/sgx_multi_prover/" class="article-date">
-  <time class="dt-published" datetime="2023-11-24T06:29:26.000Z" itemprop="datePublished">2023-11-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/24/cryptography/zkp/sgx_multi_prover/">sgx multi prover</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/133586549?spm=1001.2014.3001.5502">https://blog.csdn.net/mutourend/article/details/133586549?spm=1001.2014.3001.5502</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/24/cryptography/zkp/sgx_multi_prover/" data-id="clphpvdoj0003aj7ugctear78" data-title="sgx multi prover" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/zk-bench" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/11/24/cryptography/zkp/zk-bench/" class="article-date">
-  <time class="dt-published" datetime="2023-11-24T06:29:26.000Z" itemprop="datePublished">2023-11-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/11/24/cryptography/zkp/zk-bench/">zk bench</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/134050672?spm=1001.2014.3001.5502">csdn blog on zkbench</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/11/24/cryptography/zkp/zk-bench/" data-id="clphpvdok000caj7ubjq53ldn" data-title="zk bench" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -736,7 +662,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 11.11px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
     </div>
   </div>
 
@@ -745,7 +671,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -758,23 +684,23 @@
       <ul>
         
           <li>
+            <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/03/rust/rust_build/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/20/cpp/build/">cpp build</a>
           </li>
         
           <li>
             <a href="/2023/12/17/math/galois-theory/">Galois Theory</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/15/cryptography/field/field/">field</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
           </li>
         
       </ul>
@@ -790,7 +716,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       
-      &copy; 2023 cliff<br>
+      &copy; 2024 cliff<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

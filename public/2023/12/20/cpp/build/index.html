@@ -6,15 +6,15 @@
   
   <title>cpp build | cliff&#39;s personal blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="system &#x2F;etc&#x2F;ld.so.confThe file &#x2F;etc&#x2F;ld.so.conf is a configuration file used by the dynamic linker&#x2F;loader on Unix-like systems, including Linux. Its purpose is to specify additional dire">
+  <meta name="description" content="cmakeenvironment variables CMAKE_SOURCE_DIR: the root directory of the source tree for the project. This variable holds the full path to the directory where the top-level CMakeLists.txt file is locate">
 <meta property="og:type" content="article">
 <meta property="og:title" content="cpp build">
 <meta property="og:url" content="https://cliff0412.github.io/2023/12/20/cpp/build/index.html">
 <meta property="og:site_name" content="cliff&#39;s personal blog">
-<meta property="og:description" content="system &#x2F;etc&#x2F;ld.so.confThe file &#x2F;etc&#x2F;ld.so.conf is a configuration file used by the dynamic linker&#x2F;loader on Unix-like systems, including Linux. Its purpose is to specify additional dire">
+<meta property="og:description" content="cmakeenvironment variables CMAKE_SOURCE_DIR: the root directory of the source tree for the project. This variable holds the full path to the directory where the top-level CMakeLists.txt file is locate">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-20T03:35:20.000Z">
-<meta property="article:modified_time" content="2023-12-20T06:43:30.003Z">
+<meta property="article:modified_time" content="2024-01-04T03:06:58.736Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cpp">
 <meta name="twitter:card" content="summary">
@@ -96,11 +96,20 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="system"><a href="#system" class="headerlink" title="system"></a>system</h2><ul>
+        <h2 id="cmake"><a href="#cmake" class="headerlink" title="cmake"></a>cmake</h2><h3 id="environment-variables"><a href="#environment-variables" class="headerlink" title="environment variables"></a>environment variables</h3><ul>
+<li>CMAKE_SOURCE_DIR: the root directory of the source tree for the project. This variable holds the full path to the directory where the top-level CMakeLists.txt file is located.</li>
+</ul>
+<h3 id="cuda-related"><a href="#cuda-related" class="headerlink" title="cuda related"></a>cuda related</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="system-config"><a href="#system-config" class="headerlink" title="system config"></a>system config</h2><ul>
 <li><code>/etc/ld.so.conf</code><br>The file &#x2F;etc&#x2F;ld.so.conf is a configuration file used by the dynamic linker&#x2F;loader on Unix-like systems, including Linux. Its purpose is to specify additional directories where the linker should search for shared libraries at runtime.<br>When a program starts, the dynamic linker&#x2F;loader is responsible for resolving and loading shared libraries (also known as dynamic libraries or shared objects). The paths specified in &#x2F;etc&#x2F;ld.so.conf help the linker locate these libraries.<br>On some systems, you might also find additional configuration files in the <code>/etc/ld.so.conf.d/</code> directory, each containing a list of directories.<br>After modifying the file, you need to run the <code>ldconfig</code> command to update the dynamic linker’s cache and apply the changes.</li>
 </ul>
 <p><strong>note</strong>: <code>ld</code> stands for linker</p>
-<h2 id="environment-variables"><a href="#environment-variables" class="headerlink" title="environment variables"></a>environment variables</h2><ul>
+<h2 id="tools"><a href="#tools" class="headerlink" title="tools"></a>tools</h2><h3 id="nm"><a href="#nm" class="headerlink" title="nm"></a>nm</h3><p>nm is a command-line utility on Unix-like operating systems that displays information about the symbols (e.g., functions, variables) contained in object files, executables, and shared libraries. The name “nm” stands for “name list.”</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nm -D $&#123;path_to_dynamic_library&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="objdump"><a href="#objdump" class="headerlink" title="objdump"></a>objdump</h3><h2 id="environment-variables-1"><a href="#environment-variables-1" class="headerlink" title="environment variables"></a>environment variables</h2><ul>
 <li><code>LD_LIBRARY_PATH</code><br>The <code>LD_LIBRARY_PATH</code> environment variable is used in Unix-like operating systems (including Linux) to specify a list of directories where the system should look for shared libraries before searching the default system locations. This variable is particularly useful when you want to run an executable that depends on shared libraries that are not in standard library paths.</li>
 </ul>
 <ol>
@@ -122,6 +131,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2024/01/01/rust/rust_analyzer/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          rust analyzer
+        
+      </div>
+    </a>
   
   
     <a href="/2023/12/17/math/galois-theory/" id="article-nav-older" class="article-nav-link-wrap">
@@ -156,7 +174,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 11.11px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
     </div>
   </div>
 
@@ -165,7 +183,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -178,23 +196,23 @@
       <ul>
         
           <li>
+            <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/03/rust/rust_build/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/20/cpp/build/">cpp build</a>
           </li>
         
           <li>
             <a href="/2023/12/17/math/galois-theory/">Galois Theory</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/15/cryptography/field/field/">field</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
           </li>
         
       </ul>
@@ -210,7 +228,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       
-      &copy; 2023 cliff<br>
+      &copy; 2024 cliff<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
