@@ -14,7 +14,7 @@
 <meta property="og:description" content="1. IntroductionGoldwasser, Micali and Rackoff [GMR89] introduced zero-knowledge proofs that enable a prover to convince a verifier that a statement is true without revealing anything else. They have">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-07-07T06:29:26.000Z">
-<meta property="article:modified_time" content="2024-01-16T03:30:52.558Z">
+<meta property="article:modified_time" content="2024-01-16T03:48:35.679Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="cryptography">
 <meta property="article:tag" content="zkp">
@@ -133,14 +133,14 @@
 <h3 id="Formal-Groth16-NIZK-argument"><a href="#Formal-Groth16-NIZK-argument" class="headerlink" title="Formal Groth16 NIZK argument"></a>Formal Groth16 NIZK argument</h3><ol>
 <li>\((pk,vk) \leftarrow SETUP(R)\): Choose \(vk&#x3D;(\alpha,\beta,\gamma,\delta,\tau) \in \mathbb{Z}_p^{*}\) and compute proving key<br>\(\left(\left[p k_1\right]_1,\left[p k_2\right]_2\right)\)</li>
 </ol>
-<p>\[<br> pk_1&#x3D;(\alpha,\beta,\delta,<br>\{ \tau^i \}_{i&#x3D;0}^{n-1}, \left\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \right\}_{i&#x3D;0}^{l},<br>\left\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\delta} \right\}_{i&#x3D;l+1}^{m},\{ \frac{\tau^i \cdot t(\tau) }{\delta}\}_{i&#x3D;0}^{n-2}<br>)\]</p>
+<p>\[<br> pk_1&#x3D;(\alpha,\beta,\delta,<br>\{ \tau^i \}_{i&#x3D;0}^{n-1},<br>\left\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \right\}_{i&#x3D;0}^{l},<br>\left\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\delta} \right\}_{i&#x3D;l+1}^{m},<br>\{ \frac{\tau^i \cdot t(\tau) }{\delta}\}_{i&#x3D;0}^{n-2}<br>)\]</p>
 <p>\[ pk_2&#x3D;(\beta,\delta,\gamma, \{ \tau^i \}_{i&#x3D;0}^{n-1}) \]</p>
 <ol start="2">
 <li>\(\pi \leftarrow PROVE(R, pk, x,\omega)\): Given witness \(\omega&#x3D;(z_{l+1},…,z_m)\) and two random \((r,s)\in \mathbb{Z}_p\), compute \(\pi&#x3D;(\lbrack A \rbrack_{1}, \lbrack C \rbrack_{1}, \lbrack B \rbrack_{2})\) where</li>
 </ol>
 <p>\[ A&#x3D; \alpha +\sum_{i&#x3D;0}^{m}z_iA_i(\tau)+r\delta\]<br>\[ B&#x3D; \beta +\sum_{i&#x3D;0}^{m}z_iB_i(\tau)+s\delta\]<br>\[ C&#x3D; \frac{\sum_{i&#x3D;l+1}^{m}z_i(\beta A_i(\tau)+\alpha B_i(\tau)+C_i(\tau))+h(\tau)t(\tau)}{\delta} + As+Br-rs\delta\]<br>\(r,s\) is used to randomize proof generation to ensure the zero-knowledge property is satisfied. As shown, all elements in A are elements in \(\mathbb{G}_1\), such as \(\alpha&#x3D;\alpha \cdot g_1\). Similarly, elements in B are in \(\mathbb{G}_2\)</p>
 <ol start="3">
-<li>\(0,1 \leftarrow VFY(R, pk,x\pi)\): The verifier accepts the proof \(\pi\) if and only if:<br>\[ \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} &#x3D; \lbrack \alpha \rbrack_{1} \cdot   \lbrack \beta \rbrack_{2} + \sum_{i&#x3D;0}^{l}z_i\lbrack \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \rbrack \cdot \lbrack \gamma \rbrack_2 + \lbrack C \rbrack_1 \cdot \lbrack \delta \rbrack_2 \]<br>Intuitively, \( \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} \) represents the pairing \(e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T\)</li>
+<li>\(0,1 \leftarrow VFY(R, pk,x,\pi)\): The verifier accepts the proof \(\pi\) if and only if:<br>\[ \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} &#x3D; \lbrack \alpha \rbrack_{1} \cdot   \lbrack \beta \rbrack_{2} + \sum_{i&#x3D;0}^{l}z_i\lbrack \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \rbrack \cdot \lbrack \gamma \rbrack_2 + \lbrack C \rbrack_1 \cdot \lbrack \delta \rbrack_2 \]<br>Intuitively, \( \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} \) represents the pairing \(e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T\)</li>
 </ol>
 <h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
 <li>[1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth</li>

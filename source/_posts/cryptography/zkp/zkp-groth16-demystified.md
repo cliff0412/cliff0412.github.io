@@ -115,8 +115,10 @@ Given \\(A_i, B_i, C_i\\), we define polynomials \\(L_i: L_i(X) = \beta \cdot A_
 
 \\[
  pk_1=(\alpha,\beta,\delta,
-\\{ \tau^i \\}_{i=0}^{n-1}, \left\\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \right\\}\_{i=0}^{l},
-\left\\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\delta} \right\\}\_{i=l+1}^{m},\\{ \frac{\tau^i \cdot t(\tau) }{\delta}\\}\_{i=0}^{n-2}
+\\{ \tau^i \\}_{i=0}^{n-1}, 
+\left\\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \right\\}\_{i=0}^{l},
+\left\\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\delta} \right\\}\_{i=l+1}^{m},
+\\{ \frac{\tau^i \cdot t(\tau) }{\delta}\\}\_{i=0}^{n-2}
 )\\]
 
 
@@ -129,7 +131,7 @@ Given \\(A_i, B_i, C_i\\), we define polynomials \\(L_i: L_i(X) = \beta \cdot A_
 \\[ C= \frac{\sum_{i=l+1}^{m}z_i(\beta A_i(\tau)+\alpha B_i(\tau)+C_i(\tau))+h(\tau)t(\tau)}{\delta} + As+Br-rs\delta\\]
 \\(r,s\\) is used to randomize proof generation to ensure the zero-knowledge property is satisfied. As shown, all elements in A are elements in \\(\mathbb{G}_1\\), such as \\(\alpha=\alpha \cdot g_1\\). Similarly, elements in B are in \\(\mathbb{G}_2\\)
 
-3. \\(0,1 \leftarrow VFY(R, pk,x\pi)\\): The verifier accepts the proof \\(\pi\\) if and only if:
+3. \\(0,1 \leftarrow VFY(R, pk,x,\pi)\\): The verifier accepts the proof \\(\pi\\) if and only if:
 \\[ \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} = \lbrack \alpha \rbrack_{1} \cdot   \lbrack \beta \rbrack_{2} + \sum_{i=0}^{l}z_i\lbrack \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \rbrack \cdot \lbrack \gamma \rbrack_2 + \lbrack C \rbrack_1 \cdot \lbrack \delta \rbrack_2 \\] 
 Intuitively, \\( \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} \\) represents the pairing \\(e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T\\)
 ## references
