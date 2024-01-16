@@ -108,12 +108,30 @@ Given \\(A_i, B_i, C_i\\), we define polynomials \\(L_i: L_i(X) = \beta \cdot A_
 \\( (\lbrack \beta \rbrack_{2}, \lbrack \gamma \rbrack_{2}, \lbrack \delta \rbrack_{2}) \\)
 
 
+
 ### Formal Groth16 NIZK argument
+1. \\((pk,vk) \leftarrow SETUP(R)\\): Choose \\(vk=(\alpha,\beta,\gamma,\delta,\tau) \in \mathbb{Z}_p^{*}\\) and compute proving key 
+\\(\left\(\left\[p k_1\right\]_1,\left\[p k_2\right\]_2\right\)\\)
+
+\\[
+ pk_1=(\alpha,\beta,\delta,
+\\{ \tau^i \\}_{i=0}^{n-1}, \left\\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \right\\}\_{i=0}^{l},
+\left\\{ \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\delta} \right\\}\_{i=l+1}^{m},\\{ \frac{\tau^i \cdot t(\tau) }{\delta}\\}\_{i=0}^{n-2}
+)\\]
 
 
+\\[ pk_2=(\beta,\delta,\gamma, \\{ \tau^i \\}_{i=0}^{n-1}) \\]
 
+2. \\(\pi \leftarrow PROVE(R, pk, x,\omega)\\): Given witness \\(\omega=(z_{l+1},...,z_m)\\) and two random \\((r,s)\in \mathbb{Z}_p\\), compute \\(\pi=(\lbrack A \rbrack\_{1}, \lbrack C \rbrack\_{1}, \lbrack B \rbrack\_{2})\\) where
 
+\\[ A= \alpha +\sum_{i=0}^{m}z_iA_i(\tau)+r\delta\\]
+\\[ B= \beta +\sum_{i=0}^{m}z_iB_i(\tau)+s\delta\\]
+\\[ C= \frac{\sum_{i=l+1}^{m}z_i(\beta A_i(\tau)+\alpha B_i(\tau)+C_i(\tau))+h(\tau)t(\tau)}{\delta} + As+Br-rs\delta\\]
+\\(r,s\\) is used to randomize proof generation to ensure the zero-knowledge property is satisfied. As shown, all elements in A are elements in \\(\mathbb{G}_1\\), such as \\(\alpha=\alpha \cdot g_1\\). Similarly, elements in B are in \\(\mathbb{G}_2\\)
 
+3. \\(0,1 \leftarrow VFY(R, pk,x\pi)\\): The verifier accepts the proof \\(\pi\\) if and only if:
+\\[ \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} = \lbrack \alpha \rbrack_{1} \cdot   \lbrack \beta \rbrack_{2} + \sum_{i=0}^{l}z_i\lbrack \frac{\beta A_i(\tau) + \alpha B_i(\tau) + C_i(\tau)}{\gamma} \rbrack \cdot \lbrack \gamma \rbrack_2 + \lbrack C \rbrack_1 \cdot \lbrack \delta \rbrack_2 \\] 
+Intuitively, \\( \lbrack A \rbrack_{1} \cdot   \lbrack B \rbrack_{2} \\) represents the pairing \\(e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T\\)
 ## references
 - [1] groth 16 paper, On the Size of Pairing-based Non-interactive Arguments by Jens Groth
 - [2] 2022 Kaylee George, The Mathematical Mechanics Behind the Groth16 Zero-knowledge Proving Protocol
