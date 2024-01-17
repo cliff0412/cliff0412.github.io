@@ -31,6 +31,25 @@ nm is a command-line utility on Unix-like operating systems that displays inform
 ```
 nm -D ${path_to_dynamic_library}
 ```
+The default information that the ‘nm’ command provides is :
+- Virtual address of the symbol
+- A character which depicts the symbol type. If the character is in lower case then the symbol is local but if the character is in upper case then the symbol is external
+- Name of the symbol
+
+The characters that identify symbol type describe :
+
+- A :  Global absolute symbol.
+- a  :  Local absolute symbol.
+- B : Global bss symbol.
+- b : Local bss symbol.
+- D : Global data symbol.
+- d : Local data symbol.
+- f : Source file name symbol.
+- L : Global thread-local symbol (TLS).
+- l : Static thread-local symbol (TLS).
+- T : Global text symbol.
+- t  : Local text symbol.
+- U : Undefined symbol.
 
 ### objdump
 

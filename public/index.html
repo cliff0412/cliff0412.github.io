@@ -217,7 +217,27 @@
 <p><strong>note</strong>: <code>ld</code> stands for linker</p>
 <h2 id="tools"><a href="#tools" class="headerlink" title="tools"></a>tools</h2><h3 id="nm"><a href="#nm" class="headerlink" title="nm"></a>nm</h3><p>nm is a command-line utility on Unix-like operating systems that displays information about the symbols (e.g., functions, variables) contained in object files, executables, and shared libraries. The name “nm” stands for “name list.”</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nm -D $&#123;path_to_dynamic_library&#125;</span><br></pre></td></tr></table></figure>
-
+<p>The default information that the ‘nm’ command provides is :</p>
+<ul>
+<li>Virtual address of the symbol</li>
+<li>A character which depicts the symbol type. If the character is in lower case then the symbol is local but if the character is in upper case then the symbol is external</li>
+<li>Name of the symbol</li>
+</ul>
+<p>The characters that identify symbol type describe :</p>
+<ul>
+<li>A :  Global absolute symbol.</li>
+<li>a  :  Local absolute symbol.</li>
+<li>B : Global bss symbol.</li>
+<li>b : Local bss symbol.</li>
+<li>D : Global data symbol.</li>
+<li>d : Local data symbol.</li>
+<li>f : Source file name symbol.</li>
+<li>L : Global thread-local symbol (TLS).</li>
+<li>l : Static thread-local symbol (TLS).</li>
+<li>T : Global text symbol.</li>
+<li>t  : Local text symbol.</li>
+<li>U : Undefined symbol.</li>
+</ul>
 <h3 id="objdump"><a href="#objdump" class="headerlink" title="objdump"></a>objdump</h3><h2 id="environment-variables-1"><a href="#environment-variables-1" class="headerlink" title="environment variables"></a>environment variables</h2><ul>
 <li><code>LD_LIBRARY_PATH</code><br>The <code>LD_LIBRARY_PATH</code> environment variable is used in Unix-like operating systems (including Linux) to specify a list of directories where the system should look for shared libraries before searching the default system locations. This variable is particularly useful when you want to run an executable that depends on shared libraries that are not in standard library paths.</li>
 </ul>
