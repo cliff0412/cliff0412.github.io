@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>polynomials | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="IntroductionLet \(A(X)\) be a polynomial over \(\mathbb{F}_p\) with formal indeterminate \(X\). As an example, $$A(X) &#x3D; a_0 + a_1 X + a_2 X^2 + a_3 X^3$$ defines a degree-\(3\) polynomial. \(a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="polynomials">
+<meta property="og:url" content="https://cliff0412.github.io/2024/06/13/math/polynomials/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="IntroductionLet \(A(X)\) be a polynomial over \(\mathbb{F}_p\) with formal indeterminate \(X\). As an example, $$A(X) &#x3D; a_0 + a_1 X + a_2 X^2 + a_3 X^3$$ defines a degree-\(3\) polynomial. \(a">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-06-13T03:13:17.000Z">
+<meta property="article:modified_time" content="2024-06-13T10:38:31.093Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="math">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-math/polynomials" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/06/13/math/polynomials/" class="article-date">
+  <time class="dt-published" datetime="2024-06-13T03:13:17.000Z" itemprop="datePublished">2024-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      polynomials
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+ src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"
+  type="text/javascript">
+</script>
+
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>Let \(A(X)\) be a polynomial over \(\mathbb{F}_p\) with formal indeterminate \(X\). As an example,</p>
+<p>$$<br>A(X) &#x3D; a_0 + a_1 X + a_2 X^2 + a_3 X^3<br>$$</p>
+<p>defines a degree-\(3\) polynomial. \(a_0\) is referred to as the constant term. Polynomials of<br>degree \(n-1\) have \(n\) coefficients.</p>
+<h4 id="aside-Horner’s-rule"><a href="#aside-Horner’s-rule" class="headerlink" title="(aside) Horner’s rule"></a>(aside) Horner’s rule</h4><blockquote>
+<p>Horner’s rule allows for efficient evaluation of a polynomial of degree \(n-1\), using<br>only \(n-1\) multiplications and \(n-1\) additions. It is the following identity:<br>$$\begin{aligned}a_0 &amp;+ a_1X + a_2X^2 + \cdots + a_{n-1}X^{n-1} \ &amp;&#x3D; a_0 + X\bigg( a_1 + X \Big( a_2 + \cdots + X(a_{n-2} + X a_{n-1}) \Big)!\bigg),\end{aligned}$$</p>
+</blockquote>
+<h2 id="Quotient-Poly"><a href="#Quotient-Poly" class="headerlink" title="Quotient Poly"></a>Quotient Poly</h2><ol>
+<li>divide the evaluation in each point &amp; use iFFT to get the poly coefficients</li>
+<li>or, could use <a href="!https://en.wikipedia.org/wiki/Polynomial_long_division">polynomial long division</a></li>
+</ol>
+<h2 id="The-Schwartz-Zippel-lemma"><a href="#The-Schwartz-Zippel-lemma" class="headerlink" title="The Schwartz-Zippel lemma"></a>The Schwartz-Zippel lemma</h2><p>The Schwartz-Zippel lemma informally states that “different polynomials are different at<br>most points.” Formally, it can be written as follows:</p>
+<blockquote>
+<p>Let \(p(x_1, x_2, \cdots, x_n)\) be a nonzero polynomial of \(n\) variables with degree \(d\).<br>Let \(S\) be a finite set of numbers with at least \(d\) elements in it. If we choose random<br>\(\alpha_1, \alpha_2, \cdots, \alpha_n<br>\) from \(S\),<br>$$\text{Pr}[p(\alpha_1, \alpha_2, \cdots, \alpha_n) &#x3D; 0] \leq \frac{d}{|S|}.$$</p>
+</blockquote>
+<p>In the familiar univariate case \(p(X)\), this reduces to saying that a nonzero polynomial<br>of degree \(d\) has at most \(d\) roots.</p>
+<p>The Schwartz-Zippel lemma is used in polynomial equality testing.  Given two multi-variate<br>polynomials \(p_1(x_1,\cdots,x_n)\) and \(p_2(x_1,\cdots,x_n)\) of degrees \(d_1, d_2\)<br>respectively, we can test if<br>\(p_1(\alpha_1, \cdots, \alpha_n) - p_2(\alpha_1, \cdots, \alpha_n) &#x3D; 0\) for random<br>\(\alpha_1, \cdots, \alpha_n \leftarrow S,\) where the size of \(S\) is at least<br>\(|S| \geq (d_1 + d_2).\)  If the two polynomials are identical, this will always be true,<br>whereas if the two polynomials are different then the equality holds with probability at<br>most \(\frac{\max(d_1,d_2)}{|S|}\).</p>
+<h2 id="Vanishing-polynomial"><a href="#Vanishing-polynomial" class="headerlink" title="Vanishing polynomial"></a>Vanishing polynomial</h2><p>Consider the order-\(n\) multiplicative subgroup \(\mathcal{H}\) with primitive root of unity<br>\(\omega\). For all \(\omega^i \in \mathcal{H}, i \in [n-1],\) we have<br>\((\omega^i)^n &#x3D; (\omega^n)^i &#x3D; (\omega^0)^i &#x3D; 1.\) In other words, every element of<br>\(\mathcal{H}\) fulfils the equation </p>
+<p>$$<br>\begin{aligned}<br>Z_H(X) &amp;&#x3D; X^n - 1 \<br>&amp;&#x3D; (X-\omega^0)(X-\omega^1)(X-\omega^2)\cdots(X-\omega^{n-1}),<br>\end{aligned}<br>$$</p>
+<p>meaning every element is a root of \(Z_H(X).\) We call \(Z_H(X)\) the <strong>vanishing polynomial</strong><br>over \(\mathcal{H}\) because it evaluates to zero on all elements of \(\mathcal{H}.\)</p>
+<p>This comes in particularly handy when checking polynomial constraints. For instance, to<br>check that \(A(X) + B(X) &#x3D; C(X)\) over \(\mathcal{H},\) we simply have to check that<br>\(A(X) + B(X) - C(X)\) is some multiple of \(Z_H(X)\). In other words, if dividing our<br>constraint by the vanishing polynomial still yields some polynomial<br>\(\frac{A(X) + B(X) - C(X)}{Z_H(X)} &#x3D; H(X),\) we are satisfied that \(A(X) + B(X) - C(X) &#x3D; 0\)<br>over \(\mathcal{H}.\)</p>
+<h2 id="Lagrange-basis-functions"><a href="#Lagrange-basis-functions" class="headerlink" title="Lagrange basis functions"></a>Lagrange basis functions</h2><p>Polynomials are commonly written in the monomial basis (e.g. \(X, X^2, … X^n)\). However,<br>when working over a multiplicative subgroup of order \(n\), we find a more natural expression<br>in the Lagrange basis.</p>
+<p>Consider the order-\(n\) multiplicative subgroup \(\mathcal{H}\) with primitive root of unity<br>\(\omega\). The Lagrange basis corresponding to this subgroup is a set of functions<br>\(\mathcal{L_i}_{i &#x3D; 0}^{n-1}\)<br>where </p>
+<p>$$<br>\mathcal{L_i}(\omega^j) &#x3D; \begin{cases}<br>1 &amp; \text{if } i &#x3D; j, \<br>0 &amp; \text{otherwise.}<br>\end{cases}<br>$$</p>
+<p>We can write this more compactly as \(\mathcal{L_i}(\omega^j) &#x3D; \delta_{ij},\) where<br>\(\delta\) is the Kronecker delta function. </p>
+<p>Now, we can write our polynomial as a linear combination of Lagrange basis functions,</p>
+<p>$$A(X) &#x3D; \sum_{i &#x3D; 0}^{n-1} a_i\mathcal{L_i}(X), X \in \mathcal{H},$$</p>
+<p>which is equivalent to saying that \(A(X)\) evaluates to \(a_0\) at \(\omega^0\),<br>to \(a_1\) at \(\omega^1\), to \(a_2\) at \(\omega^2, \cdots,\) and so on.</p>
+<p>When working over a multiplicative subgroup, the Lagrange basis function has a convenient<br>sparse representation of the form</p>
+<p>$$<br>\mathcal{L}_i(X) &#x3D; \frac{c_i\cdot(X^{n} - 1)}{X - \omega^i},<br>$$</p>
+<p>where \(c_i\) is the barycentric weight. (To understand how this form was derived, refer to<br>[^barycentric].) For \(i &#x3D; 0,\) we have<br>\(c &#x3D; 1&#x2F;n \implies \mathcal{L}_0(X) &#x3D; \frac{1}{n} \frac{(X^{n} - 1)}{X - 1}\).</p>
+<p>Suppose we are given a set of evaluation points \({x_0, x_1, \cdots, x_{n-1}}\).<br>Since we cannot assume that the \(x_i\)’s form a multiplicative subgroup, we consider also<br>the Lagrange polynomials \(\mathcal{L}_i\)’s in the general case. Then we can construct:</p>
+<p>$$<br>\mathcal{L}<em>i(X) &#x3D; \prod</em>{j\neq i}\frac{X - x_j}{x_i - x_j}, i \in [0..n-1].<br>$$</p>
+<p>Here, every \(X &#x3D; x_j \neq x_i\) will produce a zero numerator term \((x_j - x_j),\) causing<br>the whole product to evaluate to zero. On the other hand, \(X&#x3D; x_i\) will evaluate to<br>\(\frac{x_i - x_j}{x_i - x_j}\) at every term, resulting in an overall product of one. This<br>gives the desired Kronecker delta behaviour \(\mathcal{L_i}(x_j) &#x3D; \delta_{ij}\) on the<br>set \({x_0, x_1, \cdots, x_{n-1}}\).</p>
+<h3 id="Lagrange-interpolation"><a href="#Lagrange-interpolation" class="headerlink" title="Lagrange interpolation"></a>Lagrange interpolation</h3><p>Given a polynomial in its evaluation representation</p>
+<p>$$A: {(x_0, A(x_0)), (x_1, A(x_1)), \cdots, (x_{n-1}, A(x_{n-1}))},$$</p>
+<p>we can reconstruct its coefficient form in the Lagrange basis:</p>
+<p>$$A(X) &#x3D; \sum_{i &#x3D; 0}^{n-1} A(x_i)\mathcal{L_i}(X), $$</p>
+<p>where \(X \in {x_0, x_1,\cdots, x_{n-1}}.\)</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] <a target="_blank" rel="noopener" href="https://zcash.github.io/halo2/background/polynomials.html">halo2 book</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/06/13/math/polynomials/" data-id="clxd1usfc0001io7u6td60hz5" data-title="polynomials" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2024/01/16/arithmatic/multiplications/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/13/math/polynomials/">polynomials</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/16/arithmatic/multiplications/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/cpp/build/">cpp build</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2024 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
