@@ -669,7 +669,60 @@ pub struct ProverOnlyCircuitData<
     pub lut_to_lookups: Vec<Lookup>,
 }
 ```
+### 8.1 prove_with_partition_witness
+1. compute full witness. get the matrix of all witness, row is num_of_wires, col is circuit gates number
+2. compute wire polynomials.
+3. compute wires commitment, save to `wires_commitment`
+4. construct `challenger`, for oracle
+5. get `num_challenges` for `betas`, and `gamms` (used in permutation check)
+6. compute partial products `partial_products_and_zs`. （`num_of_products` polys)
+7. compute lookup_polys
+8. compute `partial_products_zs_and_lookup_commitment
+9. sample `alphas` (composing polynomial)
+10. compute_quotient_polys
+10.1 z_h
+```rust
+let points = F::two_adic_subgroup(common_data.degree_bits() + quotient_degree_bits);
+let z_h_on_coset = ZeroPolyOnCoset::new(common_data.degree_bits(), quotient_degree_bits); // vanishing_polynomial, evaluated on the shifted cost. shift to make the polynomial evaluation to be none zero
+```
+the original `z_h` (vanishing poly) is defined in subgroup `H`, it is evaluated in a extension shifted coset `gK`, where `K` is the extented group. `|K| = rate * |H|`
+\\[h^n = (\omega^{rate})^n = (\omega^n)^{rate} = v^{rate} = 1 \\]
+where \\(\omega, h \\) is the generator of `K` and `H` respectively,
+On the shifted extended coset, every element is
+\\(g\omega^i, i \in [0, n*rate -1]\\), where `n` is the number of gates (padded to make it power of 2).
+
+the evaluate of `z_h` over `j`-th element on the coset is
+\\[(g\omega^j)^n -1 = g^n(\omega^n)^j = g^n\cdot v^j -1\\]
+since `v^rate =1`, here this evaluation will repeat every `rate`.
+10.2
+- batch compute `eval_vanishing_poly_base_batch`, batch size is 32
+inside `eval_vanishing_poly_base_batch`, 
+```rust
+    let constraint_terms_batch =
+        evaluate_gate_constraints_base_batch::<F, D>(common_data, vars_batch);
+```
+11. compute `quotient_polys_commitment`
+12. sample random `zeta`
+13. construct the opening set
+```rust
+  OpeningSet::new(
+            zeta,
+            g,  // let g = F::Extension::primitive_root_of_unity(common_data.degree_bits());
+            &prover_data.constants_sigmas_commitment,
+            &wires_commitment,
+            &partial_products_zs_and_lookup_commitment,
+            &quotient_polys_commitment,
+            common_data
+        )
+
+    FriOpenings {
+        batches: vec![zeta_batch, zeta_next_batch],
+    }
+```
+14.  construct fri_instance
+15. prove_openings
 
 
+## 9. Verifier
 
 ## Questions
