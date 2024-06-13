@@ -14,7 +14,7 @@
 <meta property="og:description" content="get the next m*SIZE12# define WARP_SZ 32size_t n &#x3D; (nelems+WARP_SZ-1) &amp; ((size_t)0-WARP_SZ) 0-WARP_SIZE &#x3D; 0xffffffffffffffe0eo &#x3D; 0b11100000it will select multiples of WARP_SZnelems+W">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-11-22T06:47:28.000Z">
-<meta property="article:modified_time" content="2023-12-08T06:18:33.813Z">
+<meta property="article:modified_time" content="2024-01-21T10:04:20.231Z">
 <meta property="article:author" content="cliff">
 <meta property="article:tag" content="arithmatic">
 <meta name="twitter:card" content="summary">
@@ -106,6 +106,9 @@
 0-WARP_SIZE &#x3D; 0xffffffffffffffe0<br>eo &#x3D; 0b11100000<br>it will select multiples of WARP_SZ<br>nelems+WARP_SZ-1 will counter for the removed numbers by 00000</li>
 </ul>
 <p>n will be [32, 64, 96, …]</p>
+<ul>
+<li>make a value to be 1&lt;&lt;N<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">uiint32_t</span> a;</span><br><span class="line"><span class="keyword">while</span>(a &amp; (a<span class="number">-1</span>)) <span class="comment">// equal to 0 only when a is 1&lt;&lt;N</span></span><br><span class="line">  a -= (a&amp;(<span class="number">0</span>-a)); <span class="comment">// subtract the first 1 bit</span></span><br></pre></td></tr></table></figure></li>
+</ul>
 
       
     </div>
@@ -164,7 +167,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 11.11px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
     </div>
   </div>
 
@@ -173,7 +176,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -186,6 +189,14 @@
       <ul>
         
           <li>
+            <a href="/2024/06/13/math/polynomials/">polynomials</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/16/arithmatic/multiplications/">(no title)</a>
+          </li>
+        
+          <li>
             <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
           </li>
         
@@ -195,14 +206,6 @@
         
           <li>
             <a href="/2023/12/20/cpp/build/">cpp build</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/15/cryptography/field/field/">field</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
           </li>
         
       </ul>

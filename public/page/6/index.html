@@ -71,6 +71,145 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cryptography/paillier-encryption" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/02/23/cryptography/paillier-encryption/" class="article-date">
+  <time class="dt-published" datetime="2023-02-23T13:25:41.000Z" itemprop="datePublished">2023-02-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/02/23/cryptography/paillier-encryption/">paillier encryption</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="fundamentals"><a href="#fundamentals" class="headerlink" title="fundamentals"></a>fundamentals</h2><ol>
+<li>fundamental theorem of arighmetic<br>the fundamental theorem of arithmetic, also called the unique factorization theorem and prime factorization theorem, states that every integer greater than 1 can be represented uniquely as a product of prime numbers, up to the order of the factors <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_arithmetic">wiki</a></li>
+<li>Euler’s totient function<br>In number theory, Euler’s totient function counts the positive integers up to a given integer n that are relatively prime to n. It is written using the Greek letter phi as \( \phi (n) \), and may also be called Euler’s phi function. In other words, it is the number of integers k in the range 1 ≤ k ≤ n for which the greatest common divisor gcd(n, k) is equal to 1. The integers k of this form are sometimes referred to as totatives of n. the collection of k is denoted by \( Z_{n}^{\ast } \), and \[ \phi(n) &#x3D; |Z_n^{\ast }| \]</li>
+<li>if p is prime, then \( Z_p^{\ast } &#x3D; Z_p \), \( \phi(p) &#x3D; p-1 \)</li>
+<li>if p is prime, for any integer r, then \( \begin{align} \tag{0.1} \phi(p^{r}) &#x3D;p^{r-1}\phi(p)&#x3D;p^{r-1}(p-1)\end{align} \)</li>
+<li>Euler’s totient function is a multiplicative function, meaning that if two numbers m and n are relatively prime, then \(\phi(mn) &#x3D; \phi(m)\phi(n)\)</li>
+<li>Euler’s product formula, it states<br>\[ \phi(n) &#x3D; n  \prod_{p|n}^{}(1-\frac{1}{p}) \]<br>where the product is over the distinct prime numbers dividing n.</li>
+<li>Euler’s theorem<br>if \(a\) and \(n\) are coprime positive integers, and \( \phi(n)\) is Euler’s totient function, then \(a\) raised to the power  \(\phi(n)\) is congruent to 1 modulo n; that is<br>\[a^{\phi(n)} \equiv 1 \bmod n\]</li>
+<li>according to 7, we have \( a \cdot a^{\phi(n)-1} \equiv 1 \bmod n \). then<br>\[ a^{-1} &#x3D; a^{\phi(n)-1} \]</li>
+<li>Fermat’s little theorem<br>Fermat’s little theorem states that if p is a prime number, then for any integer a, the number<br>\(a^{p}-a \) is an integer multiple of p. In the notation of modular arithmetic, this is expressed as<br>\[ a^{p} \equiv a \bmod p\]</li>
+<li>Binomial theorem<br>it states<br>\[ y &#x3D; (1+n)^{x} &#x3D; \sum_{k&#x3D;0}^{x}\tbinom{x}{k}n^{k} &#x3D; 1 + nx + \tbinom{x}{2}n^2 + …\]<br>observe that, the higher degree could be divided by \(n^2\). we have<br>\[ \begin{align} \tag{0.2} (1+n)^{x} \equiv 1 + nx \bmod n^2 \end{align} \]<br>therefore, \( y - 1 \equiv nx \bmod n^2 \). then we have<br>\[ x \equiv \frac{y-1}{n} \bmod n \].<br>In paillier, later we define \( \begin{align} \tag{0.3} L(y) &#x3D; \frac{y-1}{n} \end{align} \)<br>therefore<br>\[ L(y \bmod n^2) \equiv x \bmod n \]</li>
+</ol>
+<h2 id="Paillier"><a href="#Paillier" class="headerlink" title="Paillier"></a>Paillier</h2><ol>
+<li><p>key generation<br><code>KeyGen() -&gt; (pk, sk)</code><br>randomly select two big prime numbers \(p, q\). it shoud satisfy \(gcd(pq, (p-1)(q-1)) &#x3D;1 \), \(p\) and \(q\) should have similar bit length. let \( n &#x3D; pq \), \(\lambda &#x3D; lcm(p-1, q-1)\). randomly sample \( g \in Z_{n^2}^{\ast}\). to simplify, let \( g &#x3D; n+1\). we have<br>\[ pk&#x3D;(n,g) \]<br>\[ sk &#x3D; (\lambda)\]</p>
+</li>
+<li><p>encryption<br><code>Enc(pk, m) -&gt; c</code><br>randomly sample \( r \in Z_{n}^{\ast}\), then also have \( r \in Z_{n^2}^{\ast}\), cypher is calculated<br>\[ \begin{align} \tag{1.1} c &#x3D; g^mr^n  \bmod n^2 \end{align} \]</p>
+</li>
+<li><p>Decryption<br><code>Dec(sk, c) -&gt; m</code><br>Let \(L(x) &#x3D; \frac{x-1}{n} \), we have message<br>\[ \begin{align} \tag{1.2} m &#x3D; \frac{L(c^{\lambda} \bmod n^2)}{L(g^{\lambda} \bmod n^2)} \bmod n \end{align}\]</p>
+</li>
+<li><p>proof of correctness<br>based on Eq(1), we have \[ \begin{align} \tag{1.3} c^{\lambda} \bmod n^2 &#x3D; g^{m\lambda}r^{n\lambda} \bmod n^2 \end{align}\]<br>where \( r^{n\lambda} \bmod n^2 \equiv 1 \bmod n^2\), which is proved by Carmichael theorem later on. then Eq(3) becomes<br> \[ \begin{align} \tag{1.4} c^{\lambda} \bmod n^2 &#x3D; g^{m\lambda}\bmod n^2 \end{align}\]<br>since \( g &#x3D; n+1\), we have<br>\[ \begin{align} \tag{1.5} c^{\lambda} \bmod n^2 &#x3D; (1+n)^{m\lambda}\bmod n^2 \end{align}\]<br>According to Eq(0.2), we have<br>\[ \begin{align} \tag{1.6} c^{\lambda} \bmod n^2 &#x3D; 1 + nm\lambda \bmod n^2 \end{align}\]<br>\[ \begin{align} \tag{1.7} g^{\lambda} \bmod n^2 \equiv (1+n)^{\lambda} \bmod n^2 &#x3D; 1 +\lambda n \bmod n^2 \end{align}\]<br>therefore, based on definition given by Eq(0.3) we have<br>\[ \begin{align} \tag{1.8} L(c^{\lambda} \bmod n^2) &#x3D; \frac{c^{\lambda}-1}{n} \bmod n^2 \end{align} \]<br>Substitute Eq(1.6) into Eq(1.8), we have<br>\[ \begin{align} \tag{1.9} L(c^{\lambda} \bmod n^2) &#x3D; m\lambda \bmod n^2 \end{align} \]<br>Further, we have<br>\[ \begin{align} \tag{1.10} L(g^{\lambda} \bmod n^2) &#x3D; \frac{g^\lambda -1}{n} \end{align} \]<br>Sub Eq(1.7) into Eq(1.10), we have<br>\[ \begin{align} \tag{1.11} L(g^{\lambda} \bmod n^2) &#x3D; \frac{\lambda n}{n} \equiv \lambda \bmod n^2\end{align} \]<br>At last, Eq(1.2) becomes （bu sub Eq1.9 and Eq1.11)<br>\[ \begin{align}  m &#x3D; \frac{L(c^{\lambda} \bmod n^2)}{L(g^{\lambda} \bmod n^2)} \bmod n &#x3D; \frac{m \lambda}{\lambda} \equiv m \bmod n \end{align}\]<br><b>proved!!!</b></p>
+</li>
+<li><p>Carmichael theorem<br>In number theory, a branch of mathematics, the Carmichael function \(λ(n)\) of a positive integer n is the smallest positive integer m such that \(a^{m}\equiv 1{\pmod {n}}\) (similar but different from Euler’s totient function). Carmichael’s λ function, the reduced totient function, and the least universal exponent function<br><img src="/images/paillier/carmichael_thorem.png" alt="carmichael theorem"><br><img src="/images/paillier/carmichael_thorem_2.png"><br>let \( n &#x3D; pq\), where p and q are prime numbers; \( \phi(n)\) is the Euler’s totient function. Let \(\lambda(n)\) denotes carmichael function. We have \(\phi(n)&#x3D;(p-1)(q-1)\) and \( \lambda(n)&#x3D;\phi(n) &#x3D; (p-1)(q-1)\).</p>
+</li>
+</ol>
+<p>Since \( |Z_{n^2}^{\ast}| &#x3D; \phi(n^2) &#x3D; n \phi(n)\) (according to Eq(0.1)). Thereby, for any \( w \in Z_{n^2}^{\ast}\)<br>\[ \begin{align} \tag{1.12} w^{n\phi(n)} \equiv w^{n\lambda} \equiv 1 \bmod n^2 \end{align}\]</p>
+<p>\[ \begin{align} \tag{1.13} w^{\lambda} \equiv 1 \bmod n \end{align}\]<br>Eq(1.13) is just Carmichael’s function</p>
+<p>Based on Carmichael’s theorem<br>\[ \lambda(n^2) &#x3D; lcm(\lambda(q^2),\lambda(p^2)) &#x3D; lcm(\phi(q^2),\phi(p^2)) &#x3D; lcm(q(q-1), p(p-1)) &#x3D; pq(lcm(p-1, q-1)) &#x3D; n\lambda(n) \]<br>therefore, we have</p>
+<p>\[w^{\lambda(n^2)} &#x3D; w ^{n\lambda} \equiv 1 \bmod n^2\]</p>
+<ol start="6">
+<li><p>Addition homomorphic<br><img src="/images/paillier/homomorphic_addition.png" alt="homomorphic addition"></p>
+</li>
+<li><p>Multiplication homomorphic<br><img src="/images/paillier/homomorphic_mul.png" alt="homomorphic multiplication"></p>
+</li>
+</ol>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42328228/article/details/109349590">csdn post</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/02/23/cryptography/paillier-encryption/" data-id="clokyy8dp000nqwsjgbxocb3i" data-title="paillier encryption" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cryptography/two-party-ecdsa" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/02/07/cryptography/two-party-ecdsa/" class="article-date">
+  <time class="dt-published" datetime="2023-02-07T06:29:26.000Z" itemprop="datePublished">2023-02-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/02/07/cryptography/two-party-ecdsa/">two party ecdsa</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>this post is my reading summary of paper Yehuda Lindell 2017: Fast secure two-party ecdsa signing. the implementation could be found in tss-lib (golang), zengo’s library (rust).</p>
+<p>Unlike other schemes like RSA, Schnorr signatures and more, it is particularly hard to construct efficient threshold signature protocols for ECDSA as there is an inverse computaion of \( k \).</p>
+<p>In this paper, we consider the specific case of two parties (and thus no honest majority) and construct a protocol that is approximately two orders of magnitude faster than the previous best.</p>
+<h2 id="Comparing-ECDSA-signing-to-EC-Schnorr-signing"><a href="#Comparing-ECDSA-signing-to-EC-Schnorr-signing" class="headerlink" title="Comparing ECDSA signing to EC-Schnorr signing"></a>Comparing ECDSA signing to EC-Schnorr signing</h2><p>In both cases, the public verification key is an elliptic curve point \( Q \) and the private signing key is \( x \) such that \( Q &#x3D; x \cdot G \), where \( G \) is the generator point of an EC group of order \( q \).<br><img src="/images/two_party_ecdsa/schnorr_ecdsa_comparison.png" alt="schnorr ecdsa comparison"></p>
+<p>Observe that Schnorr signing can be easily distributed since the private key \( x \) and the value k are both used in a linear equation.  In contrast, in ECDSA signing, the equation for computing \( s \) includes \( k^{-1} \). Now, given shares \(k_1\), \(k_2\) such that \(k_1 + k_2 &#x3D; k \bmod q\) .It is very difficult to compute \(k_1^{\prime}\), \(k_2^{\prime}\) such  that \(k_1^{\prime} + k_2^{\prime} &#x3D; k^{-1} \bmod q\)</p>
+<p>two-party protocols for ECDSA signing use multiplicative sharing of \( x \) and of \( k \). That is, the parties hold \(x_1\), \(x_2\)  such that \(x_1 \cdot x_2 &#x3D; x \bmod q\), and in each signing operation they generate \(k_1\), \(k_2\) such that \(k_1 \cdot k_2 &#x3D; k \bmod q\). This enables them to easily compute \(k^{-1}\) since each party can locally compute  \(k_i^{\prime} &#x3D; k_i^{-1} \bmod q\), and then \(k_1^{\prime}\), \(k_2^{\prime}\) are multiplicative shares of \(k^{-1}\). The parties can then use additively homomorphic encryption – specifically Paillier encryption  – in order to combine their equations. For example, \(P_1\) can compute \(c_1 &#x3D; Enc_{pk}(k_1^{-1} \cdot H(m))\) and \(c_2 &#x3D; Enc_{pk}(k_1^{-1} \cdot x_1 \cdot r)\) . Then, using scar multiplication (denoted ⊙) and homomorphic addition (denoted ⊕), \( P_2 \) can compute \( (k_2^{-1} ⊙ c_1 ) ⊕ [( k_2^{-1} \cdot x_2)  ⊙ c_2 ]\), which will be an encryption of </p>
+<p><img src="/images/two_party_ecdsa/paillier_enc.png" alt="paillier encryption"></p>
+<p>However, proving that each party worked correctly is extremely difficult. For example, the first party must prove that the Paillier encryption includes \(k_1^{-1}\) when the second party only has \(R_1 &#x3D; k_1 \cdot G\). it must prove that the Paillier encryptions are to values in the expected range, and more. This can be done, but it results in a protocol that is very expensive.</p>
+<h2 id="their-results"><a href="#their-results" class="headerlink" title="their results"></a>their results</h2><p>[WIP]</p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://eprint.iacr.org/2017/552.pdf">original papger</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/02/07/cryptography/two-party-ecdsa/" data-id="clokyy8dq000pqwsjfar5aa4q" data-title="two party ecdsa" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-MPT" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/01/22/MPT/" class="article-date">
@@ -653,126 +792,6 @@ during create contract, an object <code>Contract</code> is created. A Contract o
 
 
   
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/27/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-11-27T03:47:56.000Z" itemprop="datePublished">2022-11-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/27/hello-world/">how to use hexo</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/27/hello-world/" data-id="clokyy8dl0004qwsj06vjfxz2" data-title="how to use hexo" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-rust/rust-similar-concepts-comparison" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/11/23/rust/rust-similar-concepts-comparison/" class="article-date">
-  <time class="dt-published" datetime="2022-11-23T07:52:34.000Z" itemprop="datePublished">2022-11-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/11/23/rust/rust-similar-concepts-comparison/">rust similar concepts comparison</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="ref-vs-amp"><a href="#ref-vs-amp" class="headerlink" title="ref vs &amp;"></a>ref vs &amp;</h2><p><code>ref</code> annotates pattern bindings to make them borrow rather than move. It is <strong>not</strong> a part of the pattern as far as matching is concerned: it does not affect whether a value is matched, only how it is matched.<br>By default, match statements consume all they can, which can sometimes be a problem, when you don’t really need the value to be moved and owned:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">maybe_name</span> = <span class="title function_ invoke__">Some</span>(<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Alice&quot;</span>));</span><br><span class="line"><span class="comment">// Using `ref`, the value is borrowed, not moved ...</span></span><br><span class="line"><span class="keyword">match</span> maybe_name &#123;</span><br><span class="line">    <span class="title function_ invoke__">Some</span>(<span class="keyword">ref</span> n) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;Hello, &#123;n&#125;&quot;</span>),</span><br><span class="line">    _ =&gt; <span class="built_in">println!</span>(<span class="string">&quot;Hello, world&quot;</span>),</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ... so it&#x27;s available here!</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;Hello again, &#123;&#125;&quot;</span>, maybe_name.<span class="title function_ invoke__">unwrap_or</span>(<span class="string">&quot;world&quot;</span>.<span class="title function_ invoke__">into</span>()));</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>&amp;</code> denotes that your pattern expects a reference to an object. Hence <code>&amp;</code> is a part of said pattern: <code>&amp;Foo</code> matches different objects than <code>Foo</code> does.</li>
-<li><code>ref</code> indicates that you want a reference to an unpacked value. It is not matched against: <code>Foo(ref foo)</code> matches the same objects as <code>Foo(foo)</code>.</li>
-</ul>
-<h2 id="Clone-vs-Copy"><a href="#Clone-vs-Copy" class="headerlink" title="Clone vs Copy"></a>Clone vs Copy</h2><h3 id="Copy-的含义"><a href="#Copy-的含义" class="headerlink" title="Copy 的含义"></a>Copy 的含义</h3><p><code>Copy</code> 的全名是 <code>std::marker::Copy</code>。<code>std::marker</code> 这个模块里面的所有的 trait 都是特殊的。目前稳定的有四个，它们是 <code>Copy</code>、<code>Send</code>、<code>Sized</code>、<code>Sync</code>。它们的特殊之处在于它们是跟编译器密切绑定的，impl 这些 trait 对编译器的行为有重要影响。这几个 trait 内部都没有方法，它们的唯一任务是，给类型打一个“标记”，表明它符合某种约定。</p>
-<p>如果一个类型 impl 了 Copy trait，意味着任何时候，我们可以通过简单的内存拷贝(C语言的按位拷贝memcpy)实现该类型的复制，而不会产生任何问题。</p>
-<p>一旦一个类型实现了 Copy trait，那么它在变量绑定、函数参数传递、函数返回值传递等场景下，它都是 copy 语义，而不再是默认的 move 语义。</p>
-<h3 id="Copy-的实现条件"><a href="#Copy-的实现条件" class="headerlink" title="Copy 的实现条件"></a>Copy 的实现条件</h3><p>并不是所有的类型都可以实现Copy trait。Rust规定，对于自定义类型，只有所有的成员都实现了 Copy trait，这个类型才有资格实现 Copy trait。</p>
-<p>常见的数字类型、bool类型、共享借用指针&amp;，都是具有 Copy 属性的类型。而 Box、Vec、可写借用指针&amp;mut 等类型都是不具备 Copy 属性的类型。</p>
-<p>我们可以认为，Rust中只有 POD(C++语言中的Plain Old Data) 类型才有资格实现Copy trait。在Rust中，如果一个类型只包含POD数据类型的成员，没有指针类型的成员，并且没有自定义析构函数（实现Drop trait），那它就是POD类型。比如整数、浮点数、只包含POD类型的数组等。而Box、 String、 Vec等，不能按 bit 位拷贝的类型，都不属于POD类型。但是，反过来讲，并不是所有的POD类型都应该实现Copy trait。</p>
-<h3 id="Clone-的含义"><a href="#Clone-的含义" class="headerlink" title="Clone 的含义"></a>Clone 的含义</h3><p>Clone 的全名是 std::clone::Clone。它的完整声明是这样的：</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">trait</span> <span class="title class_">Clone</span> : <span class="built_in">Sized</span> &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">clone</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span>;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">clone_from</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, source: &amp;<span class="keyword">Self</span>) &#123;</span><br><span class="line">        *<span class="keyword">self</span> = source.<span class="title function_ invoke__">clone</span>()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>它有两个关联方法，其中 clone_from 是有默认实现的，它依赖于 clone 方法的实现。clone 方法没有默认实现，需要我们手动实现。</p>
-<p>clone 方法一般用于“基于语义的复制”操作。所以，它做什么事情，跟具体类型的作用息息相关。比如对于 Box 类型，clone 就是执行的“深拷贝”，而对于 Rc 类型，clone 做的事情就是把引用计数值加1。</p>
-<p>虽然说，Rust中 clone 方法一般是用来执行复制操作的，但是你如果在自定义的 clone 函数中做点什么别的工作编译器也没法禁止，你可以根据情况在 clone 函数中编写任意的逻辑。但是有一条规则需要注意：对于实现了 Copy 的类型，它的 clone 方法应该跟 Copy 语义相容，等同于按位拷贝。</p>
-<h3 id="自动-derive"><a href="#自动-derive" class="headerlink" title="自动 derive"></a>自动 derive</h3><p>绝大多数情况下，实现 Copy Clone 这样的 trait 都是一个重复而无聊的工作。因此，Rust提供了一个 attribute，让我们可以利用编译器自动生成这部分代码。示例如下：</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[derive(Copy, Clone)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">MyStruct</span>(<span class="type">i32</span>);</span><br></pre></td></tr></table></figure>
-<p>这里的 derive 会让编译器帮我们自动生成 impl Copy 和 impl Clone 这样的代码。自动生成的 clone 方法，就是依次调用每个成员的 clone 方法。</p>
-<p>通过 derive 方式自动实现 Copy 和手工实现 Copy 有一丁点的微小区别。当类型具有泛型参数的时候，比如 struct MyStruct<T>{}，通过 derive 自动生成的代码会自动添加一个 T: Copy 的约束。</p>
-<p>目前，只有一部分固定的特殊 trait 可以通过 derive 来自动实现。将来 Rust 会允许自定义的 derive 行为，让我们自己的 trait 也可以通过 derive 的方式自动实现。</p>
-<h2 id="Cell-vs-RefCell"><a href="#Cell-vs-RefCell" class="headerlink" title="Cell vs RefCell"></a>Cell vs RefCell</h2><ul>
-<li>Cell 是操作T(values), RefCell操作&amp;T(references). Cell<T> get的时候要求T impl Copy。比如String类型没有实现Copy trait, 那么Cell::new(String::from(“Hello”)).get()会报错</li>
-<li>Cell 在编译器检查，运行时不会panic；RefCell在运行时检查，使用不当会发生panic</li>
-<li>一般来说，Cell内部实现会发生内存的分配，性能较之RefCell有点大</li>
-</ul>
-<h2 id="AsRef-vs-Borrow"><a href="#AsRef-vs-Borrow" class="headerlink" title="AsRef vs Borrow"></a>AsRef vs Borrow</h2><p>[WIP]</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2022/11/23/rust/rust-similar-concepts-comparison/" data-id="clokyy8dt001kqwsj843kh526" data-title="rust similar concepts comparison" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -801,7 +820,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 11.11px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
     </div>
   </div>
 
@@ -810,7 +829,7 @@ during create contract, an object <code>Contract</code> is created. A Contract o
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -823,6 +842,14 @@ during create contract, an object <code>Contract</code> is created. A Contract o
       <ul>
         
           <li>
+            <a href="/2024/06/13/math/polynomials/">polynomials</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/16/arithmatic/multiplications/">(no title)</a>
+          </li>
+        
+          <li>
             <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
           </li>
         
@@ -832,14 +859,6 @@ during create contract, an object <code>Contract</code> is created. A Contract o
         
           <li>
             <a href="/2023/12/20/cpp/build/">cpp build</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/15/cryptography/field/field/">field</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
           </li>
         
       </ul>
