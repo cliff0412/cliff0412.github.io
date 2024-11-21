@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Nvidia cuda dev all in one | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="NVCCnvcc predefines the following macros:  NVCC (1): Defined when compiling C&#x2F;C++&#x2F;CUDA source files. CUDACC (1): Defined when compiling CUDA source files.  compile a single cuda file1nvcc -g">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nvidia cuda dev all in one">
+<meta property="og:url" content="https://cliff0412.github.io/2024/11/21/gpu/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="NVCCnvcc predefines the following macros:  NVCC (1): Defined when compiling C&#x2F;C++&#x2F;CUDA source files. CUDACC (1): Defined when compiling CUDA source files.  compile a single cuda file1nvcc -g">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-11-21T02:04:16.000Z">
+<meta property="article:modified_time" content="2024-11-21T02:07:28.471Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="cuda">
+<meta property="article:tag" content="gpu">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-gpu" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/21/gpu/" class="article-date">
+  <time class="dt-published" datetime="2024-11-21T02:04:16.000Z" itemprop="datePublished">2024-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Nvidia cuda dev all in one
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="NVCC"><a href="#NVCC" class="headerlink" title="NVCC"></a>NVCC</h1><p>nvcc predefines the following macros:</p>
+<ul>
+<li><strong>NVCC</strong> (1): Defined when compiling C&#x2F;C++&#x2F;CUDA source files.</li>
+<li><strong>CUDACC</strong> (1): Defined when compiling CUDA source files.</li>
+</ul>
+<h1 id="compile-a-single-cuda-file"><a href="#compile-a-single-cuda-file" class="headerlink" title="compile a single cuda file"></a>compile a single cuda file</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvcc -gencode arch=compute_70,code=sm_70 -g -G kernel.cu -o kernel</span><br></pre></td></tr></table></figure>
+
+<h1 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h1><ul>
+<li>mapped memory: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/CUDA-Zero-Copy-Mapped-Memory/">https://leimao.github.io/blog/CUDA-Zero-Copy-Mapped-Memory/</a></li>
+<li>Increase Performance with Vectorized Memory Access<br><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/">https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/</a></li>
+</ul>
+<h1 id="data-transfer"><a href="#data-transfer" class="headerlink" title="data transfer"></a>data transfer</h1><h1 id="gdr"><a href="#gdr" class="headerlink" title="gdr"></a>gdr</h1><p><a target="_blank" rel="noopener" href="https://developer.nvidia.com/gdrcopy">https://developer.nvidia.com/gdrcopy</a></p>
+<h1 id="pinned-pageable-memory"><a href="#pinned-pageable-memory" class="headerlink" title="pinned pageable memory"></a>pinned pageable memory</h1><p><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/">https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/</a></p>
+<h1 id="nvlink-command"><a href="#nvlink-command" class="headerlink" title="nvlink command"></a>nvlink command</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink -h</span><br></pre></td></tr></table></figure>
+<h2 id="Showing-NVLINK-Status-For-Different-GPUs"><a href="#Showing-NVLINK-Status-For-Different-GPUs" class="headerlink" title="Showing NVLINK Status For Different GPUs"></a>Showing NVLINK Status For Different GPUs</h2><p>To show active NVLINK Connections, you must specify GPU index via -i</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink --status -i 0</span><br></pre></td></tr></table></figure>
+<p>example output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">GPU 0: NVIDIA H100 PCIe (UUID: GPU-a1bf2ff6-a98d-edac-a422-0bd80fbd9724)</span><br><span class="line">         Link 0: 26.562 GB/s</span><br><span class="line">         Link 1: 26.562 GB/s</span><br><span class="line">         Link 2: 26.562 GB/s</span><br><span class="line">         Link 3: 26.562 GB/s</span><br><span class="line">         Link 4: &lt;inactive&gt;</span><br><span class="line">         Link 5: 26.562 GB/s</span><br><span class="line">         Link 6: 26.562 GB/s</span><br><span class="line">         Link 7: 26.562 GB/s</span><br><span class="line">         Link 8: 26.562 GB/s</span><br><span class="line">         Link 9: &lt;inactive&gt;</span><br><span class="line">         Link 10: &lt;inactive&gt;</span><br><span class="line">         Link 11: 26.562 GB/s</span><br><span class="line">         Link 12: 26.562 GB/s</span><br><span class="line">         Link 13: 26.562 GB/s</span><br><span class="line">         Link 14: 26.562 GB/s</span><br><span class="line">         Link 15: &lt;inactive&gt;</span><br><span class="line">         Link 16: &lt;inactive&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="Display-amp-Explore-NVLINK-Capabilities-Per-Link"><a href="#Display-amp-Explore-NVLINK-Capabilities-Per-Link" class="headerlink" title="Display &amp; Explore NVLINK Capabilities Per Link"></a>Display &amp; Explore NVLINK Capabilities Per Link</h2><p>Allows you to query to ensure each link associated with the GPU Index (specified by -i #) has specific capabilities related to P2P, System Memory, P2P Atomics, SLI.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink --capabilities -i 1</span><br></pre></td></tr></table></figure>
+<p>example output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Link 0, P2P is supported: true</span><br><span class="line">Link 0, Access to system memory supported: true</span><br><span class="line">Link 0, P2P atomics supported: true</span><br><span class="line">Link 0, System memory atomics supported: false</span><br><span class="line">Link 0, SLI is supported: false</span><br><span class="line">Link 0, Link is supported: false</span><br><span class="line">Link 1, P2P is supported: true</span><br><span class="line">Link 1, Access to system memory supported: true</span><br><span class="line">Link 1, P2P atomics supported: true</span><br><span class="line">Link 1, System memory atomics supported: false</span><br><span class="line">Link 1, SLI is supported: false</span><br><span class="line">Link 1, Link is supported: false</span><br><span class="line">Link 2, P2P is supported: true</span><br><span class="line">Link 2, Access to system memory supported: true</span><br><span class="line">Link 2, P2P atomics supported: true</span><br><span class="line">Link 2, System memory atomics supported: false</span><br><span class="line">Link 2, SLI is supported: false</span><br><span class="line">Link 2, Link is supported: false</span><br><span class="line">Link 3, P2P is supported: true</span><br><span class="line">Link 3, Access to system memory supported: true</span><br><span class="line">Link 3, P2P atomics supported: true</span><br><span class="line">Link 3, System memory atomics supported: false</span><br><span class="line">Link 3, SLI is supported: false</span><br><span class="line">Link 3, Link is supported: false</span><br></pre></td></tr></table></figure>
+
+<h2 id="NVLink-Usage-Counters"><a href="#NVLink-Usage-Counters" class="headerlink" title="NVLink Usage Counters"></a>NVLink Usage Counters</h2><p>nvidia-smi nvlink -g N -i N allows you to view the data being traversed on the different NVLink Link.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink -g 0 -i 0</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="benchmarking-p2p-mem-copy"><a href="#benchmarking-p2p-mem-copy" class="headerlink" title="benchmarking p2p mem_copy"></a>benchmarking p2p mem_copy</h1><p>code for testing p2p memCopy</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">// P2P Test by Greg Gutmann</span><br><span class="line"> </span><br><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line">#include &quot;stdint.h&quot;</span><br><span class="line"> </span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    // GPUs</span><br><span class="line">    int gpuid_0 = 0;</span><br><span class="line">    int gpuid_1 = 1;</span><br><span class="line"> </span><br><span class="line">    // Memory Copy Size</span><br><span class="line">    uint32_t size = pow(2, 26); // 2^26 = 67MB</span><br><span class="line"> </span><br><span class="line">    // Allocate Memory</span><br><span class="line">    uint32_t* dev_0;</span><br><span class="line">    cudaSetDevice(gpuid_0);</span><br><span class="line">    cudaMalloc((void**)&amp;dev_0, size);</span><br><span class="line"> </span><br><span class="line">    uint32_t* dev_1;</span><br><span class="line">    cudaSetDevice(gpuid_1);</span><br><span class="line">    cudaMalloc((void**)&amp;dev_1, size);</span><br><span class="line"> </span><br><span class="line">    //Check for peer access between participating GPUs: </span><br><span class="line">    int can_access_peer_0_1;</span><br><span class="line">    int can_access_peer_1_0;</span><br><span class="line">    cudaDeviceCanAccessPeer(&amp;can_access_peer_0_1, gpuid_0, gpuid_1);</span><br><span class="line">    cudaDeviceCanAccessPeer(&amp;can_access_peer_1_0, gpuid_1, gpuid_0);</span><br><span class="line">    printf(&quot;cudaDeviceCanAccessPeer(%d-&gt;%d): %d\n&quot;, gpuid_0, gpuid_1, can_access_peer_0_1);</span><br><span class="line">    printf(&quot;cudaDeviceCanAccessPeer(%d-&gt;%d): %d\n&quot;, gpuid_1, gpuid_0, can_access_peer_1_0);</span><br><span class="line"> </span><br><span class="line">    if (can_access_peer_0_1 &amp;&amp; can_access_peer_1_0) &#123;</span><br><span class="line">        // Enable P2P Access</span><br><span class="line">        cudaSetDevice(gpuid_0);</span><br><span class="line">        cudaDeviceEnablePeerAccess(gpuid_1, 0);</span><br><span class="line">        cudaSetDevice(gpuid_1);</span><br><span class="line">        cudaDeviceEnablePeerAccess(gpuid_0, 0);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // Init Timing Data</span><br><span class="line">    uint32_t repeat = 10;</span><br><span class="line">    cudaEvent_t start;</span><br><span class="line">    cudaEvent_t stop;</span><br><span class="line">    cudaEventCreate(&amp;start);</span><br><span class="line">    cudaEventCreate(&amp;stop);</span><br><span class="line"> </span><br><span class="line">    // Init Stream</span><br><span class="line">    cudaStream_t stream;</span><br><span class="line">    cudaStreamCreateWithFlags(&amp;stream, cudaStreamNonBlocking);</span><br><span class="line"> </span><br><span class="line">    // ~~ Start Test ~~</span><br><span class="line">    cudaEventRecord(start, stream);</span><br><span class="line"> </span><br><span class="line">    //Do a P2P memcpy</span><br><span class="line">    for (int i = 0; i &lt; repeat; ++i) &#123;</span><br><span class="line">        cudaMemcpyAsync(dev_0, dev_1, size, cudaMemcpyDeviceToDevice, stream);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    cudaEventRecord(stop, stream);</span><br><span class="line">    cudaStreamSynchronize(stream);</span><br><span class="line">    // ~~ End of Test ~~</span><br><span class="line"> </span><br><span class="line">    // Check Timing &amp; Performance</span><br><span class="line">    float time_ms;</span><br><span class="line">    cudaEventElapsedTime(&amp;time_ms, start, stop);</span><br><span class="line">    double time_s = time_ms / 1e3;</span><br><span class="line"> </span><br><span class="line">    double gb = size * repeat / (double)1e9;</span><br><span class="line">    double bandwidth = gb / time_s;</span><br><span class="line"> </span><br><span class="line">    printf(&quot;Seconds: %f\n&quot;, time_s);</span><br><span class="line">    printf(&quot;Unidirectional Bandwidth: %f (GB/s)\n&quot;, bandwidth);</span><br><span class="line"> </span><br><span class="line">    if (can_access_peer_0_1 &amp;&amp; can_access_peer_1_0) &#123;</span><br><span class="line">        // Shutdown P2P Settings</span><br><span class="line">        cudaSetDevice(gpuid_0);</span><br><span class="line">        cudaDeviceDisablePeerAccess(gpuid_1);</span><br><span class="line">        cudaSetDevice(gpuid_1);</span><br><span class="line">        cudaDeviceDisablePeerAccess(gpuid_0);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // Clean Up</span><br><span class="line">    cudaFree(dev_0);</span><br><span class="line">    cudaFree(dev_1);</span><br><span class="line"> </span><br><span class="line">    cudaEventDestroy(start);</span><br><span class="line">    cudaEventDestroy(stop);</span><br><span class="line">    cudaStreamDestroy(stream);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="some-results"><a href="#some-results" class="headerlink" title="some results"></a>some results</h2><ul>
+<li>on H100<br>Unidirectional Bandwidth: 253.631489 (GB&#x2F;s)</li>
+<li>on 4090<br>Unidirectional Bandwidth: 25 (GB&#x2F;s)</li>
+</ul>
+<h1 id="profiling"><a href="#profiling" class="headerlink" title="profiling"></a>profiling</h1><p>nsight compute: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/Docker-Nsight-Compute/">https://leimao.github.io/blog/Docker-Nsight-Compute/</a><br>cuda with docker: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/NVIDIA-Docker-CUDA-Compatibility/">https://leimao.github.io/blog/NVIDIA-Docker-CUDA-Compatibility/</a></p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#">nvcc compiler</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/11/21/gpu/" data-id="cm3qoczvk0001dn7uajv88xhm" data-title="Nvidia cuda dev all in one" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2024/11/21/cmake/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          cmake
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2024/06/13/math/polynomials/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">polynomials</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cmake/" rel="tag">cmake</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cmake/" style="font-size: 10px;">cmake</a> <a href="/tags/cpp/" style="font-size: 15px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 13.75px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/gpu/" style="font-size: 10px;">gpu</a> <a href="/tags/math/" style="font-size: 12.5px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/11/">November 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/11/21/cmake/">cmake</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/gpu/">Nvidia cuda dev all in one</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/13/math/polynomials/">polynomials</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/16/arithmatic/multiplications/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2024 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
