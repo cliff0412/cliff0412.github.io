@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>a deep dive into codex | cliff&#39;s personal blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Codex looks like a chat interface, but the model is only one component. The useful system is a loop around the model: collect context, ask the model what to do, execute tools, return their results, en">
+<meta property="og:type" content="article">
+<meta property="og:title" content="a deep dive into codex">
+<meta property="og:url" content="https://cliff0412.github.io/2026/09/30/agent/deep-dive-into-codex/index.html">
+<meta property="og:site_name" content="cliff&#39;s personal blog">
+<meta property="og:description" content="Codex looks like a chat interface, but the model is only one component. The useful system is a loop around the model: collect context, ask the model what to do, execute tools, return their results, en">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-09-30T10:40:00.000Z">
+<meta property="article:modified_time" content="2026-09-30T03:37:16.169Z">
+<meta property="article:author" content="cliff">
+<meta property="article:tag" content="agent">
+<meta property="article:tag" content="codex">
+<meta property="article:tag" content="ai">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="cliff's personal blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">cliff&#39;s personal blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://cliff0412.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-agent/deep-dive-into-codex" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/09/30/agent/deep-dive-into-codex/" class="article-date">
+  <time class="dt-published" datetime="2026-09-30T10:40:00.000Z" itemprop="datePublished">2026-09-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      a deep dive into codex
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Codex looks like a chat interface, but the model is only one component. The useful system is a loop around the model: collect context, ask the model what to do, execute tools, return their results, enforce permissions, persist the history, and repeat until the task is complete.</p>
+<p>That distinction explains why an agent can work across a repository while a plain language model can only propose text. Codex can observe the real result of a command or edit and use that feedback in its next decision.</p>
+<p>This article develops a source-level mental model of the open-source Codex runtime. Names and file paths reflect a snapshot of the implementation and may move; the architectural boundaries are the durable part. For the current public protocol and behavior, use the <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/app-server">Codex app-server documentation</a> as the source of truth.</p>
+<h2 id="1-The-big-picture"><a href="#1-The-big-picture" class="headerlink" title="1. The big picture"></a>1. The big picture</h2><p>The runtime can be understood as five layers:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────────────────────────────────┐</span><br><span class="line">│ Frontends                                                    │</span><br><span class="line">│ TUI · exec · CLI · IDE extension · VS Code · Codex Web      │</span><br><span class="line">└──────────────────────────────┬───────────────────────────────┘</span><br><span class="line">                               │ app-server protocol</span><br><span class="line">                               │ thread/* · turn/* · item/*</span><br><span class="line">┌──────────────────────────────▼───────────────────────────────┐</span><br><span class="line">│ App server                                                   │</span><br><span class="line">│ Translates client requests and streams events                │</span><br><span class="line">│ In-process for some clients; stdio/WebSocket for others      │</span><br><span class="line">└──────────────────────────────┬───────────────────────────────┘</span><br><span class="line">                               │</span><br><span class="line">┌──────────────────────────────▼───────────────────────────────┐</span><br><span class="line">│ Core engine                                                  │</span><br><span class="line">│ Session/thread → task → model/tool loop                      │</span><br><span class="line">│                                                              │</span><br><span class="line">│ model client ────────────────► Responses API                 │</span><br><span class="line">│ tool orchestrator ───────────► shell · apply_patch · MCP     │</span><br><span class="line">│ rollout recorder ────────────► persistent history            │</span><br><span class="line">└──────────────────┬─────────────────────────┬─────────────────┘</span><br><span class="line">                   │                         │</span><br><span class="line">        ┌──────────▼──────────┐   ┌──────────▼──────────┐</span><br><span class="line">        │ Approval policy     │   │ OS sandbox          │</span><br><span class="line">        │ user / rules /      │   │ filesystem, process │</span><br><span class="line">        │ automated reviewer  │   │ and network limits  │</span><br><span class="line">        └─────────────────────┘   └─────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>The frontends do not each implement their own coding agent. They present different views over the same underlying engine. The app server provides the integration boundary: authentication, conversation history, approvals, streamed events, and thread&#x2F;turn operations. This separation lets the TUI and an IDE extension behave differently without duplicating the agent loop.</p>
+<p>The core engine owns the work. It prepares model input, receives a streamed response, dispatches requested tools, feeds observations back to the model, and records what happened. Approval routing decides whether an action may proceed; the sandbox limits what a permitted command can actually touch.</p>
+<p>This is the most important high-level split:</p>
+<ul>
+<li>the <strong>model</strong> proposes actions;</li>
+<li>the <strong>harness</strong> coordinates the loop;</li>
+<li>the <strong>tools</strong> interact with the world;</li>
+<li>the <strong>policy layer</strong> decides when human authorization is required;</li>
+<li>the <strong>sandbox</strong> enforces the technical boundary;</li>
+<li>the <strong>rollout</strong> makes the work resumable and inspectable.</li>
+</ul>
+<p>The same pattern appears in OpenAI’s managed agent architecture: a harness runs the model&#x2F;tool loop, while a separate environment provides files and compute. The local Codex runtime places that idea on the developer’s machine.</p>
+<h2 id="2-The-core-mental-model-queues-sessions-tasks-and-turns"><a href="#2-The-core-mental-model-queues-sessions-tasks-and-turns" class="headerlink" title="2. The core mental model: queues, sessions, tasks, and turns"></a>2. The core mental model: queues, sessions, tasks, and turns</h2><p>At the source level, Codex behaves like a headless asynchronous service. A user interface communicates with it through two logical streams:</p>
+<ul>
+<li><strong>Submission queue (SQ), UI → Codex.</strong> User input and control messages enter the engine: start work, interrupt, answer a question, or resolve an approval.</li>
+<li><strong>Event queue (EQ), Codex → UI.</strong> Progress returns to the client: text deltas, item updates, approval requests, errors, and completion events.</li>
+</ul>
+<p>This is why the engine is reusable. The transport can be an in-process channel, standard input&#x2F;output, or a socket; the core still sees requests arriving in one direction and events leaving in the other. The current app-server protocol exposes this model as JSON-RPC requests plus <code>thread/*</code>, <code>turn/*</code>, and <code>item/*</code> notifications.</p>
+<p>The state hierarchy in the photographed source notes is:</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Meaning</th>
+<th>Typical source area</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Session</td>
+<td>Configuration and state for one conversation; normally one active unit of work at a time</td>
+<td><code>core/src/session/</code></td>
+</tr>
+<tr>
+<td>Task</td>
+<td>Work initiated by one user request; it can require several model&#x2F;tool iterations</td>
+<td><code>core/src/tasks/</code></td>
+</tr>
+<tr>
+<td>Turn</td>
+<td>One pass through prompt construction, model streaming, and tool-result handling</td>
+<td><code>core/src/session/turn.rs</code></td>
+</tr>
+</tbody></table>
+<p>There is a terminology trap here. In the public app-server API, a <strong>thread</strong> is the persistent conversation and a <strong>turn</strong> is the user-visible cycle started by <code>turn/start</code>. Internal names can be finer-grained and can change over time. When integrating with Codex, follow the public protocol; when reading the source, first identify what that version means by session, task, and turn.</p>
+<h2 id="3-The-agent-loop"><a href="#3-The-agent-loop" class="headerlink" title="3. The agent loop"></a>3. The agent loop</h2><p>The turn loop is the heart of Codex. Conceptually, each iteration does five things.</p>
+<h3 id="3-1-Build-the-prompt"><a href="#3-1-Build-the-prompt" class="headerlink" title="3.1 Build the prompt"></a>3.1 Build the prompt</h3><p>Codex assembles the material the model needs: system and developer instructions, repository guidance such as <code>AGENTS.md</code>, conversation history, the current request, available tool definitions, relevant environment state, and any tool results from the previous iteration.</p>
+<p>The prompt is therefore not just the latest chat message. It is a structured snapshot of the task and the world around it.</p>
+<h3 id="3-2-Stream-the-model-response"><a href="#3-2-Stream-the-model-response" class="headerlink" title="3.2 Stream the model response"></a>3.2 Stream the model response</h3><p>The client sends the prompt to the Responses API and consumes a stream of response events. Streaming lets the UI show commentary as it arrives and lets the runtime recognize tool calls without waiting for one monolithic response.</p>
+<p>Connection retries, backoff, and transport fallback belong at this boundary. They are reliability details around the loop, not agent reasoning. A completed response can also provide an identifier that helps preserve continuity or resume work.</p>
+<h3 id="3-3-Dispatch-tool-calls"><a href="#3-3-Dispatch-tool-calls" class="headerlink" title="3.3 Dispatch tool calls"></a>3.3 Dispatch tool calls</h3><p>When the model asks to run a command, edit a file, search the web, call an MCP server, or use another tool, the orchestrator resolves the tool by name and invokes its implementation. Independent calls may run in parallel; dependent calls must wait for the observations they require.</p>
+<p>Before execution, sensitive actions pass through approval policy and sandbox preparation. The model does not bypass those layers merely by emitting a tool call.</p>
+<h3 id="3-4-Feed-observations-back"><a href="#3-4-Feed-observations-back" class="headerlink" title="3.4 Feed observations back"></a>3.4 Feed observations back</h3><p>Tool output becomes new model input. A compiler error, failing test, command exit code, file diff, or search result is not a side channel: it is the evidence that lets the next iteration adapt.</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">user request</span><br><span class="line">    ↓</span><br><span class="line">build context → call model → tool request → execute tool</span><br><span class="line">      ↑                                      ↓</span><br><span class="line">      └────────────── tool result ───────────┘</span><br></pre></td></tr></table></figure>
+
+<p>The loop continues while the model requests more work. When it produces a final response without another tool request, the task can finish.</p>
+<h3 id="3-5-Persist-incrementally"><a href="#3-5-Persist-incrementally" class="headerlink" title="3.5 Persist incrementally"></a>3.5 Persist incrementally</h3><p>Messages, tool calls, results, and state changes are appended to the rollout as work happens. Incremental persistence matters: a long task should remain inspectable and recoverable even if the process or connection fails before the final answer.</p>
+<p>This loop is why verification is so valuable. Tests, builds, linters, and diffs turn assumptions into observations. OpenAI’s write-up on <a target="_blank" rel="noopener" href="https://developers.openai.com/blog/run-long-horizon-tasks-with-codex">long-horizon Codex tasks</a> describes the same operating rhythm: plan, edit, run tools, observe, repair, and repeat.</p>
+<h2 id="4-Tools-one-interface-many-capabilities"><a href="#4-Tools-one-interface-many-capabilities" class="headerlink" title="4. Tools: one interface, many capabilities"></a>4. Tools: one interface, many capabilities</h2><p>Codex keeps a registry of tools and dispatches calls by name. The implementations differ, but the model sees a common pattern: a name, an input schema, and a result.</p>
+<h3 id="Shell-execution"><a href="#Shell-execution" class="headerlink" title="Shell execution"></a>Shell execution</h3><p>The shell tool runs commands and returns their output and exit status. It is the bridge from language reasoning to compilers, tests, Git, package managers, and project-specific scripts. Because shell access is powerful, it is also the path most tightly connected to approvals and sandboxing.</p>
+<h3 id="apply-patch"><a href="#apply-patch" class="headerlink" title="apply_patch"></a><code>apply_patch</code></h3><p>File editing uses a patch-oriented tool rather than asking the model to rewrite whole files blindly. The format describes add, update, and delete operations, and a streaming parser can validate and apply the patch as it arrives.</p>
+<p>Patch-based editing has three useful properties:</p>
+<ol>
+<li>The intended change is explicit.</li>
+<li>The resulting diff is easy for a human to inspect.</li>
+<li>Unrelated content is less likely to be overwritten.</li>
+</ol>
+<h3 id="MCP-tools"><a href="#MCP-tools" class="headerlink" title="MCP tools"></a>MCP tools</h3><p>External Model Context Protocol tools are adapted into the same internal tool shape, so the model can use a remote service much like a built-in capability. Codex acts as an MCP <strong>client</strong> when it connects to external tool servers over transports such as stdio or HTTP and exposes their catalogs to the model.</p>
+<p>Older Codex versions could also expose Codex itself as an MCP <strong>server</strong>, allowing another agent or IDE to drive a Codex conversation. That direction is visible in the source snapshot behind this article, but it is no longer the recommended integration path. Current documentation directs new deep integrations to the <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/app-server">Codex app server</a> and automation or CI use cases to the <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/codex-sdk">Codex SDK</a>; the legacy Codex MCP server is deprecated.</p>
+<p>The architectural lesson survives that migration: protocol adapters should terminate at a stable tool or application boundary rather than leaking transport details into the core loop.</p>
+<h2 id="5-Sandboxing-and-approvals-two-different-gates"><a href="#5-Sandboxing-and-approvals-two-different-gates" class="headerlink" title="5. Sandboxing and approvals: two different gates"></a>5. Sandboxing and approvals: two different gates</h2><p>Codex’s security model separates a policy decision from technical enforcement.</p>
+<h3 id="Approval-routing-asks-“may-this-action-proceed-”"><a href="#Approval-routing-asks-“may-this-action-proceed-”" class="headerlink" title="Approval routing asks “may this action proceed?”"></a>Approval routing asks “may this action proceed?”</h3><p>A command is compared with the active approval policy and execution rules. Depending on the result, it may run automatically, prompt the user, or be reviewed by another configured mechanism. Equivalent approved command shapes can be remembered for an appropriate scope so the user is not repeatedly asked the same question.</p>
+<h3 id="The-sandbox-asks-“what-can-this-process-actually-do-”"><a href="#The-sandbox-asks-“what-can-this-process-actually-do-”" class="headerlink" title="The sandbox asks “what can this process actually do?”"></a>The sandbox asks “what can this process actually do?”</h3><p>Even after approval routing, the command runs under an OS-enforced boundary. Current Codex documentation describes local execution as a combination of an approval policy and a sandbox that normally limits writes to the workspace and keeps network access off by default.</p>
+<p>The implementation is platform-specific. In the source snapshot:</p>
+<table>
+<thead>
+<tr>
+<th>OS</th>
+<th>Main enforcement mechanism</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>macOS</td>
+<td>Seatbelt sandbox profiles</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>Landlock, seccomp, <code>no_new_privs</code>, and bubblewrap where available</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>Restricted tokens and deny ACLs</td>
+</tr>
+</tbody></table>
+<p>The runtime also applies process hardening, such as constraining tracing or core dumps and scrubbing dangerous loader-related environment variables before launching a child process. Some deployments place the actual spawn operation in a separate executor with a virtual filesystem policy.</p>
+<p>Keeping these layers separate is deliberate:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">model requests action</span><br><span class="line">        ↓</span><br><span class="line">policy and approval routing</span><br><span class="line">        ↓</span><br><span class="line">per-OS sandbox transformation</span><br><span class="line">        ↓</span><br><span class="line">process execution</span><br><span class="line">        ↓</span><br><span class="line">captured output returned to the loop</span><br></pre></td></tr></table></figure>
+
+<p>Approval is not a substitute for containment, and containment is not a substitute for informed approval. The former expresses user intent; the latter limits blast radius. See <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/agent-approvals-security">Agent approvals &amp; security</a> for current behavior and configuration.</p>
+<h2 id="6-Persistence-why-a-session-can-resume"><a href="#6-Persistence-why-a-session-can-resume" class="headerlink" title="6. Persistence: why a session can resume"></a>6. Persistence: why a session can resume</h2><p>A Codex session is a persistent conversation identified by a stable thread ID. Each user-visible unit of work has its own turn ID. The local rollout is an append-oriented JSONL transcript containing information such as:</p>
+<ul>
+<li>user and agent messages;</li>
+<li>tool calls and results;</li>
+<li>thread and turn metadata;</li>
+<li>token usage and compaction events;</li>
+<li>environment and execution context needed to understand the work.</li>
+</ul>
+<p>Depending on the Codex version, active rollout files have appeared under date-partitioned paths inside <code>~/.codex/sessions/</code> or related thread storage. Treat that layout as generated implementation state, not as a stable API.</p>
+<p>The rollout enables several features:</p>
+<ul>
+<li><strong>resume</strong> reconstructs enough context to continue the conversation;</li>
+<li><strong>fork</strong> creates a new line of work from an earlier point;</li>
+<li><strong>diagnostics</strong> can explain which messages and tools led to an outcome;</li>
+<li><strong>compaction</strong> summarizes older material when the context window fills;</li>
+<li><strong>memory extraction</strong> can distill reusable context from eligible completed work.</li>
+</ul>
+<p>These files can contain prompts, source code, local paths, commands, and tool output. They should be treated as sensitive. Archiving retains the transcript; deletion removes persisted thread data. The app server exposes explicit operations for both lifecycle choices.</p>
+<h2 id="7-Memory-is-derived-context-not-authority"><a href="#7-Memory-is-derived-context-not-authority" class="headerlink" title="7. Memory is derived context, not authority"></a>7. Memory is derived context, not authority</h2><p>Conversation persistence and memory solve different problems. A rollout preserves one thread in detail. Memory extracts a smaller amount of potentially useful context so it can help in future threads.</p>
+<p>The pipeline is roughly:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">session rollout JSONL</span><br><span class="line">        ↓</span><br><span class="line">phase 1: per-thread extraction</span><br><span class="line">        ↓</span><br><span class="line">phase 2: global selection and consolidation</span><br><span class="line">        ↓</span><br><span class="line">reusable local memory files</span><br></pre></td></tr></table></figure>
+
+<p>The first phase can produce compact facts about tasks, outcomes, preferences, reusable knowledge, failures, and references, plus a readable summary of the thread and evidence linking the memory back to its source. The second phase selects useful, current entries and consolidates them into the global memory store.</p>
+<p>In the implementation snapshot, an extraction record separates <code>raw_memory</code>, a readable <code>rollout_summary</code>, and a short <code>rollout_slug</code>. Version fields such as <code>source_updated_at</code> and <code>generated_at</code> identify the rollout used to create it. Bookkeeping fields such as <code>usage_count</code>, <code>last_usage</code>, <code>selected_for_phase2</code>, and a phase-two source watermark help the consolidator measure reuse and avoid treating a stale selection as current. These are useful for understanding the pipeline, but they are internal storage details rather than a stable API.</p>
+<p>Local Codex memories live under <code>~/.codex/memories/</code>. The generated state can include summaries, durable entries, recent inputs, and supporting evidence. Codex waits for eligible threads to become idle before processing them, and it can skip extraction because of age, external-context policy, or available rate limit.</p>
+<p>Two controls are intentionally independent:</p>
+<ul>
+<li><code>memories.generate_memories</code> decides whether new chats may contribute to future memory;</li>
+<li><code>memories.use_memories</code> decides whether existing memories may be injected into future sessions.</li>
+</ul>
+<p>The <code>/memories</code> command changes these choices for the current chat; <code>config.toml</code> supplies global defaults. Disabling either control does not delete stored memories and does not stop ordinary session persistence.</p>
+<p>The most important rule is conceptual: memory is a <strong>recall layer</strong>, not an authoritative source. Requirements that must always be followed belong in <code>AGENTS.md</code> or checked-in project documentation. Memories can be stale, incomplete, or irrelevant to a new task. The current <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/customization/memories">Codex memories documentation</a> makes the same distinction.</p>
+<h2 id="8-A-practical-source-reading-order"><a href="#8-A-practical-source-reading-order" class="headerlink" title="8. A practical source-reading order"></a>8. A practical source-reading order</h2><p>If you want to trace the implementation rather than reading the repository from top to bottom, this order keeps the concepts connected:</p>
+<ol>
+<li><code>codex-rs/docs/protocol_v1.md</code> or the current protocol documentation — learn the vocabulary and event sequence first.</li>
+<li><code>core/src/session/turn.rs</code> — find the main agent loop.</li>
+<li><code>core/src/client.rs</code> — see how Codex talks to the model and consumes streaming responses.</li>
+<li><code>core/src/tools/orchestrator.rs</code> and <code>apply-patch/</code> — follow tool dispatch and file editing.</li>
+<li><code>sandboxing/</code> and <code>execpolicy/</code> — trace policy, approval, and OS enforcement.</li>
+<li><code>AGENTS.md</code> at the repository root — understand contributor-facing conventions before interpreting or changing the code.</li>
+</ol>
+<p>Paths in a fast-moving repository will change. Search by concepts and types when a path no longer exists: thread, turn, rollout, orchestrator, approval, sandbox, and app server are better anchors than a frozen directory tree.</p>
+<h2 id="9-What-the-architecture-gets-right"><a href="#9-What-the-architecture-gets-right" class="headerlink" title="9. What the architecture gets right"></a>9. What the architecture gets right</h2><p>Several design choices make Codex more than a code-generating chat:</p>
+<h3 id="The-UI-is-decoupled-from-the-engine"><a href="#The-UI-is-decoupled-from-the-engine" class="headerlink" title="The UI is decoupled from the engine"></a>The UI is decoupled from the engine</h3><p>A TUI, IDE, desktop app, or custom integration can share the same lifecycle and safety semantics. New frontends do not need to reinvent the agent.</p>
+<h3 id="Feedback-is-part-of-reasoning"><a href="#Feedback-is-part-of-reasoning" class="headerlink" title="Feedback is part of reasoning"></a>Feedback is part of reasoning</h3><p>The loop treats command output and file changes as first-class observations. Codex can repair a failed build because the failure becomes context, not because the model somehow predicted every consequence in advance.</p>
+<h3 id="Safety-is-layered"><a href="#Safety-is-layered" class="headerlink" title="Safety is layered"></a>Safety is layered</h3><p>Policy, human approval, sandbox transformation, and process execution are distinct components. Each can evolve without collapsing the whole security model into a single yes&#x2F;no switch.</p>
+<h3 id="State-is-externalized"><a href="#State-is-externalized" class="headerlink" title="State is externalized"></a>State is externalized</h3><p>Repository files, rollouts, diffs, plans, and memory records give long-running work durable state. The model does not have to carry everything inside one transient response.</p>
+<h3 id="Integration-boundaries-are-explicit"><a href="#Integration-boundaries-are-explicit" class="headerlink" title="Integration boundaries are explicit"></a>Integration boundaries are explicit</h3><p>Tools normalize capabilities, the app server normalizes clients, and persistence normalizes continuation. These boundaries are what let the system grow without placing every responsibility inside the model prompt.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>The cleanest way to understand Codex is not “an LLM that can run shell commands.” It is a stateful agent harness built around a model:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">context → model → action → guarded execution → observation → persisted context</span><br></pre></td></tr></table></figure>
+
+<p>The model supplies judgment, but the surrounding runtime supplies continuity, evidence, permissions, and a real environment. The app server makes the engine usable from many clients; the tool layer makes external capabilities uniform; the approval and sandbox layers make execution governable; rollouts and memory let useful state survive beyond a single response.</p>
+<p>Once this loop is visible, Codex’s behavior becomes much easier to reason about. A strong prompt helps, but reliable agentic work comes from the whole system: clear instructions, bounded tools, observable results, durable state, and verification at every meaningful step.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2026/09/30/agent/deep-dive-into-codex/" data-id="cmunk13fb0004su2gf11o4dhf" data-title="a deep dive into codex" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/agent/" rel="tag">agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ai/" rel="tag">ai</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/codex/" rel="tag">codex</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2024/11/21/cmake/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cmake</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/agent/" rel="tag">agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ai/" rel="tag">ai</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cmake/" rel="tag">cmake</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/codex/" rel="tag">codex</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/defi/" rel="tag">defi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/agent/" style="font-size: 10px;">agent</a> <a href="/tags/ai/" style="font-size: 10px;">ai</a> <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cmake/" style="font-size: 10px;">cmake</a> <a href="/tags/codex/" style="font-size: 10px;">codex</a> <a href="/tags/cpp/" style="font-size: 15px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 13.75px;">cuda</a> <a href="/tags/defi/" style="font-size: 10px;">defi</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/gpu/" style="font-size: 10px;">gpu</a> <a href="/tags/math/" style="font-size: 13.75px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/11/">November 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/09/30/agent/deep-dive-into-codex/">a deep dive into codex</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/cmake/">cmake</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/gpu/">Nvidia cuda dev all in one</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/19/uni-v3/">a deep dive into uniswap v3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/13/math/polynomials/">polynomials</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 cliff<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

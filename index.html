@@ -71,6 +71,383 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-agent/deep-dive-into-codex" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/09/30/agent/deep-dive-into-codex/" class="article-date">
+  <time class="dt-published" datetime="2026-09-30T10:40:00.000Z" itemprop="datePublished">2026-09-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/09/30/agent/deep-dive-into-codex/">a deep dive into codex</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Codex looks like a chat interface, but the model is only one component. The useful system is a loop around the model: collect context, ask the model what to do, execute tools, return their results, enforce permissions, persist the history, and repeat until the task is complete.</p>
+<p>That distinction explains why an agent can work across a repository while a plain language model can only propose text. Codex can observe the real result of a command or edit and use that feedback in its next decision.</p>
+<p>This article develops a source-level mental model of the open-source Codex runtime. Names and file paths reflect a snapshot of the implementation and may move; the architectural boundaries are the durable part. For the current public protocol and behavior, use the <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/app-server">Codex app-server documentation</a> as the source of truth.</p>
+<h2 id="1-The-big-picture"><a href="#1-The-big-picture" class="headerlink" title="1. The big picture"></a>1. The big picture</h2><p>The runtime can be understood as five layers:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────────────────────────────────┐</span><br><span class="line">│ Frontends                                                    │</span><br><span class="line">│ TUI · exec · CLI · IDE extension · VS Code · Codex Web      │</span><br><span class="line">└──────────────────────────────┬───────────────────────────────┘</span><br><span class="line">                               │ app-server protocol</span><br><span class="line">                               │ thread/* · turn/* · item/*</span><br><span class="line">┌──────────────────────────────▼───────────────────────────────┐</span><br><span class="line">│ App server                                                   │</span><br><span class="line">│ Translates client requests and streams events                │</span><br><span class="line">│ In-process for some clients; stdio/WebSocket for others      │</span><br><span class="line">└──────────────────────────────┬───────────────────────────────┘</span><br><span class="line">                               │</span><br><span class="line">┌──────────────────────────────▼───────────────────────────────┐</span><br><span class="line">│ Core engine                                                  │</span><br><span class="line">│ Session/thread → task → model/tool loop                      │</span><br><span class="line">│                                                              │</span><br><span class="line">│ model client ────────────────► Responses API                 │</span><br><span class="line">│ tool orchestrator ───────────► shell · apply_patch · MCP     │</span><br><span class="line">│ rollout recorder ────────────► persistent history            │</span><br><span class="line">└──────────────────┬─────────────────────────┬─────────────────┘</span><br><span class="line">                   │                         │</span><br><span class="line">        ┌──────────▼──────────┐   ┌──────────▼──────────┐</span><br><span class="line">        │ Approval policy     │   │ OS sandbox          │</span><br><span class="line">        │ user / rules /      │   │ filesystem, process │</span><br><span class="line">        │ automated reviewer  │   │ and network limits  │</span><br><span class="line">        └─────────────────────┘   └─────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>The frontends do not each implement their own coding agent. They present different views over the same underlying engine. The app server provides the integration boundary: authentication, conversation history, approvals, streamed events, and thread&#x2F;turn operations. This separation lets the TUI and an IDE extension behave differently without duplicating the agent loop.</p>
+<p>The core engine owns the work. It prepares model input, receives a streamed response, dispatches requested tools, feeds observations back to the model, and records what happened. Approval routing decides whether an action may proceed; the sandbox limits what a permitted command can actually touch.</p>
+<p>This is the most important high-level split:</p>
+<ul>
+<li>the <strong>model</strong> proposes actions;</li>
+<li>the <strong>harness</strong> coordinates the loop;</li>
+<li>the <strong>tools</strong> interact with the world;</li>
+<li>the <strong>policy layer</strong> decides when human authorization is required;</li>
+<li>the <strong>sandbox</strong> enforces the technical boundary;</li>
+<li>the <strong>rollout</strong> makes the work resumable and inspectable.</li>
+</ul>
+<p>The same pattern appears in OpenAI’s managed agent architecture: a harness runs the model&#x2F;tool loop, while a separate environment provides files and compute. The local Codex runtime places that idea on the developer’s machine.</p>
+<h2 id="2-The-core-mental-model-queues-sessions-tasks-and-turns"><a href="#2-The-core-mental-model-queues-sessions-tasks-and-turns" class="headerlink" title="2. The core mental model: queues, sessions, tasks, and turns"></a>2. The core mental model: queues, sessions, tasks, and turns</h2><p>At the source level, Codex behaves like a headless asynchronous service. A user interface communicates with it through two logical streams:</p>
+<ul>
+<li><strong>Submission queue (SQ), UI → Codex.</strong> User input and control messages enter the engine: start work, interrupt, answer a question, or resolve an approval.</li>
+<li><strong>Event queue (EQ), Codex → UI.</strong> Progress returns to the client: text deltas, item updates, approval requests, errors, and completion events.</li>
+</ul>
+<p>This is why the engine is reusable. The transport can be an in-process channel, standard input&#x2F;output, or a socket; the core still sees requests arriving in one direction and events leaving in the other. The current app-server protocol exposes this model as JSON-RPC requests plus <code>thread/*</code>, <code>turn/*</code>, and <code>item/*</code> notifications.</p>
+<p>The state hierarchy in the photographed source notes is:</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Meaning</th>
+<th>Typical source area</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Session</td>
+<td>Configuration and state for one conversation; normally one active unit of work at a time</td>
+<td><code>core/src/session/</code></td>
+</tr>
+<tr>
+<td>Task</td>
+<td>Work initiated by one user request; it can require several model&#x2F;tool iterations</td>
+<td><code>core/src/tasks/</code></td>
+</tr>
+<tr>
+<td>Turn</td>
+<td>One pass through prompt construction, model streaming, and tool-result handling</td>
+<td><code>core/src/session/turn.rs</code></td>
+</tr>
+</tbody></table>
+<p>There is a terminology trap here. In the public app-server API, a <strong>thread</strong> is the persistent conversation and a <strong>turn</strong> is the user-visible cycle started by <code>turn/start</code>. Internal names can be finer-grained and can change over time. When integrating with Codex, follow the public protocol; when reading the source, first identify what that version means by session, task, and turn.</p>
+<h2 id="3-The-agent-loop"><a href="#3-The-agent-loop" class="headerlink" title="3. The agent loop"></a>3. The agent loop</h2><p>The turn loop is the heart of Codex. Conceptually, each iteration does five things.</p>
+<h3 id="3-1-Build-the-prompt"><a href="#3-1-Build-the-prompt" class="headerlink" title="3.1 Build the prompt"></a>3.1 Build the prompt</h3><p>Codex assembles the material the model needs: system and developer instructions, repository guidance such as <code>AGENTS.md</code>, conversation history, the current request, available tool definitions, relevant environment state, and any tool results from the previous iteration.</p>
+<p>The prompt is therefore not just the latest chat message. It is a structured snapshot of the task and the world around it.</p>
+<h3 id="3-2-Stream-the-model-response"><a href="#3-2-Stream-the-model-response" class="headerlink" title="3.2 Stream the model response"></a>3.2 Stream the model response</h3><p>The client sends the prompt to the Responses API and consumes a stream of response events. Streaming lets the UI show commentary as it arrives and lets the runtime recognize tool calls without waiting for one monolithic response.</p>
+<p>Connection retries, backoff, and transport fallback belong at this boundary. They are reliability details around the loop, not agent reasoning. A completed response can also provide an identifier that helps preserve continuity or resume work.</p>
+<h3 id="3-3-Dispatch-tool-calls"><a href="#3-3-Dispatch-tool-calls" class="headerlink" title="3.3 Dispatch tool calls"></a>3.3 Dispatch tool calls</h3><p>When the model asks to run a command, edit a file, search the web, call an MCP server, or use another tool, the orchestrator resolves the tool by name and invokes its implementation. Independent calls may run in parallel; dependent calls must wait for the observations they require.</p>
+<p>Before execution, sensitive actions pass through approval policy and sandbox preparation. The model does not bypass those layers merely by emitting a tool call.</p>
+<h3 id="3-4-Feed-observations-back"><a href="#3-4-Feed-observations-back" class="headerlink" title="3.4 Feed observations back"></a>3.4 Feed observations back</h3><p>Tool output becomes new model input. A compiler error, failing test, command exit code, file diff, or search result is not a side channel: it is the evidence that lets the next iteration adapt.</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">user request</span><br><span class="line">    ↓</span><br><span class="line">build context → call model → tool request → execute tool</span><br><span class="line">      ↑                                      ↓</span><br><span class="line">      └────────────── tool result ───────────┘</span><br></pre></td></tr></table></figure>
+
+<p>The loop continues while the model requests more work. When it produces a final response without another tool request, the task can finish.</p>
+<h3 id="3-5-Persist-incrementally"><a href="#3-5-Persist-incrementally" class="headerlink" title="3.5 Persist incrementally"></a>3.5 Persist incrementally</h3><p>Messages, tool calls, results, and state changes are appended to the rollout as work happens. Incremental persistence matters: a long task should remain inspectable and recoverable even if the process or connection fails before the final answer.</p>
+<p>This loop is why verification is so valuable. Tests, builds, linters, and diffs turn assumptions into observations. OpenAI’s write-up on <a target="_blank" rel="noopener" href="https://developers.openai.com/blog/run-long-horizon-tasks-with-codex">long-horizon Codex tasks</a> describes the same operating rhythm: plan, edit, run tools, observe, repair, and repeat.</p>
+<h2 id="4-Tools-one-interface-many-capabilities"><a href="#4-Tools-one-interface-many-capabilities" class="headerlink" title="4. Tools: one interface, many capabilities"></a>4. Tools: one interface, many capabilities</h2><p>Codex keeps a registry of tools and dispatches calls by name. The implementations differ, but the model sees a common pattern: a name, an input schema, and a result.</p>
+<h3 id="Shell-execution"><a href="#Shell-execution" class="headerlink" title="Shell execution"></a>Shell execution</h3><p>The shell tool runs commands and returns their output and exit status. It is the bridge from language reasoning to compilers, tests, Git, package managers, and project-specific scripts. Because shell access is powerful, it is also the path most tightly connected to approvals and sandboxing.</p>
+<h3 id="apply-patch"><a href="#apply-patch" class="headerlink" title="apply_patch"></a><code>apply_patch</code></h3><p>File editing uses a patch-oriented tool rather than asking the model to rewrite whole files blindly. The format describes add, update, and delete operations, and a streaming parser can validate and apply the patch as it arrives.</p>
+<p>Patch-based editing has three useful properties:</p>
+<ol>
+<li>The intended change is explicit.</li>
+<li>The resulting diff is easy for a human to inspect.</li>
+<li>Unrelated content is less likely to be overwritten.</li>
+</ol>
+<h3 id="MCP-tools"><a href="#MCP-tools" class="headerlink" title="MCP tools"></a>MCP tools</h3><p>External Model Context Protocol tools are adapted into the same internal tool shape, so the model can use a remote service much like a built-in capability. Codex acts as an MCP <strong>client</strong> when it connects to external tool servers over transports such as stdio or HTTP and exposes their catalogs to the model.</p>
+<p>Older Codex versions could also expose Codex itself as an MCP <strong>server</strong>, allowing another agent or IDE to drive a Codex conversation. That direction is visible in the source snapshot behind this article, but it is no longer the recommended integration path. Current documentation directs new deep integrations to the <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/app-server">Codex app server</a> and automation or CI use cases to the <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/codex-sdk">Codex SDK</a>; the legacy Codex MCP server is deprecated.</p>
+<p>The architectural lesson survives that migration: protocol adapters should terminate at a stable tool or application boundary rather than leaking transport details into the core loop.</p>
+<h2 id="5-Sandboxing-and-approvals-two-different-gates"><a href="#5-Sandboxing-and-approvals-two-different-gates" class="headerlink" title="5. Sandboxing and approvals: two different gates"></a>5. Sandboxing and approvals: two different gates</h2><p>Codex’s security model separates a policy decision from technical enforcement.</p>
+<h3 id="Approval-routing-asks-“may-this-action-proceed-”"><a href="#Approval-routing-asks-“may-this-action-proceed-”" class="headerlink" title="Approval routing asks “may this action proceed?”"></a>Approval routing asks “may this action proceed?”</h3><p>A command is compared with the active approval policy and execution rules. Depending on the result, it may run automatically, prompt the user, or be reviewed by another configured mechanism. Equivalent approved command shapes can be remembered for an appropriate scope so the user is not repeatedly asked the same question.</p>
+<h3 id="The-sandbox-asks-“what-can-this-process-actually-do-”"><a href="#The-sandbox-asks-“what-can-this-process-actually-do-”" class="headerlink" title="The sandbox asks “what can this process actually do?”"></a>The sandbox asks “what can this process actually do?”</h3><p>Even after approval routing, the command runs under an OS-enforced boundary. Current Codex documentation describes local execution as a combination of an approval policy and a sandbox that normally limits writes to the workspace and keeps network access off by default.</p>
+<p>The implementation is platform-specific. In the source snapshot:</p>
+<table>
+<thead>
+<tr>
+<th>OS</th>
+<th>Main enforcement mechanism</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>macOS</td>
+<td>Seatbelt sandbox profiles</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>Landlock, seccomp, <code>no_new_privs</code>, and bubblewrap where available</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>Restricted tokens and deny ACLs</td>
+</tr>
+</tbody></table>
+<p>The runtime also applies process hardening, such as constraining tracing or core dumps and scrubbing dangerous loader-related environment variables before launching a child process. Some deployments place the actual spawn operation in a separate executor with a virtual filesystem policy.</p>
+<p>Keeping these layers separate is deliberate:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">model requests action</span><br><span class="line">        ↓</span><br><span class="line">policy and approval routing</span><br><span class="line">        ↓</span><br><span class="line">per-OS sandbox transformation</span><br><span class="line">        ↓</span><br><span class="line">process execution</span><br><span class="line">        ↓</span><br><span class="line">captured output returned to the loop</span><br></pre></td></tr></table></figure>
+
+<p>Approval is not a substitute for containment, and containment is not a substitute for informed approval. The former expresses user intent; the latter limits blast radius. See <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/agent-approvals-security">Agent approvals &amp; security</a> for current behavior and configuration.</p>
+<h2 id="6-Persistence-why-a-session-can-resume"><a href="#6-Persistence-why-a-session-can-resume" class="headerlink" title="6. Persistence: why a session can resume"></a>6. Persistence: why a session can resume</h2><p>A Codex session is a persistent conversation identified by a stable thread ID. Each user-visible unit of work has its own turn ID. The local rollout is an append-oriented JSONL transcript containing information such as:</p>
+<ul>
+<li>user and agent messages;</li>
+<li>tool calls and results;</li>
+<li>thread and turn metadata;</li>
+<li>token usage and compaction events;</li>
+<li>environment and execution context needed to understand the work.</li>
+</ul>
+<p>Depending on the Codex version, active rollout files have appeared under date-partitioned paths inside <code>~/.codex/sessions/</code> or related thread storage. Treat that layout as generated implementation state, not as a stable API.</p>
+<p>The rollout enables several features:</p>
+<ul>
+<li><strong>resume</strong> reconstructs enough context to continue the conversation;</li>
+<li><strong>fork</strong> creates a new line of work from an earlier point;</li>
+<li><strong>diagnostics</strong> can explain which messages and tools led to an outcome;</li>
+<li><strong>compaction</strong> summarizes older material when the context window fills;</li>
+<li><strong>memory extraction</strong> can distill reusable context from eligible completed work.</li>
+</ul>
+<p>These files can contain prompts, source code, local paths, commands, and tool output. They should be treated as sensitive. Archiving retains the transcript; deletion removes persisted thread data. The app server exposes explicit operations for both lifecycle choices.</p>
+<h2 id="7-Memory-is-derived-context-not-authority"><a href="#7-Memory-is-derived-context-not-authority" class="headerlink" title="7. Memory is derived context, not authority"></a>7. Memory is derived context, not authority</h2><p>Conversation persistence and memory solve different problems. A rollout preserves one thread in detail. Memory extracts a smaller amount of potentially useful context so it can help in future threads.</p>
+<p>The pipeline is roughly:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">session rollout JSONL</span><br><span class="line">        ↓</span><br><span class="line">phase 1: per-thread extraction</span><br><span class="line">        ↓</span><br><span class="line">phase 2: global selection and consolidation</span><br><span class="line">        ↓</span><br><span class="line">reusable local memory files</span><br></pre></td></tr></table></figure>
+
+<p>The first phase can produce compact facts about tasks, outcomes, preferences, reusable knowledge, failures, and references, plus a readable summary of the thread and evidence linking the memory back to its source. The second phase selects useful, current entries and consolidates them into the global memory store.</p>
+<p>In the implementation snapshot, an extraction record separates <code>raw_memory</code>, a readable <code>rollout_summary</code>, and a short <code>rollout_slug</code>. Version fields such as <code>source_updated_at</code> and <code>generated_at</code> identify the rollout used to create it. Bookkeeping fields such as <code>usage_count</code>, <code>last_usage</code>, <code>selected_for_phase2</code>, and a phase-two source watermark help the consolidator measure reuse and avoid treating a stale selection as current. These are useful for understanding the pipeline, but they are internal storage details rather than a stable API.</p>
+<p>Local Codex memories live under <code>~/.codex/memories/</code>. The generated state can include summaries, durable entries, recent inputs, and supporting evidence. Codex waits for eligible threads to become idle before processing them, and it can skip extraction because of age, external-context policy, or available rate limit.</p>
+<p>Two controls are intentionally independent:</p>
+<ul>
+<li><code>memories.generate_memories</code> decides whether new chats may contribute to future memory;</li>
+<li><code>memories.use_memories</code> decides whether existing memories may be injected into future sessions.</li>
+</ul>
+<p>The <code>/memories</code> command changes these choices for the current chat; <code>config.toml</code> supplies global defaults. Disabling either control does not delete stored memories and does not stop ordinary session persistence.</p>
+<p>The most important rule is conceptual: memory is a <strong>recall layer</strong>, not an authoritative source. Requirements that must always be followed belong in <code>AGENTS.md</code> or checked-in project documentation. Memories can be stale, incomplete, or irrelevant to a new task. The current <a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/customization/memories">Codex memories documentation</a> makes the same distinction.</p>
+<h2 id="8-A-practical-source-reading-order"><a href="#8-A-practical-source-reading-order" class="headerlink" title="8. A practical source-reading order"></a>8. A practical source-reading order</h2><p>If you want to trace the implementation rather than reading the repository from top to bottom, this order keeps the concepts connected:</p>
+<ol>
+<li><code>codex-rs/docs/protocol_v1.md</code> or the current protocol documentation — learn the vocabulary and event sequence first.</li>
+<li><code>core/src/session/turn.rs</code> — find the main agent loop.</li>
+<li><code>core/src/client.rs</code> — see how Codex talks to the model and consumes streaming responses.</li>
+<li><code>core/src/tools/orchestrator.rs</code> and <code>apply-patch/</code> — follow tool dispatch and file editing.</li>
+<li><code>sandboxing/</code> and <code>execpolicy/</code> — trace policy, approval, and OS enforcement.</li>
+<li><code>AGENTS.md</code> at the repository root — understand contributor-facing conventions before interpreting or changing the code.</li>
+</ol>
+<p>Paths in a fast-moving repository will change. Search by concepts and types when a path no longer exists: thread, turn, rollout, orchestrator, approval, sandbox, and app server are better anchors than a frozen directory tree.</p>
+<h2 id="9-What-the-architecture-gets-right"><a href="#9-What-the-architecture-gets-right" class="headerlink" title="9. What the architecture gets right"></a>9. What the architecture gets right</h2><p>Several design choices make Codex more than a code-generating chat:</p>
+<h3 id="The-UI-is-decoupled-from-the-engine"><a href="#The-UI-is-decoupled-from-the-engine" class="headerlink" title="The UI is decoupled from the engine"></a>The UI is decoupled from the engine</h3><p>A TUI, IDE, desktop app, or custom integration can share the same lifecycle and safety semantics. New frontends do not need to reinvent the agent.</p>
+<h3 id="Feedback-is-part-of-reasoning"><a href="#Feedback-is-part-of-reasoning" class="headerlink" title="Feedback is part of reasoning"></a>Feedback is part of reasoning</h3><p>The loop treats command output and file changes as first-class observations. Codex can repair a failed build because the failure becomes context, not because the model somehow predicted every consequence in advance.</p>
+<h3 id="Safety-is-layered"><a href="#Safety-is-layered" class="headerlink" title="Safety is layered"></a>Safety is layered</h3><p>Policy, human approval, sandbox transformation, and process execution are distinct components. Each can evolve without collapsing the whole security model into a single yes&#x2F;no switch.</p>
+<h3 id="State-is-externalized"><a href="#State-is-externalized" class="headerlink" title="State is externalized"></a>State is externalized</h3><p>Repository files, rollouts, diffs, plans, and memory records give long-running work durable state. The model does not have to carry everything inside one transient response.</p>
+<h3 id="Integration-boundaries-are-explicit"><a href="#Integration-boundaries-are-explicit" class="headerlink" title="Integration boundaries are explicit"></a>Integration boundaries are explicit</h3><p>Tools normalize capabilities, the app server normalizes clients, and persistence normalizes continuation. These boundaries are what let the system grow without placing every responsibility inside the model prompt.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>The cleanest way to understand Codex is not “an LLM that can run shell commands.” It is a stateful agent harness built around a model:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">context → model → action → guarded execution → observation → persisted context</span><br></pre></td></tr></table></figure>
+
+<p>The model supplies judgment, but the surrounding runtime supplies continuity, evidence, permissions, and a real environment. The app server makes the engine usable from many clients; the tool layer makes external capabilities uniform; the approval and sandbox layers make execution governable; rollouts and memory let useful state survive beyond a single response.</p>
+<p>Once this loop is visible, Codex’s behavior becomes much easier to reason about. A strong prompt helps, but reliable agentic work comes from the whole system: clear instructions, bounded tools, observable results, durable state, and verification at every meaningful step.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2026/09/30/agent/deep-dive-into-codex/" data-id="cmunk13fb0004su2gf11o4dhf" data-title="a deep dive into codex" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/agent/" rel="tag">agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ai/" rel="tag">ai</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/codex/" rel="tag">codex</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cmake" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/21/cmake/" class="article-date">
+  <time class="dt-published" datetime="2024-11-21T02:08:33.000Z" itemprop="datePublished">2024-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2024/11/21/cmake/">cmake</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake .. -DTARGET_PLATFORM=macos_arm64 </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set_source_files_properties</span>(cuda/ntt/parameters.cuh PROPERTIES LANGUAGE CUDA)</span><br><span class="line"> <span class="built_in">set_target_properties</span>(cryptography_cuda</span><br><span class="line">         PROPERTIES</span><br><span class="line">                 CUDA_RUNTIME_LIBRARY Shared</span><br><span class="line">                 # CUDA_STANDARD <span class="number">14</span> <span class="meta"># this one cannot be changed by CMake</span></span><br><span class="line">                 # CUDA_SEPARABLE_COMPILATION ON <span class="meta"># not needed for this example</span></span><br><span class="line"> )</span><br><span class="line"> # # # <span class="built_in">set_property</span>(TARGET CUDA_COMP PROPERTY CUDA_ARCHITECTURES <span class="number">86</span>-real <span class="number">86</span>-<span class="keyword">virtual</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">set_target_properties</span>(cryptography_cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)</span><br><span class="line"><span class="built_in">set</span>(CUDA_NVCC_EXECUTABLE <span class="string">&quot;/usr/local/cuda/bin/nvcc&quot;</span>)</span><br><span class="line"># <span class="built_in">find_library</span>(CUDA_LIBRARY cuda HINTS $&#123;CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES&#125;)</span><br><span class="line"># <span class="built_in">target_compile_features</span>(cryptography_cuda PRIVATE cuda_std_14)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>CUDA_SEPARABLE_COMPILATION</code><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find_package(CUDAToolkit REQUIRED)</span><br><span class="line"><span class="built_in">set</span>(CUDA_SEPARABLE_COMPILATION ON)</span><br></pre></td></tr></table></figure>
+ Separable compilation allows the compilation of individual CUDA source files (*.cu) into separate object files, which can be linked together later. This can result in faster incremental builds, as changes to one CUDA source file may only require recompilation of that specific file.</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/11/21/cmake/" data-id="cm3qoczvi0000dn7u2e0tgi64" data-title="cmake" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cmake/" rel="tag">cmake</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-gpu" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/21/gpu/" class="article-date">
+  <time class="dt-published" datetime="2024-11-21T02:04:16.000Z" itemprop="datePublished">2024-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2024/11/21/gpu/">Nvidia cuda dev all in one</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="NVCC"><a href="#NVCC" class="headerlink" title="NVCC"></a>NVCC</h1><p>nvcc predefines the following macros:</p>
+<ul>
+<li><strong>NVCC</strong> (1): Defined when compiling C&#x2F;C++&#x2F;CUDA source files.</li>
+<li><strong>CUDACC</strong> (1): Defined when compiling CUDA source files.</li>
+</ul>
+<h1 id="compile-a-single-cuda-file"><a href="#compile-a-single-cuda-file" class="headerlink" title="compile a single cuda file"></a>compile a single cuda file</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvcc -gencode arch=compute_70,code=sm_70 -g -G kernel.cu -o kernel</span><br></pre></td></tr></table></figure>
+
+<h1 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h1><ul>
+<li>mapped memory: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/CUDA-Zero-Copy-Mapped-Memory/">https://leimao.github.io/blog/CUDA-Zero-Copy-Mapped-Memory/</a></li>
+<li>Increase Performance with Vectorized Memory Access<br><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/">https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/</a></li>
+</ul>
+<h1 id="data-transfer"><a href="#data-transfer" class="headerlink" title="data transfer"></a>data transfer</h1><h1 id="gdr"><a href="#gdr" class="headerlink" title="gdr"></a>gdr</h1><p><a target="_blank" rel="noopener" href="https://developer.nvidia.com/gdrcopy">https://developer.nvidia.com/gdrcopy</a></p>
+<h1 id="pinned-pageable-memory"><a href="#pinned-pageable-memory" class="headerlink" title="pinned pageable memory"></a>pinned pageable memory</h1><p><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/">https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/</a></p>
+<h1 id="nvlink-command"><a href="#nvlink-command" class="headerlink" title="nvlink command"></a>nvlink command</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink -h</span><br></pre></td></tr></table></figure>
+<h2 id="Showing-NVLINK-Status-For-Different-GPUs"><a href="#Showing-NVLINK-Status-For-Different-GPUs" class="headerlink" title="Showing NVLINK Status For Different GPUs"></a>Showing NVLINK Status For Different GPUs</h2><p>To show active NVLINK Connections, you must specify GPU index via -i</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink --status -i 0</span><br></pre></td></tr></table></figure>
+<p>example output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">GPU 0: NVIDIA H100 PCIe (UUID: GPU-a1bf2ff6-a98d-edac-a422-0bd80fbd9724)</span><br><span class="line">         Link 0: 26.562 GB/s</span><br><span class="line">         Link 1: 26.562 GB/s</span><br><span class="line">         Link 2: 26.562 GB/s</span><br><span class="line">         Link 3: 26.562 GB/s</span><br><span class="line">         Link 4: &lt;inactive&gt;</span><br><span class="line">         Link 5: 26.562 GB/s</span><br><span class="line">         Link 6: 26.562 GB/s</span><br><span class="line">         Link 7: 26.562 GB/s</span><br><span class="line">         Link 8: 26.562 GB/s</span><br><span class="line">         Link 9: &lt;inactive&gt;</span><br><span class="line">         Link 10: &lt;inactive&gt;</span><br><span class="line">         Link 11: 26.562 GB/s</span><br><span class="line">         Link 12: 26.562 GB/s</span><br><span class="line">         Link 13: 26.562 GB/s</span><br><span class="line">         Link 14: 26.562 GB/s</span><br><span class="line">         Link 15: &lt;inactive&gt;</span><br><span class="line">         Link 16: &lt;inactive&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="Display-amp-Explore-NVLINK-Capabilities-Per-Link"><a href="#Display-amp-Explore-NVLINK-Capabilities-Per-Link" class="headerlink" title="Display &amp; Explore NVLINK Capabilities Per Link"></a>Display &amp; Explore NVLINK Capabilities Per Link</h2><p>Allows you to query to ensure each link associated with the GPU Index (specified by -i #) has specific capabilities related to P2P, System Memory, P2P Atomics, SLI.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink --capabilities -i 1</span><br></pre></td></tr></table></figure>
+<p>example output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Link 0, P2P is supported: true</span><br><span class="line">Link 0, Access to system memory supported: true</span><br><span class="line">Link 0, P2P atomics supported: true</span><br><span class="line">Link 0, System memory atomics supported: false</span><br><span class="line">Link 0, SLI is supported: false</span><br><span class="line">Link 0, Link is supported: false</span><br><span class="line">Link 1, P2P is supported: true</span><br><span class="line">Link 1, Access to system memory supported: true</span><br><span class="line">Link 1, P2P atomics supported: true</span><br><span class="line">Link 1, System memory atomics supported: false</span><br><span class="line">Link 1, SLI is supported: false</span><br><span class="line">Link 1, Link is supported: false</span><br><span class="line">Link 2, P2P is supported: true</span><br><span class="line">Link 2, Access to system memory supported: true</span><br><span class="line">Link 2, P2P atomics supported: true</span><br><span class="line">Link 2, System memory atomics supported: false</span><br><span class="line">Link 2, SLI is supported: false</span><br><span class="line">Link 2, Link is supported: false</span><br><span class="line">Link 3, P2P is supported: true</span><br><span class="line">Link 3, Access to system memory supported: true</span><br><span class="line">Link 3, P2P atomics supported: true</span><br><span class="line">Link 3, System memory atomics supported: false</span><br><span class="line">Link 3, SLI is supported: false</span><br><span class="line">Link 3, Link is supported: false</span><br></pre></td></tr></table></figure>
+
+<h2 id="NVLink-Usage-Counters"><a href="#NVLink-Usage-Counters" class="headerlink" title="NVLink Usage Counters"></a>NVLink Usage Counters</h2><p>nvidia-smi nvlink -g N -i N allows you to view the data being traversed on the different NVLink Link.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink -g 0 -i 0</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="benchmarking-p2p-mem-copy"><a href="#benchmarking-p2p-mem-copy" class="headerlink" title="benchmarking p2p mem_copy"></a>benchmarking p2p mem_copy</h1><p>code for testing p2p memCopy</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">// P2P Test by Greg Gutmann</span><br><span class="line"> </span><br><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line">#include &quot;stdint.h&quot;</span><br><span class="line"> </span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    // GPUs</span><br><span class="line">    int gpuid_0 = 0;</span><br><span class="line">    int gpuid_1 = 1;</span><br><span class="line"> </span><br><span class="line">    // Memory Copy Size</span><br><span class="line">    uint32_t size = pow(2, 26); // 2^26 = 67MB</span><br><span class="line"> </span><br><span class="line">    // Allocate Memory</span><br><span class="line">    uint32_t* dev_0;</span><br><span class="line">    cudaSetDevice(gpuid_0);</span><br><span class="line">    cudaMalloc((void**)&amp;dev_0, size);</span><br><span class="line"> </span><br><span class="line">    uint32_t* dev_1;</span><br><span class="line">    cudaSetDevice(gpuid_1);</span><br><span class="line">    cudaMalloc((void**)&amp;dev_1, size);</span><br><span class="line"> </span><br><span class="line">    //Check for peer access between participating GPUs: </span><br><span class="line">    int can_access_peer_0_1;</span><br><span class="line">    int can_access_peer_1_0;</span><br><span class="line">    cudaDeviceCanAccessPeer(&amp;can_access_peer_0_1, gpuid_0, gpuid_1);</span><br><span class="line">    cudaDeviceCanAccessPeer(&amp;can_access_peer_1_0, gpuid_1, gpuid_0);</span><br><span class="line">    printf(&quot;cudaDeviceCanAccessPeer(%d-&gt;%d): %d\n&quot;, gpuid_0, gpuid_1, can_access_peer_0_1);</span><br><span class="line">    printf(&quot;cudaDeviceCanAccessPeer(%d-&gt;%d): %d\n&quot;, gpuid_1, gpuid_0, can_access_peer_1_0);</span><br><span class="line"> </span><br><span class="line">    if (can_access_peer_0_1 &amp;&amp; can_access_peer_1_0) &#123;</span><br><span class="line">        // Enable P2P Access</span><br><span class="line">        cudaSetDevice(gpuid_0);</span><br><span class="line">        cudaDeviceEnablePeerAccess(gpuid_1, 0);</span><br><span class="line">        cudaSetDevice(gpuid_1);</span><br><span class="line">        cudaDeviceEnablePeerAccess(gpuid_0, 0);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // Init Timing Data</span><br><span class="line">    uint32_t repeat = 10;</span><br><span class="line">    cudaEvent_t start;</span><br><span class="line">    cudaEvent_t stop;</span><br><span class="line">    cudaEventCreate(&amp;start);</span><br><span class="line">    cudaEventCreate(&amp;stop);</span><br><span class="line"> </span><br><span class="line">    // Init Stream</span><br><span class="line">    cudaStream_t stream;</span><br><span class="line">    cudaStreamCreateWithFlags(&amp;stream, cudaStreamNonBlocking);</span><br><span class="line"> </span><br><span class="line">    // ~~ Start Test ~~</span><br><span class="line">    cudaEventRecord(start, stream);</span><br><span class="line"> </span><br><span class="line">    //Do a P2P memcpy</span><br><span class="line">    for (int i = 0; i &lt; repeat; ++i) &#123;</span><br><span class="line">        cudaMemcpyAsync(dev_0, dev_1, size, cudaMemcpyDeviceToDevice, stream);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    cudaEventRecord(stop, stream);</span><br><span class="line">    cudaStreamSynchronize(stream);</span><br><span class="line">    // ~~ End of Test ~~</span><br><span class="line"> </span><br><span class="line">    // Check Timing &amp; Performance</span><br><span class="line">    float time_ms;</span><br><span class="line">    cudaEventElapsedTime(&amp;time_ms, start, stop);</span><br><span class="line">    double time_s = time_ms / 1e3;</span><br><span class="line"> </span><br><span class="line">    double gb = size * repeat / (double)1e9;</span><br><span class="line">    double bandwidth = gb / time_s;</span><br><span class="line"> </span><br><span class="line">    printf(&quot;Seconds: %f\n&quot;, time_s);</span><br><span class="line">    printf(&quot;Unidirectional Bandwidth: %f (GB/s)\n&quot;, bandwidth);</span><br><span class="line"> </span><br><span class="line">    if (can_access_peer_0_1 &amp;&amp; can_access_peer_1_0) &#123;</span><br><span class="line">        // Shutdown P2P Settings</span><br><span class="line">        cudaSetDevice(gpuid_0);</span><br><span class="line">        cudaDeviceDisablePeerAccess(gpuid_1);</span><br><span class="line">        cudaSetDevice(gpuid_1);</span><br><span class="line">        cudaDeviceDisablePeerAccess(gpuid_0);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // Clean Up</span><br><span class="line">    cudaFree(dev_0);</span><br><span class="line">    cudaFree(dev_1);</span><br><span class="line"> </span><br><span class="line">    cudaEventDestroy(start);</span><br><span class="line">    cudaEventDestroy(stop);</span><br><span class="line">    cudaStreamDestroy(stream);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="some-results"><a href="#some-results" class="headerlink" title="some results"></a>some results</h2><ul>
+<li>on H100<br>Unidirectional Bandwidth: 253.631489 (GB&#x2F;s)</li>
+<li>on 4090<br>Unidirectional Bandwidth: 25 (GB&#x2F;s)</li>
+</ul>
+<h1 id="profiling"><a href="#profiling" class="headerlink" title="profiling"></a>profiling</h1><p>nsight compute: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/Docker-Nsight-Compute/">https://leimao.github.io/blog/Docker-Nsight-Compute/</a><br>cuda with docker: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/NVIDIA-Docker-CUDA-Compatibility/">https://leimao.github.io/blog/NVIDIA-Docker-CUDA-Compatibility/</a></p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#">nvcc compiler</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/11/21/gpu/" data-id="cm3qoczvk0001dn7uajv88xhm" data-title="Nvidia cuda dev all in one" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-uni-v3" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/19/uni-v3/" class="article-date">
+  <time class="dt-published" datetime="2024-11-19T17:22:25.000Z" itemprop="datePublished">2024-11-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2024/11/19/uni-v3/">a deep dive into uniswap v3</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+<h2 id="concentrated-liquidity"><a href="#concentrated-liquidity" class="headerlink" title="concentrated liquidity"></a>concentrated liquidity</h2><p>recap on AMM. the price of asset X is defined as<br>\[ \tag{1}<br>P &#x3D; y&#x2F;x<br>\]</p>
+<p>where y is asset quantity of asset Y, and x is asset quantity of X.<br>since<br>\[ \tag{2}<br>L^{2} &#x3D; x*y<br>\]<br>where \(L\) is the liquidity, and \(L^2&#x3D;k\)</p>
+<p>divide E.q.(2) by E.q.(1), we get<br>\begin{equation} \label{eq:3}<br>L&#x2F;\sqrt{P} &#x3D; x<br>\end{equation}</p>
+<p>multiply E.q.(2) with E.q.(1), we get<br>\begin{equation} \label{eq:4}<br>L*\sqrt{P} &#x3D; y<br>\end{equation}<br><img src="/images/defi/uni_v3_virtual_reserves.jpg" alt="virtual reserves"></p>
+<p>at point a, we have<br>$$ L \cdot \sqrt{P_{a}} &#x3D; y_{a} $$<br>at point b, we have<br>\[L&#x2F;\sqrt{P_{b}} &#x3D; x_{b}\]<br>at point c, we have<br>\begin{equation}<br>(x_{b} + x_{real}) * (y_{a}+y_{real}) &#x3D; L^2<br>\end{equation}<br>then, we get<br>\begin{equation}<br>(L&#x2F;\sqrt{P_{b}} + x_{real}) * (L*\sqrt{P_{a}}+y_{real}) &#x3D; L^2<br>\end{equation}<br>which is E.q(2.2) in the original uni-v3 white paper</p>
+<p>alternatively, liquidity can be thought of as the amount that token1(Y) reserves (either actual or virtual) changes for a given change in \(\sqrt{P}\)<br>\begin{equation}<br>L &#x3D;  \frac{\Delta Y}{\Delta\sqrt{P}}<br>\end{equation}</p>
+<p>The global state also tracks the current tick index as tick $tick(i_{c})$, a signed integer representing the current tick (more specifically, the nearest tick below the current price)<br>specifically, at any given time, the following equation should be true:<br>\begin{equation}<br>i_{c} &#x3D;  \lfloor{log_{\sqrt{1.0001}}\sqrt{P}}\rfloor<br>\end{equation}</p>
+<p>The global state also tracks two numbers: $feeGrowthGlobal0(f_{g,0})$ and $feeGrowthGlobal1(f_{g,1})$. These represent the total amount of fees that have been earned per unit of virtual liquidity $L$, over the entire history of the contract</p>
+<p>Each tick tracks $\Delta L$, the total amount of liquidity that should be kicked in or out when the tick is crossed. The tick only needs to track one signed integer: the amount of liquidity added (or, if negative, removed) when the tick is crossed going left to right. This value does not need to be updated when the tick is crossed (but only when a position with a bound at that tick is updated)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/11/19/uni-v3/" data-id="cmunk13ev0000su2ggjw4fbm0" data-title="a deep dive into uniswap v3" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/defi/" rel="tag">defi</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-math/polynomials" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2024/06/13/math/polynomials/" class="article-date">
@@ -441,261 +818,6 @@
 
 
   
-    <article id="post-cryptography/zkp/polygon_zkevm" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/11/cryptography/zkp/polygon_zkevm/" class="article-date">
-  <time class="dt-published" datetime="2023-12-11T05:24:03.000Z" itemprop="datePublished">2023-12-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/11/cryptography/zkp/polygon_zkevm/">polygon zkEVM</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="zkProver"><a href="#zkProver" class="headerlink" title="zkProver"></a>zkProver</h2><h3 id="State-Machines"><a href="#State-Machines" class="headerlink" title="State Machines"></a>State Machines</h3><p>The zkProver follows modularity of design to the extent that, except for a few components, it is mainly a cluster of State Machines. It has a total of thirteen (13) State Machines;</p>
-<ul>
-<li>The Main State Machine</li>
-<li>Secondary State Machines → Binary SM, Storage SM, Memory SM, Arithmetic SM, Keccak Function SM, PoseidonG SM,</li>
-<li>Auxiliary State Machines → Padding-PG SM, Padding-KK SM, Bits2Field SM, Memory Align SM, Byte4 SM, ROM SM.<br>Due to the modular design of zkProver, the Main State Machine can delegate as many of tasks as possible to other specialist State Machines. This heavily improves the efficiency of Main SM.<br><img src="/images/zkp/zkevm/polygon/state_machines.png"></li>
-</ul>
-<h3 id="Two-Novel-Languages-For-zkProver"><a href="#Two-Novel-Languages-For-zkProver" class="headerlink" title="Two Novel Languages For zkProver"></a>Two Novel Languages For zkProver</h3><h4 id="Zero-Knowledge-Assembly-zkASM"><a href="#Zero-Knowledge-Assembly-zkASM" class="headerlink" title="Zero-Knowledge Assembly(zkASM)"></a>Zero-Knowledge Assembly(zkASM)</h4><p>As an Assembly language, the Zero-Knowledge Assembly (or zkASM) language is specially designed to map instructions from the zkProver’s Main State Machine to other State Machines. In case of the State Machines with firmware, zkASM is the Interpreter for the firmware.</p>
-<h4 id="Polynomial-Identity-Language-PIL"><a href="#Polynomial-Identity-Language-PIL" class="headerlink" title="Polynomial Identity Language(PIL)"></a>Polynomial Identity Language(PIL)</h4><p>The Polynomial Identity Language (or PIL) is especially designed for the zkProver. Almost all state machines express computations in terms of polynomials. Therefore, state transitions in State Machines must satisfy computation-specific polynomial identities.</p>
-<h3 id="Microprocessor-State-Machines"><a href="#Microprocessor-State-Machines" class="headerlink" title="Microprocessor State Machines"></a>Microprocessor State Machines</h3><p>There are two microprocessor-type state machines; the Main SM and the Storage SM. These two State Machines have the Firmware and the Hardware part. It is worth noting that each of these Microprocessor SM has its own ROM.</p>
-<p>The Firmware part runs the zkASM language to set up the logic and rules, which are expressed in JSON format and stored in a ROM. The JSON-file is then parsed to the specific SM Executor, which executes Storage Actions in compliance with the rules and logic in the JSON-file.</p>
-<p>The Hardware component, which uses the Polynomial Identity Language (PIL), defines constraints (or polynomial identities), expresses them in JSON format, and stores them in the accompanying JSON-file. These constraints are parsed to the specific SM Executor, because all computations must be executed in conformance to the polynomial identities.</p>
-<p><img src="/images/zkp/zkevm/polygon/micro_processor.png"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/11/cryptography/zkp/polygon_zkevm/" data-id="clq0nd00w00024z7u843t2waw" data-title="polygon zkEVM" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-arithmatic/montgomery-multiplication" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/07/arithmatic/montgomery-multiplication/" class="article-date">
-  <time class="dt-published" datetime="2023-12-07T11:10:13.000Z" itemprop="datePublished">2023-12-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/07/arithmatic/montgomery-multiplication/">montgomery multiplication</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="montgomery-space"><a href="#montgomery-space" class="headerlink" title="montgomery space"></a>montgomery space</h2><p>Montgomery multiplication works by first transforming the multipliers into Montgomery space, where modular multiplication can be performed cheaply, and then transforming them back when their actual values are needed. Unlike general integer division methods, Montgomery multiplication is not efficient for performing just one modular reduction and only becomes worthwhile when there is a chain of modular operations. </p>
-<p>The space is defined by the modulo <code>n</code> and a positive integer <code>r ≥ n</code> coprime to <code>n</code>. The algorithm involves modulo and division by <code>r</code>, so in practice, <code>r</code> is chosen to be <code>2^32</code> or <code>2^64</code>, so that these operations can be done with a right-shift and a bitwise <code>AND</code> respectively.</p>
-<p>Definition. the representative \(\bar{x}\) of a number \(x\) in the Montgomery space is defined as<br>\[ \bar{x} &#x3D; x \cdot r \mod n \]</p>
-<p>Computing this transformation involves a multiplication and a modulo — an expensive operation that we wanted to optimize away in the first place — which is why we only use this method when the overhead of transforming numbers to and from the Montgomery space is worth it and not for general modular multiplication.</p>
-<p>Inside the Montgomery space, addition, substraction, and checking for equality is performed as usual:</p>
-<p>\[ x \cdot r + y \cdot r \equiv (x+y) \cdot r \mod n \]</p>
-<p>However, this is not the case for multiplication. Denoting multiplication in the Montgomery space as \(∗\) and the “normal” multiplication as \(\cdot\), we expect the result to be:<br>\[ \bar{x} * \bar{y} &#x3D; \overline{x\cdot y} &#x3D; (x\cdot y)\cdot r \mod n \]</p>
-<p>But the normal multiplication in the Montgomery space yields:<br>\[ \bar{x} \cdot \bar{y}&#x3D;(x\cdot y)\cdot r \cdot r \mod n  \]</p>
-<p>Therefore, the multiplication in the Montgomery space is defined as<br>\[ \bar{x} * \bar{y} &#x3D; \bar{x} \cdot \bar{y} \cdot r^{-1} \mod n \]</p>
-<p>This means that, after we normally multiply two numbers in the Montgomery space, we need to reduce the result by multiplying it by \(r^{-1}\)  and taking the modulo — and there is an efficent way to do this particular operation.</p>
-<h2 id="Montgomery-reduction"><a href="#Montgomery-reduction" class="headerlink" title="Montgomery reduction"></a>Montgomery reduction</h2><p>assume that \(r&#x3D;2^{32}\), the modulo \(n\) is 32-bit, and the number \(x\) we need to reduce is 64-bit(the product of two 32-bit numbers). The goal is to calculate \(y&#x3D;x\cdot r^{-1} \mod n\).</p>
-<p>Since \(r\) is coprime with \(n\), we know that there are two numbers \(r^{-1}\) and \(n’\) in the \([0, n)\) range such that<br>\[ r \cdot r^{-1} + n \cdot n’ &#x3D; 1 \]<br>both \(r^{-1} and \quad n’\) can be computed using extended Euclidean algorithm <strong>(\(n’ &#x3D; n^{-1} \mod r\))</strong>.<br>Using this identiy, we can express \(r \cdot r^{-1}\) as \(1-n\cdot n’\) and write \(x \cdot r^{-1}\) as</p>
-<p>\[<br>  \displaylines{<br>  x\cdot r^{-1} &#x3D; \frac{x \cdot r \cdot r^{-1}}{r} \\<br>  &#x3D; \frac{x \cdot (1-n\cdot n’)}{r} \\<br>  &#x3D; \frac{x - x \cdot n \cdot n’}{r} \\<br>  &#x3D; \frac{x - x \cdot n \cdot n’ + k\cdot r \cdot n}{r} \quad (\mod n) (for \hspace{0.2cm}any\hspace{0.2cm} integer\hspace{0.2cm} k) \\<br>  &#x3D; \frac{x - (x\cdot n’ - k\cdot r)\cdot n}{r}<br>}<br>  \]</p>
-<p>Now, if we choose \(k\) to be \(\lfloor x\cdot n’&#x2F;r\rfloor\) (the upper 64 bits of \(x\cdot n’\), giving \(x\) is 64 bits and \(n’\) is 32 bits ), it will cancel out, and \(k\cdot r - x\cdot n’\) will simply be equal to \(x \cdot n’ \mod r\) (the lower 32 bits of \(x\cdot n’\)), implying:<br>\[ x\cdot r^{-1} &#x3D; (x - (x\cdot n’ \mod r )\cdot n)&#x2F;r\]</p>
-<p>the algorithm itself just evaluates this formula, performing two multiplications to calculate \(q &#x3D; x\cdot n’ \mod r\) and \(m &#x3D; q\cdot n\), and then subtracts it from \(x\) and right shifts the result to divide it by r.</p>
-<p>The only remaining thing to handle is that the result may not be in the \([0,n)\) range; but since<br>\[x &lt; n\cdot n &lt; r\cdot n &#x3D;&gt; x&#x2F;r &lt; n \]<br>and<br>\[m &#x3D; q\cdot n &lt; r\cdot n &#x3D;&gt; m&#x2F;r &lt; n\]<br>it is guaranted that<br>\[ -n &lt; (x-m)&#x2F;r &lt; n \]</p>
-<p>Therefore, we can simply check if the result is negative and in that case, add \(n\) to it, giving the following algorithm:</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">__uint32_t</span> u32;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">__uint64_t</span> u64;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> u32 n = <span class="number">1e9</span> + <span class="number">7</span>, nr = <span class="built_in">inverse</span>(n, <span class="number">1ull</span> &lt;&lt; <span class="number">32</span>); <span class="comment">// nr is n&#x27; in the above equations, r is 1&lt;&lt;32</span></span><br><span class="line"></span><br><span class="line"><span class="function">u32 <span class="title">reduce</span><span class="params">(u64 x)</span> </span>&#123;</span><br><span class="line">    u32 q = <span class="built_in">u32</span>(x) * nr;      <span class="comment">// q = x * n&#x27; mod r</span></span><br><span class="line">    u64 m = (u64) q * n;      <span class="comment">// m = q * n</span></span><br><span class="line">    u32 y = (x - m) &gt;&gt; <span class="number">32</span>;    <span class="comment">// y = (x - m) / r</span></span><br><span class="line">    <span class="keyword">return</span> x &lt; m ? y + n : y; <span class="comment">// if y &lt; 0, add n to make it be in the [0, n) range</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>This last check is relatively cheap, but it is still on the critical path. If we are fine with the result being in the \([0,2\cdot n−2]\) range instead of \([0, n)\), we can remove it and add \(n\) to the result unconditionally:</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">u32 <span class="title">reduce</span><span class="params">(u64 x)</span> </span>&#123;</span><br><span class="line">    u32 q = <span class="built_in">u32</span>(x) * nr;</span><br><span class="line">    u64 m = (u64) q * n;</span><br><span class="line">    u32 y = (x - m) &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">return</span> y + n</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>We can also move the <code>&gt;&gt; 32</code> operation one step earlier in the computation graph and compute \(\lfloor x&#x2F;r \rfloor - \lfloor m&#x2F;r \rfloor\) instead of \( (x-m)&#x2F;r\). This is correct because the lower 32 bits of \(x\) and \(m\) are equal anyway since<br>\[ m &#x3D; x\cdot n’ \cdot n &#x3D; x \mod r\] (mod r is same as taking the lower 32 bits).</p>
-<p>But why would we voluntarily choose to perfom two right-shifts instead of just one? This is beneficial because for <code>((u64) q * n) &gt;&gt; 32</code> we need to do a 32-by-32 multiplication and take the upper 32 bits of the result (which the x86 mul instruction already writes in a separate register, so it doesn’t cost anything), and the other right-shift <code>x &gt;&gt; 32</code> is not on the critical path.</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">u32 <span class="title">reduce</span><span class="params">(u64 x)</span> </span>&#123;</span><br><span class="line">    u32 q = <span class="built_in">u32</span>(x) * nr;</span><br><span class="line">    u32 m = ((u64) q * n) &gt;&gt; <span class="number">32</span>;</span><br><span class="line">    <span class="keyword">return</span> (x &gt;&gt; <span class="number">32</span>) + n - m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>if to reduce a u128 number（u64 * u64). it is as below</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">__uint128_t</span> u128;</span><br><span class="line"></span><br><span class="line"><span class="function">u64 <span class="title">reduce</span><span class="params">(u128 x)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    u64 q = <span class="built_in">u64</span>(x) * nr;</span><br><span class="line">    u64 m = ((u128) q * n) &gt;&gt; <span class="number">64</span>;</span><br><span class="line">    <span class="keyword">return</span> (x &gt;&gt; <span class="number">64</span>) + n - m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="Faster-Inverse"><a href="#Faster-Inverse" class="headerlink" title="Faster Inverse"></a>Faster Inverse</h1><p>Montgomery multiplication itself is fast, but it requires some precomputation:</p>
-<ul>
-<li>inverting \(n\) modulo \(r\) to compute \(n’\)</li>
-<li>transforming a number to the Montgomery space,</li>
-<li>transforming a number from the Montgomery space.</li>
-</ul>
-<p>The last operation is already efficiently performed with the reduce procedure we just implemented, but the first <code>inverting</code> can be slightly optimized.<br>Computing the inverse \(n’ &#x3D; n^{-1} \mod r\) can be done faster than with the extended Euclidean algorith by taking advantage of the fact that \(r\) is a power of two and using the following identity:<br>\[ a\cdot x &#x3D; 1 \mod 2^k &#x3D;&gt; a\cdot x\cdot (2-a\cdot x) &#x3D; 1 \mod 2^{2k} \]<br>Proof:<br> \[<br>  \displaylines{<br> a\cdot x \cdot (2-a\cdot x) &#x3D; 2\cdot a\cdot x - (a\cdot x)^2 \\<br> &#x3D; 2\cdot(1+m\cdot 2^k) - (1+m\cdot 2^k)^2 \\<br> &#x3D; 2 + 2\cdot m\cdot 2^k - 1-2\cdot m \cdot 2^k -m^2\cdot 2^{2k} \\<br> &#x3D; 1-m^2\cdot 2^{2k} \\<br> &#x3D; 1 \mod 2^{2k}<br>}<br>  \]<br><strong>note</strong></p>
-<ul>
-<li>\(a\cdot x \) coudl be represented by \(1+m\cdot 2^k\) as \(a\cdot x &#x3D; 1 \mod 2^k\)</li>
-</ul>
-<p>as for our case, \(x\) is \(nr\), \(a\) is \(n\). i.e \(n\cdot nr &#x3D; 1 \mod 2^k\). Since \(n \) is an odd number, we can start with \(nr&#x3D;1\) as the inverse of \(n\) modulo \(2^1\). then applying this identity one time, i.e \(n\cdot 1 \cdot (2-n\cdot 1) &#x3D; 1 \mod 2^2\). Let \(nr &#x3D; 1\cdot(2-n\cdot 1) \), we apply this identity again, and get \(n\cdot nr \cdot (2-a\cdot nr) &#x3D; 1 \mod 2^4\). Following this approach, and apply this identity exactly \(log_2^m\) times, where \(m\) is the bit length of \(r\)</p>
-<h2 id="Complement-Implementation"><a href="#Complement-Implementation" class="headerlink" title="Complement Implementation"></a>Complement Implementation</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">https://en.algorithmica.org/hpc/number-theory/montgomery/</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/95613967">csdn blog on montgomery reduction</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.nayuki.io/page/montgomery-reduction-algorithm">nayuki montgomery reduction</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/07/arithmatic/montgomery-multiplication/" data-id="clphpvdof0000aj7u9gaz5qfy" data-title="montgomery multiplication" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/kzg-commitment" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/03/cryptography/zkp/kzg-commitment/" class="article-date">
-  <time class="dt-published" datetime="2023-12-03T03:19:44.000Z" itemprop="datePublished">2023-12-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/03/cryptography/zkp/kzg-commitment/">kzg polynomial commitment</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>KZG polynomial commitments was introduced by Kate, Zaverucha and Goldberg. It is called a commitment, because having sent the commitment value (an elliptic curve point) to someone (the verifier), the prover cannot change the polynomial they are working with.</p>
-<h2 id="Comparison-to-Merkle-trees"><a href="#Comparison-to-Merkle-trees" class="headerlink" title="Comparison to Merkle trees"></a>Comparison to Merkle trees</h2><p>A Merkle tree is what cryptographers call a vector commitment: Using a Merkle tree of depth \(d\), you can compute a commitment to a vector. A polynomial commitment can be achived by making a merkle tree commitment of all polynomials coefficients. however, it is not efficient.</p>
-<h2 id="parings"><a href="#parings" class="headerlink" title="parings"></a>parings</h2><p>Let \(\mathbb{G_1}\) and \(\mathbb{G_2}\) be two elliptic curves wit a paring \(e: \mathbb{G_1} \times \mathbb{G_2} \rightarrow \mathbb{G_T}\). Let \(p\) be the order of \(\mathbb{G_1}\) and \(\mathbb{G_2}\), and \(G\) and \(H\) be generators of \(\mathbb{G_1}\) and \(\mathbb{G_2}\). We will use a very useful shorhand notation<br>\( [x]_1 &#x3D; xG \in \mathbb{G_1}\), and \([x]_2 &#x3D; xH \in \mathbb{G_2} \), for any \(x \in \mathbb{F_p}\)</p>
-<h2 id="Trusted-setup"><a href="#Trusted-setup" class="headerlink" title="Trusted setup"></a>Trusted setup</h2><p>Let’s assume we have a trusted setup, so that for some secret \(s\), the elements \([s^i]_1\) and \([s^i]_2\) are available to both prover and verifier for \(i&#x3D;0, …, n-1\). </p>
-<p>Let \(p(X) &#x3D; \sum_{i&#x3D;0}^{n}p_i X^i \) be a polynomial, the prover can compute</p>
-<p>\( \left[ p(s) \right]_1 &#x3D; p_0[s^0]_1 + p_1[s^1]_1 + … + p_n[s^n]_1 \)</p>
-<h2 id="Kate-commitment"><a href="#Kate-commitment" class="headerlink" title="Kate commitment"></a>Kate commitment</h2><p>In the Kate commitment scheme, the eleemnt \(C &#x3D; [p(s)]_1\) is the commitment to the polynomial \(p(X)\).  Could the prover (without knowing \(s\)) find another polynomial \(q(X) \neq p(X)\)  that has the same commitment. Let’s assume that this were the case. Then it would mean \([p(s) - q(s)]_1 &#x3D; 0\), implying \(p(s) - q(s) &#x3D; 0\).</p>
-<p>Now, \(r(X) &#x3D; p(X) - q(X)\) is itself a polynomial. we know that it’s not constant because \(p(X) \neq q(X) \).  It is a well-known fact that any non-constant polynomial of degree \(n\) can have at most \(n\) zeroes.<br>Since the prover doesn’t know \(s\), the only way they could achieve that \(p(s) - q(s) &#x3D; 0\)<br> is by making \( p(X) - q(X)&#x3D;0\) in as many places as possible. But since they can do that in at most \(n\)<br> places, as we’ve just proved, they are very unlikely to succeed: since \(n\) is much smaller than the order of the curve, \(p\). the probability that  \(s\) will be one of the points they chose to make \(p(X) &#x3D; q(X)\) will be vanishingly tiny.</p>
-<h2 id="Multiplying-polynomials"><a href="#Multiplying-polynomials" class="headerlink" title="Multiplying polynomials"></a>Multiplying polynomials</h2><p>While elliptic curves themselves don’t allow polynomial multiplication, luckily we can do it with pairings: We have that<br>\[ e([a]_1, [b]_2) &#x3D; e(G,H)^{(ab)} &#x3D; [ab]_T\]<br>while we unfortunately can’t just multiply two field elements inside an elliptic curve and get their product as an elliptic curve element, we can multiply two field elements if we commited to them in different curves (one in \(G_1\) and one in \(G_2\), and the output is a<br>\(G_T\) element.</p>
-<p>Noe let’s say we want to prove that \(p(z)&#x3D;y\). we will use the polynomial \(p(X) - y\). this polynomial is clearly zero at \(z\). Let \(q(X)\) be the polynomial \(p(X) - y\) divided by the linear factor \(X-z\), i.e<br>\[ q(X) &#x3D; \frac{p(X) - y}{X-z} \]<br>which is equivalent to saying that \(q(X)(X-z) &#x3D; p(X) - y\)</p>
-<h2 id="Kate-proofs"><a href="#Kate-proofs" class="headerlink" title="Kate proofs"></a>Kate proofs</h2><p>now a kate proof for the evaluation \(p(z) &#x3D; y\) is defined as \(\pi &#x3D; [q(s)]_1\). remember the commitment to the polynomial \(p(X)\) is defined as \(C&#x3D;[p(s)]_1\)<br>the verifier checks this proof using the following equation<br>\( e(\pi, [s-z]_2) &#x3D; e(C-[y]_1, H) \)</p>
-<p>Note that the verifier can compute \([s-z]_2\), because it is just a combination of the element \([s]_2\)<br> from the trusted setup and \(z\) is the point at which the polynomial is evaluated. </p>
-<h2 id="multiproofs"><a href="#multiproofs" class="headerlink" title="multiproofs"></a>multiproofs</h2><p>So far we have shown how to prove an evaluation of a polynomial at a single point. Note that this is already pretty amazing: You can show that some polynomial that could be any degree – say \(2^{28}\) – at some point takes a certain value, by only sending a single group element (that could be 48 bytes, for example in BLS12_381). The toy example of using Merkle trees as polynomial commitments would have needed to send \(2^{28}\) elements – all the coefficients of the polynomial.</p>
-<p>Let’s say we have a list of \(k\) points \((z_0, y_0),(z_1, y_1), …, (z_{k-1}, y_{k-1})\). Using lagrange interpolation, we can find polynomial \(I(X)\) goes through all of these points.</p>
-<p>Now let’s assume that we know \(p(X)\) goes through all these points. then the polynomial \(p(X) - I(X)\) will clearly be zero at each \(z_0, z_1, …, z_{k-1}\). the zero polynomial is<br>\(Z(X) &#x3D; (X-z_0)\cdot (X-z_1)…(X-z_{k-1})\)<br>Now, we can compute the quotient<br>\(q(X) &#x3D; \frac{p(X)-I(X)}{Z(X)}\)<br>We can now define the Kate multiproof for the evaluations \((z_0, y_0),(z_1, y_1),…, (z_{k-1}, y_{k-1})\): \(\pi &#x3D; [q(s)]_1\). note that this is still only one group element.</p>
-<p>Now, to check this, the verifier will also have to compute the interpolation polynomial \(I(X)\) and the zero polynomial Z(X). Using this, they can compute \([Z(s)]_2\) and \([I(s)]_1\), and thus verify the paring equation<br>\[ e(\pi, [Z(s)]_2) &#x3D; e(C-[I(s)]_1, H) \]</p>
-<h2 id="Kate-as-a-vector-commitment"><a href="#Kate-as-a-vector-commitment" class="headerlink" title="Kate as a vector commitment"></a>Kate as a vector commitment</h2><p>While the Kate commitment scheme is designed as a polynomial commitment, it actually also makes a really nice vector commitment. Remember that a vector commitment commits to a vector \(a_0, …, a_{n-1}\) and lets you prove that you committed to \(a_i\) for some \(i\). We can reproduce this using the Kate commitment scheme: Let \(p(X)\) be the polynomial that for all \(i\) evaluates as \(p(i)&#x3D;a_i\).<br>Now using this polynomial, we can prove any number of elements in the vector using just a single group element! Note how much more efficient (in terms of proof size) this is compared to Merkle trees</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html">Dankrad Feist Post</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/03/cryptography/zkp/kzg-commitment/" data-id="clpoya0gr0000pksj12ah1gzj" data-title="kzg polynomial commitment" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/circom" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/03/cryptography/zkp/circom/" class="article-date">
-  <time class="dt-published" datetime="2023-12-03T03:19:44.000Z" itemprop="datePublished">2023-12-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/03/cryptography/zkp/circom/">circom</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="Arithmetic-Operators"><a href="#Arithmetic-Operators" class="headerlink" title="Arithmetic Operators"></a>Arithmetic Operators</h2><p>| operator |example|explanation|<br>|—|:—:|:—:|—:|<br>||a \b| Quotient of the integer division |<br>|%|a % b| Remainder of the integer division |</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/03/cryptography/zkp/circom/" data-id="clqcbi48m00002y7uaaykdllj" data-title="circom" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -714,7 +836,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/agent/" rel="tag">agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ai/" rel="tag">ai</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cmake/" rel="tag">cmake</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/codex/" rel="tag">codex</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/defi/" rel="tag">defi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -724,7 +846,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/agent/" style="font-size: 10px;">agent</a> <a href="/tags/ai/" style="font-size: 10px;">ai</a> <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cmake/" style="font-size: 10px;">cmake</a> <a href="/tags/codex/" style="font-size: 10px;">codex</a> <a href="/tags/cpp/" style="font-size: 15px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 13.75px;">cuda</a> <a href="/tags/defi/" style="font-size: 10px;">defi</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/gpu/" style="font-size: 10px;">gpu</a> <a href="/tags/math/" style="font-size: 13.75px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -733,7 +855,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/11/">November 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -746,23 +868,23 @@
       <ul>
         
           <li>
+            <a href="/2026/09/30/agent/deep-dive-into-codex/">a deep dive into codex</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/cmake/">cmake</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/gpu/">Nvidia cuda dev all in one</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/19/uni-v3/">a deep dive into uniswap v3</a>
+          </li>
+        
+          <li>
             <a href="/2024/06/13/math/polynomials/">polynomials</a>
-          </li>
-        
-          <li>
-            <a href="/2024/01/16/arithmatic/multiplications/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
-          </li>
-        
-          <li>
-            <a href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/cpp/build/">cpp build</a>
           </li>
         
       </ul>
@@ -778,7 +900,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       
-      &copy; 2024 cliff<br>
+      &copy; 2026 cliff<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

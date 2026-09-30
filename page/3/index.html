@@ -71,6 +71,236 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-arithmatic/efficient_implementations" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/22/arithmatic/efficient_implementations/" class="article-date">
+  <time class="dt-published" datetime="2023-11-22T06:47:28.000Z" itemprop="datePublished">2023-11-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/22/arithmatic/efficient_implementations/">classic implementations of arithematic of multi precision big integers</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
+
+
+<h2 id="multiple-precision-integer-arithmetic"><a href="#multiple-precision-integer-arithmetic" class="headerlink" title="multiple-precision integer arithmetic"></a>multiple-precision integer arithmetic</h2><p>If \(b ≥ 2\) is an integer, then any positive integer \(a\) can be expressed uniquely as \(a &#x3D; a_n \cdot b^n+a_{n−1}\cdot b^{n−1}+···+a_1 \cdot b+a_0\), where \(a_i\) is an integer with \(0≤a_i &lt;b \) for \(0≤ i ≤ n \), and \(a_n  \ne 0\).</p>
+<p>The representation of a positive integer \(a\) as a sum of multiples of powers of \(b\), as given above, is called the base \(b\) or \(radix b\) representation of \(a\), which is usually written as<br>\(a &#x3D; (a_n a_{n−1} ···a_1 a_0)_b\)</p>
+<p>If \( (a_n a_{n−1} ···a_1 a_0)_b\) is the base b representation of \(a\) and \(a_n \ne 0\), then the precision<br>or length of a is n + 1. If n &#x3D; 0, then a is called a single-precision integer; otherwise, a is a <strong>multiple-precision</strong> integer.</p>
+<p>The division algorithm for integers provides an efficient method for determining the base b representation of a non-negative integer<br><img src="/images/arithmatic/radix_b_repesentation.png" alt="radix_b_repesentation"></p>
+<p>if \( (a_{n} a_{n−1} ···a_1 a_0)_b \) is the base b representation of a and k is a positive integer, then</p>
+<p>\( (u_{l} u_{l−1} ···u_1 u_0)_{b^k} \) is the base \( b^k \) representation of a, where \( l &#x3D;\lceil (n+1)&#x2F;k \rceil -1 \), </p>
+<p>\( u_i &#x3D; \sum_{j&#x3D;0}^{k-1} a_{ik+j}b^j  \) for \( 0 \le i \le l-1 \), and<br>\( u_l &#x3D; \sum_{j&#x3D;0}^{n-lk} a_{lk+j}b^j\)</p>
+<h3 id="Representing-negative-numbers"><a href="#Representing-negative-numbers" class="headerlink" title="Representing negative numbers"></a>Representing negative numbers</h3><p><strong>complement representation</strong>.</p>
+<h2 id="addition-and-subtraction"><a href="#addition-and-subtraction" class="headerlink" title="addition and subtraction"></a>addition and subtraction</h2><p><img src="/images/arithmatic/multiple_precision_addition.png" alt="multiple_precision_addition"><br>subraction is quite similar to addition. (omitted here)</p>
+<h2 id="multiplication"><a href="#multiplication" class="headerlink" title="multiplication"></a>multiplication</h2><p>Let x and y be integers expressed in radix b representation:<br>\( x &#x3D; (x_n x_{n−1} ··· x_1 x_0)_b \) and </p>
+<p>\( y &#x3D; (y_t y_{t−1} ··· y_1 y_0)_b \). The product x · y will have at most (n + t + 2) base b digits.</p>
+<h2 id="modular-reduction"><a href="#modular-reduction" class="headerlink" title="modular reduction"></a>modular reduction</h2><h3 id="Barrett"><a href="#Barrett" class="headerlink" title="Barrett"></a>Barrett</h3><h3 id="Mongtgomery"><a href="#Mongtgomery" class="headerlink" title="Mongtgomery"></a>Mongtgomery</h3><h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li>[1] <a target="_blank" rel="noopener" href="http://cacr.uwaterloo.ca/hac/about/chap14.pdf">Handbook of Applied Cryptography chap14</a></li>
+<li>[2] <a target="_blank" rel="noopener" href="https://blog.csdn.net/mutourend/article/details/134224122?spm=1001.2014.3001.5502">csdn blog</a></li>
+<li>[3] <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=hUl8ZB6hpUM">risc zero youtube: ff implementations: Barrett &amp; Montgomery</a></li>
+<li>[4] <a target="_blank" rel="noopener" href="https://en.algorithmica.org/hpc/number-theory/montgomery/">montgomery multiplication</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/22/arithmatic/efficient_implementations/" data-id="clp9d5a6z0007e37u1cxf6c30" data-title="classic implementations of arithematic of multi precision big integers" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cpp/generics_and_macros" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/21/cpp/generics_and_macros/" class="article-date">
+  <time class="dt-published" datetime="2023-11-21T03:35:20.000Z" itemprop="datePublished">2023-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/21/cpp/generics_and_macros/">cpp generics</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="generics"><a href="#generics" class="headerlink" title="generics"></a>generics</h1><h2 id="variadic-template-parameter"><a href="#variadic-template-parameter" class="headerlink" title="variadic template parameter"></a>variadic template parameter</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Types&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">printValues</span><span class="params">(<span class="type">const</span> Types&amp;... values)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Fold expression (C++17 and later) to print all values</span></span><br><span class="line">    (std::cout &lt;&lt; ... &lt;&lt; values) &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="macros"><a href="#macros" class="headerlink" title="macros"></a>macros</h1><h2 id="examples"><a href="#examples" class="headerlink" title="examples"></a>examples</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> defined(_WIN32)</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>__cplusplus</code> macro is a predefined macro in C++ that is used to indicate the version of the C++ standard being used by the compiler. The value of <code>__cplusplus</code> is an integer that represents the version.</li>
+<li><strong>FILE</strong><br><code>__FILE__</code> is a predefined macro in C and C++ that expands to the name of the current source file as a string literal.</li>
+<li><strong>LINE</strong><br><code>__LINE__</code> is a predefined macro in C and C++ that expands to the current line number in the source code.</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/21/cpp/generics_and_macros/" data-id="clp8cm0vx0000l57u7eqtbi6s" data-title="cpp generics" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cpp/key_words" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/21/cpp/key_words/" class="article-date">
+  <time class="dt-published" datetime="2023-11-21T03:35:20.000Z" itemprop="datePublished">2023-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/21/cpp/key_words/">cpp key workds</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <ul>
+<li><p><code>decltype</code><br><code>decltype</code> is a keyword that is used to obtain the type of an expression or an entity</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">42</span>;</span><br><span class="line">    <span class="type">double</span> y = <span class="number">3.14</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Using decltype to declare a variable with the same type as another variable</span></span><br><span class="line">    <span class="keyword">decltype</span>(x) result1 = x;  <span class="comment">// result1 has the type int</span></span><br><span class="line">    <span class="keyword">decltype</span>(y) result2 = y;  <span class="comment">// result2 has the type double</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Using decltype with an expression</span></span><br><span class="line">    <span class="type">int</span> a = <span class="number">10</span>;</span><br><span class="line">    <span class="type">int</span> b = <span class="number">20</span>;</span><br><span class="line">    <span class="keyword">decltype</span>(a + b) sum = a + b;  <span class="comment">// sum has the type int</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>friend</code><br>In C++, the friend keyword is used to grant non-member functions or other classes access to the private and protected members of a class. When a function or class is declared as a friend of another class, it is allowed to access private and protected members of that class as if it were a member of that class.</p>
+</li>
+<li><p><code>const</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> var = <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span>* a = <span class="keyword">new</span> <span class="type">int</span>;</span><br><span class="line">*a = <span class="number">2</span>; <span class="comment">// change the pointed int</span></span><br><span class="line">a = (<span class="type">int</span>*)&amp;var; <span class="comment">// change pointer to pointing another int</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> var = <span class="number">1</span>;</span><br><span class="line"><span class="type">const</span> <span class="type">int</span>* a = <span class="keyword">new</span> <span class="type">int</span>; <span class="comment">// cannot change the value pointed by a; same as written `int const* a = new int`</span></span><br><span class="line">*a = <span class="number">2</span>; <span class="comment">// illegal</span></span><br><span class="line">a = (<span class="type">int</span>*)&amp;var; <span class="comment">//  valid</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> var = <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span>* <span class="type">const</span> a = <span class="keyword">new</span> <span class="type">int</span>; <span class="comment">// cannot change the pointer address, but can change the pointed value;</span></span><br><span class="line">*a = <span class="number">2</span>; <span class="comment">// valid</span></span><br><span class="line">a = (<span class="type">int</span>*)&amp;var; <span class="comment">//  invalid</span></span><br><span class="line"></span><br><span class="line">```cpp</span><br><span class="line"><span class="type">const</span> <span class="type">int</span> var = <span class="number">1</span>;</span><br><span class="line"><span class="type">const</span> <span class="type">int</span>* <span class="type">const</span> a = <span class="keyword">new</span> <span class="type">int</span>; </span><br><span class="line">*a = <span class="number">2</span>; <span class="comment">// invalid</span></span><br><span class="line">a = (<span class="type">int</span>*)&amp;var; <span class="comment">//  invalid</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Entity</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>: </span><br><span class="line">    <span class="type">int</span> m_x, m_y;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">GetX</span><span class="params">()</span> <span class="type">const</span> <span class="comment">// const here means the method will not change state of the object</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> m_x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>const</code> is a promise, you can bypass it actually.</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/21/cpp/key_words/" data-id="clp8cm0w50003l57ubl7e5d6y" data-title="cpp key workds" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-cpp/std" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/11/21/cpp/std/" class="article-date">
+  <time class="dt-published" datetime="2023-11-21T03:35:20.000Z" itemprop="datePublished">2023-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/11/21/cpp/std/">cpp std</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="snprintf"><a href="#snprintf" class="headerlink" title="snprintf"></a>snprintf</h1><p><code>snprintf</code> is a function that formats a string and writes the resulting characters to a character array.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">snprintf</span><span class="params">(<span class="type">char</span> *str, <span class="type">size_t</span> size, <span class="type">const</span> <span class="type">char</span> *format, ...)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>str</code>: A pointer to the destination buffer where the resulting string is stored.</li>
+<li><code>size</code>: The size of the destination buffer (including the null-terminating character).</li>
+<li><code>format</code>: A format string that specifies the desired format of the output.</li>
+<li><code>...</code>: Additional arguments corresponding to the placeholders in the format string.<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">size_t</span> n = std::<span class="built_in">snprintf</span>(<span class="literal">nullptr</span>, <span class="number">0</span>, <span class="string">&quot;%s&quot;</span>, <span class="string">&quot;hello, world&quot;</span>);</span><br><span class="line">    std::cout &lt;&lt; n &lt;&lt; std::endl;  <span class="comment">// print 12</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="string"><a href="#string" class="headerlink" title="string"></a>string</h1><h2 id="std-string-n-39-0-39"><a href="#std-string-n-39-0-39" class="headerlink" title="std::string(n, &#39;\0&#39;)"></a><code>std::string(n, &#39;\0&#39;)</code></h2><p>creates a string with a length of <code>n</code> and fills it with null characters (‘\0’).</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">size_t</span> n = <span class="number">10</span>;</span><br><span class="line"><span class="function">std::string <span class="title">myString</span><span class="params">(n, <span class="string">&#x27;\0&#x27;</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="strerror-r"><a href="#strerror-r" class="headerlink" title="strerror_r"></a><code>strerror_r</code></h2><p>is a function that is commonly used for thread-safe retrieval of error messages. The purpose of this function is to convert an error number (an integer typically set by a system call or library function to indicate an error) into a human-readable error message</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">strerror_r</span><span class="params">(<span class="type">int</span> errnum, <span class="type">char</span> *buf, <span class="type">size_t</span> buflen)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>errnum</code>: The error number for which you want to retrieve the error message.</li>
+<li><code>buf</code>: A pointer to the buffer where the error message will be stored.</li>
+<li><code>buflen</code>: The size of the buffer pointed to by buf.</li>
+</ul>
+<h2 id="others"><a href="#others" class="headerlink" title="others"></a>others</h2><ul>
+<li><code>strncpy</code>: Copy no more than N characters of SRC to DEST.</li>
+<li><code>std::strlen</code>: Return the length of String.</li>
+<li><code>std::strstr</code> is a standard C library function that is used to find the first occurrence of a substring within a string. The function returns a pointer to the first occurrence of the substring in the given string, or NULL if the substring is not found.</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2023/11/21/cpp/std/" data-id="clp8cm0w60004l57uckd04dmz" data-title="cpp std" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-arithmatic/goldilocks-field" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/11/18/arithmatic/goldilocks-field/" class="article-date">
@@ -738,258 +968,6 @@ the original <code>z_h</code> (vanishing poly) is defined in subgroup <code>H</c
 
 
   
-    <article id="post-blockchain/danksharding" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/12/blockchain/danksharding/" class="article-date">
-  <time class="dt-published" datetime="2023-10-12T06:36:58.000Z" itemprop="datePublished">2023-10-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/12/blockchain/danksharding/">danksharding</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>Danksharding is central to Ethereum’s rollup-centric roadmap. The idea is to provide space for large blobs of data, which are verifiable and available, without attempting to interpret them.</p>
-<h2 id="Preliminaries"><a href="#Preliminaries" class="headerlink" title="Preliminaries"></a>Preliminaries</h2><p>All references to EC, in this report, refer to BLS12_381 [1]. We are mainly concerned with the EC Abelian-group \(\mathbb{G_{1}}\) and the EC scalar-field \(F_r\). Both are of size \(r &lt; 2256\). Note that \(2^{32}\) divides the size of the multiplicative-group in \(F_r\)</p>
-<h2 id="Data-organization"><a href="#Data-organization" class="headerlink" title="Data organization"></a>Data organization</h2><p>The input data consists of n &#x3D; 256 shard-blobs. Each shard-blob is a vector of m &#x3D; 4096 field-elements referred-to as symbols. The data symbols are organized in an n × m input<br>matrix<br>\[<br>    \tag{1}<br>    D_{n x m}^{in} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    d(0,0)   &amp; d(0,1)  &amp; \dots  &amp; d(0,m-1)\\<br>    d(1,0)   &amp; d(1,1)  &amp; \dots  &amp; d(1,m-1)\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    d(n-1,0)   &amp; d(n-1,1)  &amp; \dots  &amp; d(n-1,m-1)<br>}<br>\end{bmatrix}<br>\]<br>where each row is one of the shard-blob vectors [2]<br>In order to enable interpolation and polynomial-commitment to the data, we will pro-<br>ceed to treat the data symbols as polynomial evaluations.</p>
-<p>Let us thus associate each domain location in the input matrix with a field-element pair \(u_{\mu}, \omega_{\eta}\), where \(\mu \in [0, n−1], \eta \in [0, m−1]\) correspond to the row and column indexes, respectively.The row field-element is defined as \( u_{\mu} \equiv u^{rbo(\mu)}\), where u is a 2n’th root-of-unity such that \(u^{2n} &#x3D; 1\). The column field-element is defined as \( \omega_{\eta} \equiv \omega^{rbo(\eta)}\), where \(\omega\) is a 2m’th root-of-unity such that \(\omega^{2m} &#x3D; 1\). <span style="color:red"><em>Using reverse-bit-order ordering rather than natural-ordering allows accessing cosets in block (consecutive) rather than interleaved manner</em></span></p>
-<h2 id="coefficients-extraction"><a href="#coefficients-extraction" class="headerlink" title="coefficients extraction"></a>coefficients extraction</h2><p>Taking the data symbols to be evaluations of a 2D-polynomial or 1D-product-polynomials with row degree n−1 and column degree m−1 uniquely defines the polynomials’ coefficients.</p>
-<h3 id="2D-coeficients-extraction"><a href="#2D-coeficients-extraction" class="headerlink" title="2D coeficients extraction"></a>2D coeficients extraction</h3><p>The 2D-polynomial representing the input data can be expressed as<br>\[\tag{2} d(x,y) \equiv \sum_{i&#x3D;0}^{n-1}\sum_{j&#x3D;0}^{m-1} \hat{c}[i,j] x^{i}y^{j}\]<br>Plugging an evaluation from (1) into (2) results in the following:</p>
-<p>\[\tag{3} d(u_{\mu},\omega_{\eta}) \equiv \sum_{i&#x3D;0}^{n-1}\sum_{j&#x3D;0}^{m-1} \hat{c}[i,j] {u_{\mu}}^{i}{\omega_{\eta}}^{j}\]</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p>[1] Ben Edgington. Bls12-381 for the rest of us. <a target="_blank" rel="noopener" href="https://hackmd.io/@benjaminion/bls12-381">https://hackmd.io/@benjaminion/bls12-381</a>.<br>[2] Dankrad Feist. Data availability encoding. <a target="_blank" rel="noopener" href="https://notes.ethereum.org/@dankrad/danksharding_encoding">https://notes.ethereum.org/@dankrad/danksharding_encoding</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/12/blockchain/danksharding/" data-id="clokyy8dm0005qwsja95zaawe" data-title="danksharding" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-math/fourier-series" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/12/math/fourier-series/" class="article-date">
-  <time class="dt-published" datetime="2023-10-12T03:13:17.000Z" itemprop="datePublished">2023-10-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/12/math/fourier-series/">fourier series, DFT and FFT</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="Fourier-Series"><a href="#Fourier-Series" class="headerlink" title="Fourier Series"></a>Fourier Series</h2><h3 id="innter-product-of-two-functions"><a href="#innter-product-of-two-functions" class="headerlink" title="innter product of two functions"></a>innter product of two functions</h3><p>\[ &lt;f(x), g(x)&gt; &#x3D; \int_{a}^{b} f(x) \bar{g}(x)dx\]<br>\(\bar{g}\) is the congugate of g on complex number system</p>
-<h3 id="Fourier-series-definition"><a href="#Fourier-series-definition" class="headerlink" title="Fourier series definition"></a>Fourier series definition</h3><p>let \(f(x)\) be a periodic function over a period of \([-\pi, +\pi]\)<br><img src="/images/math/fourier_series/f_x.png" alt="f(x)"></p>
-<p>\( f(x) \) can be transformed into below<br>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(kx) + B_{k}sin(kx)\],<br>where<br>\[ A_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)cos(kx)dx &#x3D; \frac{1}{||cos(kx)||^2}&lt;f(x),cos(kx)&gt; \]<br>\[ B_{k} &#x3D; \frac{1}{\pi} \int_{-\pi}^{+\pi} f(x)sin(kx)dx &#x3D; \frac{1}{||sin(kx)||^2}&lt;f(x),sin(kx)&gt; \]<br>where \(A_{k}, B_{k}\) is just the <strong>innver product</strong> of \(f(x)\), and \( cos(kx) \), \(sin(kx)\) respectively. intuitively, it is the <strong>projection</strong> of \(f(x)\) over \(sin(kx)\), or \(cos(kx)\). </p>
-<h3 id="if-period-is-L"><a href="#if-period-is-L" class="headerlink" title="if period is L"></a>if period is L</h3><p>\[ f(x) &#x3D; \frac{A_{0}}{2} + \sum_{k&#x3D;1}^{\infty}A_{k}cos(\frac{2\pi kx}{L}) + B_{k}sin(\frac{2\pi kx}{L})\],<br>where<br>\[ A_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)cos(\frac{2\pi kx}{L})dx\]<br>\[ B_{k} &#x3D; \frac{2}{L} \int_{0}^{L} f(x)sin(\frac{2\pi kx}{L})dx\]</p>
-<h2 id="Complex-Fourier-Series"><a href="#Complex-Fourier-Series" class="headerlink" title="Complex Fourier Series"></a>Complex Fourier Series</h2><p>let’s define \[ \psi_k &#x3D; e^{ikx} &#x3D; cos(kx) + i \cdot sin(kx)\]<br>we can prove that \(\psi_k, and \psi_j\) are <strong>orthogonal</strong> as their inner product is zero<br><strong>proof</strong><br>\[ &lt;\psi_j, \psi_k&gt; &#x3D; \int_{-\pi}^{+\pi} e^{jkx}e^{-ikx}dx &#x3D;  \int_{-\pi}^{+\pi} e^{j(j-k)x}dx &#x3D; \frac{1}{i(j-k)}[e^{i(j-k)x}]_{-\pi}^{\pi}\]<br>it is 0 if \(j \ne k\) , \(2\pi \) if \(j&#x3D;k\)</p>
-<p><strong>note</strong> conjugate of \(\psi_k\) is \(e^{-ikx}\)</p>
-<p>\(f(x) &#x3D; \frac{1}{2\pi} \sum_{k&#x3D;-\infty}^{\infty} c_k \psi_k\), where \(c_k&#x3D;&lt;f(x), \psi_k&gt; &#x3D; \int_{-\pi}^{+\pi} f(x)e^{-ikx}dx\)</p>
-<h2 id="Discrete-Fourier-Transform-DFT"><a href="#Discrete-Fourier-Transform-DFT" class="headerlink" title="Discrete Fourier Transform (DFT)"></a>Discrete Fourier Transform (DFT)</h2><p>The discrete Fourier transform transforms a sequence of N complex numbers<br>\[\lbrace x_{n} \rbrace :&#x3D; x_0, x_1,…, x_{N-1} \] into another sequence of complex numbers,<br>\[\lbrace X_{k} \rbrace :&#x3D; X_0, X_1,…, X_{N-1} \] which is defined by<br>\[X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot e^{-\frac{i2\pi}{N}kn}\]</p>
-<p>let the n-th root of unity be \(\omega_N &#x3D; e^{-\frac{2\pi i}{N}}\), we have<br>\[ \tag{1.1} X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot \omega_N^{kn}\]</p>
-<h3 id="inverse-DFT"><a href="#inverse-DFT" class="headerlink" title="inverse DFT"></a>inverse DFT</h3><p>The inverse transform is given by<br>\[ \tag{1.2} x_{n} &#x3D; \frac{1}{N}\sum_{k&#x3D;0}^{N-1} X_{k} \cdot \omega_N^{-kn}\]</p>
-<h3 id="the-unitary-DFT"><a href="#the-unitary-DFT" class="headerlink" title="the unitary DFT"></a>the unitary DFT</h3><p>Another way of looking at the DFT is to note that the DFT can be expressed as the DFT matrix, a Vandermonde matrix, introduced by Sylvester in 1867.<br>\[<br>    \boldsymbol{F} &#x3D;<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]<br>where \( \omega_{N} &#x3D; e^{-\frac{i2\pi}{N}}\) is a primitive Nth root of unity. (any complex number that yields 1 when raised to some positive integer power n)</p>
-<p>\[ X &#x3D; F \cdot x^{T}\]<br>\(x\) is a column vector</p>
-<h2 id="Polynomial-amp-DFT"><a href="#Polynomial-amp-DFT" class="headerlink" title="Polynomial &amp; DFT"></a>Polynomial &amp; DFT</h2><h3 id="Polynomial-evaluation-amp-DFT"><a href="#Polynomial-evaluation-amp-DFT" class="headerlink" title="Polynomial evaluation &amp; DFT"></a>Polynomial evaluation &amp; DFT</h3><p>let a polynomial be<br>$$f(x)&#x3D;\sum_{n&#x3D;0}^{N-1}x_nx^n$$<br>then,<br>$$f(\omega_N^{k})&#x3D;\sum_{n&#x3D;0}^{N-1}x_n\omega_N^{kn},\quad k&#x3D;0,1,2,…,N-1$$<br>compare this equation with E.q(1.1), we can know that DFT is the evaluations of a polynomial at N points of Nth root of unity, \(\omega_N^{0},\omega_N^1,\omega_N^2,…,\omega_N^{N-1}\)</p>
-<p>$$(\omega_N^{0},X_0),(\omega_N^1,X_1),(\omega_N^2,X_2),…,(\omega_N^{N-1},X_{N-1})$$</p>
-<h3 id="Polynomial-interpolation-amp-IDFT"><a href="#Polynomial-interpolation-amp-IDFT" class="headerlink" title="Polynomial interpolation &amp; IDFT"></a>Polynomial interpolation &amp; IDFT</h3><p>According to E.q(1.2), IDFT is the polynomial interpolation (getting original polynomial coefficients).</p>
-<h2 id="Fast-Fourier-Transform-FFT-3"><a href="#Fast-Fourier-Transform-FFT-3" class="headerlink" title="Fast Fourier Transform (FFT) [3]"></a>Fast Fourier Transform (FFT) [3]</h2><p>The problem is to calculate the below<br>\[ \tag{2.1} X_{k} &#x3D; \sum_{n&#x3D;0}^{N-1} x_{n} \cdot \omega_N^{kn}, \quad  k&#x3D; 0,1,…,N-1\]<br>A straightforward calculation using would require \(N^2\) operations where “operation” means, as it will throughout this note, a complex multiplication followed by a complex addition.<br>The FFT algorithm described here iterates on the array and yields the result in less than \( 2N log_2N \)</p>
-<p>To derive the algorithm, suppose \(N\) is a composite, i.e., \(N &#x3D; r_1\cdot r_2\). Then let the indices in (2.1) be expressed<br>\[ k &#x3D; k_1r_1 + k_0, \quad k_0 &#x3D; 0,1,…,r_1-1, \quad k_1 &#x3D; 0,1,…, r_2 -1 \]<br>\[ n &#x3D; n_1r_2 + n_0, \quad n_0 &#x3D; 0,1,…,r_2-1, \quad n_1 &#x3D; 0,1,…, r_1 -1 \]</p>
-<p>Since \(  n &#x3D; n_1r_2 + n_0\), we can write</p>
-<p>\[ \tag{2.2} X(k_1, k_0) &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn} &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn_1r_2}\omega_N^{kn_0}  \]<br><strong>note</strong> \( x(n_1,n_0)\) is same to \(x(n)\), just the indexing is transformed form 1D to 2D. You can think original 1D array of size N is resized to a matrix of size \( (r_2, r_1) \), \(r_1\) is number of cols, while \(r_2\) is number of rows</p>
-<p>Since \(k &#x3D; k_1r_1 + k_0\), we have<br>\[ \omega_N^{kn_1r_2} &#x3D;\omega_N^{(k_1r_1+k_0)n_1r_2} &#x3D; \omega_N^{(k_1r_1)n_1r_2} \cdot \omega_N^{k_0n_1r_2}\]<br>according to the property of Nth root of unity, \( \omega_N^{N} &#x3D; \omega_N^{r_1r_2} &#x3D;1 \), \( \omega_N^{(k_1r_1)n_1r_2}\) is also 1.<br>then we have<br>\[ \omega_N^{kn_1r_2} &#x3D;  \omega_N^{k_0n_1r_2}\]<br>substitute it into E.q 2.2, we get<br>\[ \tag{2.3} X(k_1, k_0) &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{kn} &#x3D; \sum_{n_0} \sum_{n_1}x(n_1,n_0)\omega_N^{k_0n_1r_2}\omega_N^{kn_0}  \]<br>Therefore, the inner sum, over \(n_1\), depends only on \(k_0\) and \(n_0\), and can be defined as a new array,<br>\[ \tag{2.4} x_1(k_0, n_0) &#x3D; \sum_{n_1} x(n_1, n_0) \cdot \omega_N^{k_0n_1r_2}\]<br>E.q(2.3) can be writtern as<br>\[ \tag{2.5} X(k_1, k_0) &#x3D; \sum_{n_0} x_1(k_0,n_0)\omega_N^{kn_0} &#x3D;  \sum_{n_0} x_1(k_0,n_0)\omega_N^{(k_1r_1 + k_0)n_0}  \]</p>
-<p>There are N elements in the matrix \(x_1\), each requiring \(r_1\) operations, giving a total of \(Nr_1\) operations. Similarly, it takes \(Nr_2\) operations to calculate \(X\) from \(x_1\). Therefore, the two-step algorithm, given by Eq(2.4) and Eq(2.5) requires a total of<br>\[ \tag{2.6} T &#x3D; N(r_1+r_2) \]</p>
-<p>it is easy to see how successive applications of the above procedure (recursively),  starting with its appliation to Eq(2.4) give an m-step algorihtm requiring<br>\[ \tag{2.7} T &#x3D; N(r_1+r_2 + … + r_m) \]<br>where<br>\[ N &#x3D; \prod_{j&#x3D;1}^{j&#x3D;m}r_j\]<br>if all \(r_j\) are equal to \(r\), i.e \(N &#x3D; r^m \), which gives \( m &#x3D; log_rN \)<br>E.q(2.7) becomes<br>\[ \tag{2.8} T &#x3D; N(m \cdot r)  &#x3D; rNm &#x3D; rN(log_rN) \]</p>
-<h2 id="radix-2-FFT"><a href="#radix-2-FFT" class="headerlink" title="radix-2 FFT"></a>radix-2 FFT</h2><p>The algorithm with \(r&#x3D;2\) is derived by expressing the indices in the form</p>
-<p>\[\tag{3.1} k&#x3D;k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0 \]<br>\[\tag{3.2} n&#x3D;n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0 \]<br>where \( k_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \), and \( n_v \in [0,1] \), for \( v &#x3D; 0,…,m-1 \)<br><strong>\(k_v\) and \(n_v\) are the contents of the respective bit positions in the binary representation of \(k\) and \(n\)</strong></p>
-<p>All arrays will now be written as functions of the bits of their indices. With this convention E.q(2.1) is written as<br>\[ \tag{3.3}<br>\displaylines{<br>  X(k_{m-1}, …, k_0) &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{k(n_{m-1} \cdot 2^{m-1} + … + n_1 \cdot 2 + n_0)} \\<br>  &#x3D; \sum_{n_0}\sum_{n_1} … \sum_{n_{m-1}} x(n_{m-1}, …,n_1, n_0) \cdot \omega_N^{kn_{m-1} \cdot 2^{m-1} + … + kn_1 \cdot 2 + kn_0}<br>}<br>\]<br>where the sums are over \(n_v \in [0,1]\), for \(v &#x3D; 0,1,…,m-1\)</p>
-<p>Since \[ \displaylines{<br>  \omega_N^{kn_{m-1}\cdot 2^{m-1}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-1}\cdot 2^{m-1}} \\<br>  &#x3D; \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]<br>(it is easy to show that all other terms are 1 as \( \omega_N^{2^m} &#x3D; 1 \), so only \( k_0\) is kept)</p>
-<p>the innermost sum of E.q(3.3) over \(n_{m-1} \), depends only on \( k_0, n_{m-2}, …, n_0\) and can be writtern<br>\[ \displaylines{<br>x_1(k_0, n_{m-2}, …, n_1, n_0) &#x3D; \sum_{n_{m-1}} x(n_{m-1}, …, n_0) \cdot \omega_N^{k_0 n_{m-1} \cdot 2^{m-1}}<br>}<br>  \]</p>
-<p>proceeding to the next innermost sum, over \( n_{m-2} \), and so on, and using<br>\[ \displaylines{<br>  \omega_N^{kn_{m-l}\cdot 2^{m-l}} &#x3D; \omega_N^{(k_{m-1} \cdot 2^{m-1} + … + k_1 \cdot 2 + k_0)n_{m-l}\cdot 2^{m-l}} \\<br>  &#x3D; \omega_N^{(k_{l-1}\cdot 2^{l-1} + … + k_0) n_{m-l} \cdot 2^{m-1}}<br>}<br>  \]<br>one obtains successive arrays<br>\[\displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; \sum_{n_{m-l}}x_{l-1}(k_0, …, k_{l-2}, n_{m-l}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot n_{m-l} \cdot 2^{m-l}}<br>}\]<br>for \(l &#x3D; 1,2,…,m \)</p>
-<p>writing out the sum this appears as<br>\[  \tag{3.4} \displaylines{<br>x_l(k_0, …, k_{l-1}, n_{m-l-1}, … , n_0)   \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 0 \cdot 2^{m-l}}   \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l -1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + …+ k_0) \cdot 1 \cdot 2^{m-l}}  \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-1}\cdot 2^{l-1} + k_{l-2}\cdot 2^{l-2 }+k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{l-1} \cdot 2^{m-l} } \cdot \omega_N^{k_{l-2}\cdot 2^{l-2 } \cdot 2^{m-l}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ \omega_N^{k_{l-1}\cdot 2^{m-1} } \cdot \omega_N^{k_{l-2}\cdot 2^{m-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}} \\<br>&#x3D; x_{l-1}(k_0, …, k_{l-2}, 0, n_{m-l -1}, …, n_0 ) \\<br>+ (-1)^{k_{l-1} } \cdot i^{k_{l-2}} \cdot x_{l-1}(k_0, …, k_{l-2}, 1, n_{m-l-1}, …, n_0 ) \cdot \omega_N^{(k_{l-3}\cdot 2^{l-3} + …+ k_0) \cdot 2^{m-l}}<br>}\]<br>according to the indexing convension, this is stored in a location whose index is<br>\[ k_0 \cdot 2^{m-1} + … + k_{l-1} \cdot 2 ^{m-l} + n_{m-l-1} \cdot 2^{m-l-1} + … + n_0 \]</p>
-<p>It can be seen in E.q(3.4) that only the two storage locations with indices having 0 and 1 in the \(2^{m-l}\) bit position are involved in the computation. Parallel computation is permitted since the operation described by E.q(3.4) can be carried out with all values of \(k_0, …, k_{l-2} \), and \( n_0, …, n_{m-l-1}\) simultaneously. In some applications it is convenient to use E.q(3.4) to express \(x_l\) in terms of \(x_{l-2}\), giving what is equivalent to an algorithm with \(r &#x3D; 4\).<br>the last array calculated gives the desired Fourier sums,</p>
-<p>\[\tag{3.5}<br>X(k_{m-1}, …, k_0) &#x3D; x_{m}(k_0, …, k_{m-1})<br>\]<br>in such an order that the index of an X must have its binary bits put in reverse order to yield its index in the array \(x_m\)</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
-<li>[1] <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=MB6XGQWLV04">youtube video by Steve Brunton, Fourier Series</a></li>
-<li>[2] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">DFT wikipedia</a></li>
-<li>[3] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm">Cooley–Tukey FFT algorithm wikipedia</a></li>
-<li>[4] <a target="_blank" rel="noopener" href="https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/S0025-5718-1965-0178586-1.pdf">1965, Cooley &amp; Turkey: an algorithm for the machine calculation of complex fourier series</a></li>
-<li>[5] <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Split-radix_FFT_algorithm">Split-radix FFT algorithm wikipedia</a></li>
-<li>[6] <a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43870101/article/details/106095644?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_utm_term~default-2-106095644-blog-132357995.235%5Ev38%5Epc_relevant_sort_base1&spm=1001.2101.3001.4242.2&utm_relevant_index=5">csdn blog of FFT notes</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/12/math/fourier-series/" data-id="clokyy8dv0021qwsjhghcad7b" data-title="fourier series, DFT and FFT" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-tools/markdown_and_latex" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/01/tools/markdown_and_latex/" class="article-date">
-  <time class="dt-published" datetime="2023-10-01T01:22:35.000Z" itemprop="datePublished">2023-10-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/01/tools/markdown_and_latex/">markdown &amp; latex</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="markdown-by-example"><a href="#markdown-by-example" class="headerlink" title="markdown by example"></a>markdown by example</h2><p><em>italic</em><br><span style="color:red">color</span></p>
-<h2 id="latex-by-example"><a href="#latex-by-example" class="headerlink" title="latex by example"></a>latex by example</h2><h2 id="symbol"><a href="#symbol" class="headerlink" title="symbol"></a>symbol</h2><p>\( \mu \)<br>\( \omega \)<br>\( \sigma \)<br>\( \epsilon \)<br>\( \zeta \)<br>\( \eta \)<br>\( \theta \)<br>\( \kappa \)<br>\( \nu \)<br>\( \omicron \)<br>\( \rho \)<br>\( \delta \)<br>\( \tau \)<br>\( \upsilon \)<br>\( \phi \)<br>\( \chi \)<br>\( \psi \)<br>\(\mathcal O\)</p>
-<h2 id="font-amp-effects"><a href="#font-amp-effects" class="headerlink" title="font &amp; effects"></a>font &amp; effects</h2><p>\( \mathbb{G_{1}}\)<br>\( \boldsymbol{F}\)<br>\( \hat{h} \)</p>
-<h2 id="equation"><a href="#equation" class="headerlink" title="equation"></a>equation</h2><p>\[  \tag{1.1} X &#x3D; F \cdot x^{T}\]</p>
-<h2 id="blob"><a href="#blob" class="headerlink" title="blob"></a>blob</h2><p>\[<br>\begin{bmatrix}<br>\displaylines{<br>    \omega_{N}^{0\cdot0}   &amp; \omega_{N}^{0\cdot1}   &amp; \dots  &amp; \omega_{N}^{0\cdot (N-1)}\\<br>    \omega_{N}^{1\cdot0}   &amp; \omega_{N}^{1\cdot1}   &amp; \dots  &amp; \omega_{N}^{2\cdot (N-1)}\\<br>    \vdots                 &amp; \vdots                 &amp; \ddots &amp; \vdots\\<br>    \omega_{N}^{N-1\cdot0} &amp; \omega_{N}^{N-1\cdot1} &amp; \dots  &amp; \omega_{N}^{N-1\cdot (N-1)}<br>}<br>\end{bmatrix}<br>\]</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/10/01/tools/markdown_and_latex/" data-id="clokyy8dv001zqwsj9hdfghdd" data-title="markdown &amp; latex" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tool/" rel="tag">tool</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/zkp-demystify-zokrates" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" class="article-date">
-  <time class="dt-published" datetime="2023-07-14T06:29:26.000Z" itemprop="datePublished">2023-07-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/">zkp demystify zokrates</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><h3 id="source-file"><a href="#source-file" class="headerlink" title="source file"></a>source file</h3><p>an example, <code>square.zok</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def main(private field a, field b) &#123;</span><br><span class="line">    assert(a * a == b);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>The keyword private signals that we do not want to reveal this input, but still prove that we know its value.</li>
-</ul>
-<h3 id="compile"><a href="#compile" class="headerlink" title="compile"></a>compile</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates compile -i root.zok</span><br></pre></td></tr></table></figure>
-<p>after compile, it generates below files</p>
-<ul>
-<li>out</li>
-<li>out.r1cs</li>
-<li>abi.json</li>
-</ul>
-<h3 id="setup"><a href="#setup" class="headerlink" title="setup"></a>setup</h3><p>Performs a trusted setup for a given constraint system</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zokrates setup</span><br></pre></td></tr></table></figure>
-<p>options </p>
-<ul>
-<li>-i, –input <FILE>                       Path of the binary [default: out]<br>it generates below two files</li>
-<li>proving.key</li>
-<li>verification.key</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/07/14/cryptography/zkp/zkp-demystify-zokrates/" data-id="clokyy8e00039qwsjfxurcxan" data-title="zkp demystify zokrates" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -1008,7 +986,7 @@ the original <code>z_h</code> (vanishing poly) is defined in subgroup <code>H</c
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/agent/" rel="tag">agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ai/" rel="tag">ai</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cmake/" rel="tag">cmake</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/codex/" rel="tag">codex</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/defi/" rel="tag">defi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -1018,7 +996,7 @@ the original <code>z_h</code> (vanishing poly) is defined in subgroup <code>H</c
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/agent/" style="font-size: 10px;">agent</a> <a href="/tags/ai/" style="font-size: 10px;">ai</a> <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cmake/" style="font-size: 10px;">cmake</a> <a href="/tags/codex/" style="font-size: 10px;">codex</a> <a href="/tags/cpp/" style="font-size: 15px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 13.75px;">cuda</a> <a href="/tags/defi/" style="font-size: 10px;">defi</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/gpu/" style="font-size: 10px;">gpu</a> <a href="/tags/math/" style="font-size: 13.75px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -1027,7 +1005,7 @@ the original <code>z_h</code> (vanishing poly) is defined in subgroup <code>H</c
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/11/">November 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -1040,23 +1018,23 @@ the original <code>z_h</code> (vanishing poly) is defined in subgroup <code>H</c
       <ul>
         
           <li>
+            <a href="/2026/09/30/agent/deep-dive-into-codex/">a deep dive into codex</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/cmake/">cmake</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/gpu/">Nvidia cuda dev all in one</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/19/uni-v3/">a deep dive into uniswap v3</a>
+          </li>
+        
+          <li>
             <a href="/2024/06/13/math/polynomials/">polynomials</a>
-          </li>
-        
-          <li>
-            <a href="/2024/01/16/arithmatic/multiplications/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
-          </li>
-        
-          <li>
-            <a href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/cpp/build/">cpp build</a>
           </li>
         
       </ul>
@@ -1072,7 +1050,7 @@ the original <code>z_h</code> (vanishing poly) is defined in subgroup <code>H</c
   <div class="outer">
     <div id="footer-info" class="inner">
       
-      &copy; 2024 cliff<br>
+      &copy; 2026 cliff<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
