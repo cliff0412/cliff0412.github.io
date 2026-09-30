@@ -71,6 +71,132 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cmake" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/21/cmake/" class="article-date">
+  <time class="dt-published" datetime="2024-11-21T02:08:33.000Z" itemprop="datePublished">2024-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2024/11/21/cmake/">cmake</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake .. -DTARGET_PLATFORM=macos_arm64 </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set_source_files_properties</span>(cuda/ntt/parameters.cuh PROPERTIES LANGUAGE CUDA)</span><br><span class="line"> <span class="built_in">set_target_properties</span>(cryptography_cuda</span><br><span class="line">         PROPERTIES</span><br><span class="line">                 CUDA_RUNTIME_LIBRARY Shared</span><br><span class="line">                 # CUDA_STANDARD <span class="number">14</span> <span class="meta"># this one cannot be changed by CMake</span></span><br><span class="line">                 # CUDA_SEPARABLE_COMPILATION ON <span class="meta"># not needed for this example</span></span><br><span class="line"> )</span><br><span class="line"> # # # <span class="built_in">set_property</span>(TARGET CUDA_COMP PROPERTY CUDA_ARCHITECTURES <span class="number">86</span>-real <span class="number">86</span>-<span class="keyword">virtual</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">set_target_properties</span>(cryptography_cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)</span><br><span class="line"><span class="built_in">set</span>(CUDA_NVCC_EXECUTABLE <span class="string">&quot;/usr/local/cuda/bin/nvcc&quot;</span>)</span><br><span class="line"># <span class="built_in">find_library</span>(CUDA_LIBRARY cuda HINTS $&#123;CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES&#125;)</span><br><span class="line"># <span class="built_in">target_compile_features</span>(cryptography_cuda PRIVATE cuda_std_14)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>CUDA_SEPARABLE_COMPILATION</code><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find_package(CUDAToolkit REQUIRED)</span><br><span class="line"><span class="built_in">set</span>(CUDA_SEPARABLE_COMPILATION ON)</span><br></pre></td></tr></table></figure>
+ Separable compilation allows the compilation of individual CUDA source files (*.cu) into separate object files, which can be linked together later. This can result in faster incremental builds, as changes to one CUDA source file may only require recompilation of that specific file.</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/11/21/cmake/" data-id="cm3qoczvi0000dn7u2e0tgi64" data-title="cmake" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cmake/" rel="tag">cmake</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-gpu" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/21/gpu/" class="article-date">
+  <time class="dt-published" datetime="2024-11-21T02:04:16.000Z" itemprop="datePublished">2024-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2024/11/21/gpu/">Nvidia cuda dev all in one</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="NVCC"><a href="#NVCC" class="headerlink" title="NVCC"></a>NVCC</h1><p>nvcc predefines the following macros:</p>
+<ul>
+<li><strong>NVCC</strong> (1): Defined when compiling C&#x2F;C++&#x2F;CUDA source files.</li>
+<li><strong>CUDACC</strong> (1): Defined when compiling CUDA source files.</li>
+</ul>
+<h1 id="compile-a-single-cuda-file"><a href="#compile-a-single-cuda-file" class="headerlink" title="compile a single cuda file"></a>compile a single cuda file</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvcc -gencode arch=compute_70,code=sm_70 -g -G kernel.cu -o kernel</span><br></pre></td></tr></table></figure>
+
+<h1 id="memory"><a href="#memory" class="headerlink" title="memory"></a>memory</h1><ul>
+<li>mapped memory: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/CUDA-Zero-Copy-Mapped-Memory/">https://leimao.github.io/blog/CUDA-Zero-Copy-Mapped-Memory/</a></li>
+<li>Increase Performance with Vectorized Memory Access<br><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/">https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/</a></li>
+</ul>
+<h1 id="data-transfer"><a href="#data-transfer" class="headerlink" title="data transfer"></a>data transfer</h1><h1 id="gdr"><a href="#gdr" class="headerlink" title="gdr"></a>gdr</h1><p><a target="_blank" rel="noopener" href="https://developer.nvidia.com/gdrcopy">https://developer.nvidia.com/gdrcopy</a></p>
+<h1 id="pinned-pageable-memory"><a href="#pinned-pageable-memory" class="headerlink" title="pinned pageable memory"></a>pinned pageable memory</h1><p><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/">https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/</a></p>
+<h1 id="nvlink-command"><a href="#nvlink-command" class="headerlink" title="nvlink command"></a>nvlink command</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink -h</span><br></pre></td></tr></table></figure>
+<h2 id="Showing-NVLINK-Status-For-Different-GPUs"><a href="#Showing-NVLINK-Status-For-Different-GPUs" class="headerlink" title="Showing NVLINK Status For Different GPUs"></a>Showing NVLINK Status For Different GPUs</h2><p>To show active NVLINK Connections, you must specify GPU index via -i</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink --status -i 0</span><br></pre></td></tr></table></figure>
+<p>example output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">GPU 0: NVIDIA H100 PCIe (UUID: GPU-a1bf2ff6-a98d-edac-a422-0bd80fbd9724)</span><br><span class="line">         Link 0: 26.562 GB/s</span><br><span class="line">         Link 1: 26.562 GB/s</span><br><span class="line">         Link 2: 26.562 GB/s</span><br><span class="line">         Link 3: 26.562 GB/s</span><br><span class="line">         Link 4: &lt;inactive&gt;</span><br><span class="line">         Link 5: 26.562 GB/s</span><br><span class="line">         Link 6: 26.562 GB/s</span><br><span class="line">         Link 7: 26.562 GB/s</span><br><span class="line">         Link 8: 26.562 GB/s</span><br><span class="line">         Link 9: &lt;inactive&gt;</span><br><span class="line">         Link 10: &lt;inactive&gt;</span><br><span class="line">         Link 11: 26.562 GB/s</span><br><span class="line">         Link 12: 26.562 GB/s</span><br><span class="line">         Link 13: 26.562 GB/s</span><br><span class="line">         Link 14: 26.562 GB/s</span><br><span class="line">         Link 15: &lt;inactive&gt;</span><br><span class="line">         Link 16: &lt;inactive&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="Display-amp-Explore-NVLINK-Capabilities-Per-Link"><a href="#Display-amp-Explore-NVLINK-Capabilities-Per-Link" class="headerlink" title="Display &amp; Explore NVLINK Capabilities Per Link"></a>Display &amp; Explore NVLINK Capabilities Per Link</h2><p>Allows you to query to ensure each link associated with the GPU Index (specified by -i #) has specific capabilities related to P2P, System Memory, P2P Atomics, SLI.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink --capabilities -i 1</span><br></pre></td></tr></table></figure>
+<p>example output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Link 0, P2P is supported: true</span><br><span class="line">Link 0, Access to system memory supported: true</span><br><span class="line">Link 0, P2P atomics supported: true</span><br><span class="line">Link 0, System memory atomics supported: false</span><br><span class="line">Link 0, SLI is supported: false</span><br><span class="line">Link 0, Link is supported: false</span><br><span class="line">Link 1, P2P is supported: true</span><br><span class="line">Link 1, Access to system memory supported: true</span><br><span class="line">Link 1, P2P atomics supported: true</span><br><span class="line">Link 1, System memory atomics supported: false</span><br><span class="line">Link 1, SLI is supported: false</span><br><span class="line">Link 1, Link is supported: false</span><br><span class="line">Link 2, P2P is supported: true</span><br><span class="line">Link 2, Access to system memory supported: true</span><br><span class="line">Link 2, P2P atomics supported: true</span><br><span class="line">Link 2, System memory atomics supported: false</span><br><span class="line">Link 2, SLI is supported: false</span><br><span class="line">Link 2, Link is supported: false</span><br><span class="line">Link 3, P2P is supported: true</span><br><span class="line">Link 3, Access to system memory supported: true</span><br><span class="line">Link 3, P2P atomics supported: true</span><br><span class="line">Link 3, System memory atomics supported: false</span><br><span class="line">Link 3, SLI is supported: false</span><br><span class="line">Link 3, Link is supported: false</span><br></pre></td></tr></table></figure>
+
+<h2 id="NVLink-Usage-Counters"><a href="#NVLink-Usage-Counters" class="headerlink" title="NVLink Usage Counters"></a>NVLink Usage Counters</h2><p>nvidia-smi nvlink -g N -i N allows you to view the data being traversed on the different NVLink Link.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi nvlink -g 0 -i 0</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="benchmarking-p2p-mem-copy"><a href="#benchmarking-p2p-mem-copy" class="headerlink" title="benchmarking p2p mem_copy"></a>benchmarking p2p mem_copy</h1><p>code for testing p2p memCopy</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">// P2P Test by Greg Gutmann</span><br><span class="line"> </span><br><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line">#include &quot;stdint.h&quot;</span><br><span class="line"> </span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    // GPUs</span><br><span class="line">    int gpuid_0 = 0;</span><br><span class="line">    int gpuid_1 = 1;</span><br><span class="line"> </span><br><span class="line">    // Memory Copy Size</span><br><span class="line">    uint32_t size = pow(2, 26); // 2^26 = 67MB</span><br><span class="line"> </span><br><span class="line">    // Allocate Memory</span><br><span class="line">    uint32_t* dev_0;</span><br><span class="line">    cudaSetDevice(gpuid_0);</span><br><span class="line">    cudaMalloc((void**)&amp;dev_0, size);</span><br><span class="line"> </span><br><span class="line">    uint32_t* dev_1;</span><br><span class="line">    cudaSetDevice(gpuid_1);</span><br><span class="line">    cudaMalloc((void**)&amp;dev_1, size);</span><br><span class="line"> </span><br><span class="line">    //Check for peer access between participating GPUs: </span><br><span class="line">    int can_access_peer_0_1;</span><br><span class="line">    int can_access_peer_1_0;</span><br><span class="line">    cudaDeviceCanAccessPeer(&amp;can_access_peer_0_1, gpuid_0, gpuid_1);</span><br><span class="line">    cudaDeviceCanAccessPeer(&amp;can_access_peer_1_0, gpuid_1, gpuid_0);</span><br><span class="line">    printf(&quot;cudaDeviceCanAccessPeer(%d-&gt;%d): %d\n&quot;, gpuid_0, gpuid_1, can_access_peer_0_1);</span><br><span class="line">    printf(&quot;cudaDeviceCanAccessPeer(%d-&gt;%d): %d\n&quot;, gpuid_1, gpuid_0, can_access_peer_1_0);</span><br><span class="line"> </span><br><span class="line">    if (can_access_peer_0_1 &amp;&amp; can_access_peer_1_0) &#123;</span><br><span class="line">        // Enable P2P Access</span><br><span class="line">        cudaSetDevice(gpuid_0);</span><br><span class="line">        cudaDeviceEnablePeerAccess(gpuid_1, 0);</span><br><span class="line">        cudaSetDevice(gpuid_1);</span><br><span class="line">        cudaDeviceEnablePeerAccess(gpuid_0, 0);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // Init Timing Data</span><br><span class="line">    uint32_t repeat = 10;</span><br><span class="line">    cudaEvent_t start;</span><br><span class="line">    cudaEvent_t stop;</span><br><span class="line">    cudaEventCreate(&amp;start);</span><br><span class="line">    cudaEventCreate(&amp;stop);</span><br><span class="line"> </span><br><span class="line">    // Init Stream</span><br><span class="line">    cudaStream_t stream;</span><br><span class="line">    cudaStreamCreateWithFlags(&amp;stream, cudaStreamNonBlocking);</span><br><span class="line"> </span><br><span class="line">    // ~~ Start Test ~~</span><br><span class="line">    cudaEventRecord(start, stream);</span><br><span class="line"> </span><br><span class="line">    //Do a P2P memcpy</span><br><span class="line">    for (int i = 0; i &lt; repeat; ++i) &#123;</span><br><span class="line">        cudaMemcpyAsync(dev_0, dev_1, size, cudaMemcpyDeviceToDevice, stream);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    cudaEventRecord(stop, stream);</span><br><span class="line">    cudaStreamSynchronize(stream);</span><br><span class="line">    // ~~ End of Test ~~</span><br><span class="line"> </span><br><span class="line">    // Check Timing &amp; Performance</span><br><span class="line">    float time_ms;</span><br><span class="line">    cudaEventElapsedTime(&amp;time_ms, start, stop);</span><br><span class="line">    double time_s = time_ms / 1e3;</span><br><span class="line"> </span><br><span class="line">    double gb = size * repeat / (double)1e9;</span><br><span class="line">    double bandwidth = gb / time_s;</span><br><span class="line"> </span><br><span class="line">    printf(&quot;Seconds: %f\n&quot;, time_s);</span><br><span class="line">    printf(&quot;Unidirectional Bandwidth: %f (GB/s)\n&quot;, bandwidth);</span><br><span class="line"> </span><br><span class="line">    if (can_access_peer_0_1 &amp;&amp; can_access_peer_1_0) &#123;</span><br><span class="line">        // Shutdown P2P Settings</span><br><span class="line">        cudaSetDevice(gpuid_0);</span><br><span class="line">        cudaDeviceDisablePeerAccess(gpuid_1);</span><br><span class="line">        cudaSetDevice(gpuid_1);</span><br><span class="line">        cudaDeviceDisablePeerAccess(gpuid_0);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // Clean Up</span><br><span class="line">    cudaFree(dev_0);</span><br><span class="line">    cudaFree(dev_1);</span><br><span class="line"> </span><br><span class="line">    cudaEventDestroy(start);</span><br><span class="line">    cudaEventDestroy(stop);</span><br><span class="line">    cudaStreamDestroy(stream);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="some-results"><a href="#some-results" class="headerlink" title="some results"></a>some results</h2><ul>
+<li>on H100<br>Unidirectional Bandwidth: 253.631489 (GB&#x2F;s)</li>
+<li>on 4090<br>Unidirectional Bandwidth: 25 (GB&#x2F;s)</li>
+</ul>
+<h1 id="profiling"><a href="#profiling" class="headerlink" title="profiling"></a>profiling</h1><p>nsight compute: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/Docker-Nsight-Compute/">https://leimao.github.io/blog/Docker-Nsight-Compute/</a><br>cuda with docker: <a target="_blank" rel="noopener" href="https://leimao.github.io/blog/NVIDIA-Docker-CUDA-Compatibility/">https://leimao.github.io/blog/NVIDIA-Docker-CUDA-Compatibility/</a></p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#">nvcc compiler</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cliff0412.github.io/2024/11/21/gpu/" data-id="cm3qoczvk0001dn7uajv88xhm" data-title="Nvidia cuda dev all in one" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-math/polynomials" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2024/06/13/math/polynomials/" class="article-date">
@@ -587,115 +713,6 @@
 
 
   
-    <article id="post-cryptography/zkp/kzg-commitment" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/03/cryptography/zkp/kzg-commitment/" class="article-date">
-  <time class="dt-published" datetime="2023-12-03T03:19:44.000Z" itemprop="datePublished">2023-12-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/03/cryptography/zkp/kzg-commitment/">kzg polynomial commitment</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>KZG polynomial commitments was introduced by Kate, Zaverucha and Goldberg. It is called a commitment, because having sent the commitment value (an elliptic curve point) to someone (the verifier), the prover cannot change the polynomial they are working with.</p>
-<h2 id="Comparison-to-Merkle-trees"><a href="#Comparison-to-Merkle-trees" class="headerlink" title="Comparison to Merkle trees"></a>Comparison to Merkle trees</h2><p>A Merkle tree is what cryptographers call a vector commitment: Using a Merkle tree of depth \(d\), you can compute a commitment to a vector. A polynomial commitment can be achived by making a merkle tree commitment of all polynomials coefficients. however, it is not efficient.</p>
-<h2 id="parings"><a href="#parings" class="headerlink" title="parings"></a>parings</h2><p>Let \(\mathbb{G_1}\) and \(\mathbb{G_2}\) be two elliptic curves wit a paring \(e: \mathbb{G_1} \times \mathbb{G_2} \rightarrow \mathbb{G_T}\). Let \(p\) be the order of \(\mathbb{G_1}\) and \(\mathbb{G_2}\), and \(G\) and \(H\) be generators of \(\mathbb{G_1}\) and \(\mathbb{G_2}\). We will use a very useful shorhand notation<br>\( [x]_1 &#x3D; xG \in \mathbb{G_1}\), and \([x]_2 &#x3D; xH \in \mathbb{G_2} \), for any \(x \in \mathbb{F_p}\)</p>
-<h2 id="Trusted-setup"><a href="#Trusted-setup" class="headerlink" title="Trusted setup"></a>Trusted setup</h2><p>Let’s assume we have a trusted setup, so that for some secret \(s\), the elements \([s^i]_1\) and \([s^i]_2\) are available to both prover and verifier for \(i&#x3D;0, …, n-1\). </p>
-<p>Let \(p(X) &#x3D; \sum_{i&#x3D;0}^{n}p_i X^i \) be a polynomial, the prover can compute</p>
-<p>\( \left[ p(s) \right]_1 &#x3D; p_0[s^0]_1 + p_1[s^1]_1 + … + p_n[s^n]_1 \)</p>
-<h2 id="Kate-commitment"><a href="#Kate-commitment" class="headerlink" title="Kate commitment"></a>Kate commitment</h2><p>In the Kate commitment scheme, the eleemnt \(C &#x3D; [p(s)]_1\) is the commitment to the polynomial \(p(X)\).  Could the prover (without knowing \(s\)) find another polynomial \(q(X) \neq p(X)\)  that has the same commitment. Let’s assume that this were the case. Then it would mean \([p(s) - q(s)]_1 &#x3D; 0\), implying \(p(s) - q(s) &#x3D; 0\).</p>
-<p>Now, \(r(X) &#x3D; p(X) - q(X)\) is itself a polynomial. we know that it’s not constant because \(p(X) \neq q(X) \).  It is a well-known fact that any non-constant polynomial of degree \(n\) can have at most \(n\) zeroes.<br>Since the prover doesn’t know \(s\), the only way they could achieve that \(p(s) - q(s) &#x3D; 0\)<br> is by making \( p(X) - q(X)&#x3D;0\) in as many places as possible. But since they can do that in at most \(n\)<br> places, as we’ve just proved, they are very unlikely to succeed: since \(n\) is much smaller than the order of the curve, \(p\). the probability that  \(s\) will be one of the points they chose to make \(p(X) &#x3D; q(X)\) will be vanishingly tiny.</p>
-<h2 id="Multiplying-polynomials"><a href="#Multiplying-polynomials" class="headerlink" title="Multiplying polynomials"></a>Multiplying polynomials</h2><p>While elliptic curves themselves don’t allow polynomial multiplication, luckily we can do it with pairings: We have that<br>\[ e([a]_1, [b]_2) &#x3D; e(G,H)^{(ab)} &#x3D; [ab]_T\]<br>while we unfortunately can’t just multiply two field elements inside an elliptic curve and get their product as an elliptic curve element, we can multiply two field elements if we commited to them in different curves (one in \(G_1\) and one in \(G_2\), and the output is a<br>\(G_T\) element.</p>
-<p>Noe let’s say we want to prove that \(p(z)&#x3D;y\). we will use the polynomial \(p(X) - y\). this polynomial is clearly zero at \(z\). Let \(q(X)\) be the polynomial \(p(X) - y\) divided by the linear factor \(X-z\), i.e<br>\[ q(X) &#x3D; \frac{p(X) - y}{X-z} \]<br>which is equivalent to saying that \(q(X)(X-z) &#x3D; p(X) - y\)</p>
-<h2 id="Kate-proofs"><a href="#Kate-proofs" class="headerlink" title="Kate proofs"></a>Kate proofs</h2><p>now a kate proof for the evaluation \(p(z) &#x3D; y\) is defined as \(\pi &#x3D; [q(s)]_1\). remember the commitment to the polynomial \(p(X)\) is defined as \(C&#x3D;[p(s)]_1\)<br>the verifier checks this proof using the following equation<br>\( e(\pi, [s-z]_2) &#x3D; e(C-[y]_1, H) \)</p>
-<p>Note that the verifier can compute \([s-z]_2\), because it is just a combination of the element \([s]_2\)<br> from the trusted setup and \(z\) is the point at which the polynomial is evaluated. </p>
-<h2 id="multiproofs"><a href="#multiproofs" class="headerlink" title="multiproofs"></a>multiproofs</h2><p>So far we have shown how to prove an evaluation of a polynomial at a single point. Note that this is already pretty amazing: You can show that some polynomial that could be any degree – say \(2^{28}\) – at some point takes a certain value, by only sending a single group element (that could be 48 bytes, for example in BLS12_381). The toy example of using Merkle trees as polynomial commitments would have needed to send \(2^{28}\) elements – all the coefficients of the polynomial.</p>
-<p>Let’s say we have a list of \(k\) points \((z_0, y_0),(z_1, y_1), …, (z_{k-1}, y_{k-1})\). Using lagrange interpolation, we can find polynomial \(I(X)\) goes through all of these points.</p>
-<p>Now let’s assume that we know \(p(X)\) goes through all these points. then the polynomial \(p(X) - I(X)\) will clearly be zero at each \(z_0, z_1, …, z_{k-1}\). the zero polynomial is<br>\(Z(X) &#x3D; (X-z_0)\cdot (X-z_1)…(X-z_{k-1})\)<br>Now, we can compute the quotient<br>\(q(X) &#x3D; \frac{p(X)-I(X)}{Z(X)}\)<br>We can now define the Kate multiproof for the evaluations \((z_0, y_0),(z_1, y_1),…, (z_{k-1}, y_{k-1})\): \(\pi &#x3D; [q(s)]_1\). note that this is still only one group element.</p>
-<p>Now, to check this, the verifier will also have to compute the interpolation polynomial \(I(X)\) and the zero polynomial Z(X). Using this, they can compute \([Z(s)]_2\) and \([I(s)]_1\), and thus verify the paring equation<br>\[ e(\pi, [Z(s)]_2) &#x3D; e(C-[I(s)]_1, H) \]</p>
-<h2 id="Kate-as-a-vector-commitment"><a href="#Kate-as-a-vector-commitment" class="headerlink" title="Kate as a vector commitment"></a>Kate as a vector commitment</h2><p>While the Kate commitment scheme is designed as a polynomial commitment, it actually also makes a really nice vector commitment. Remember that a vector commitment commits to a vector \(a_0, …, a_{n-1}\) and lets you prove that you committed to \(a_i\) for some \(i\). We can reproduce this using the Kate commitment scheme: Let \(p(X)\) be the polynomial that for all \(i\) evaluates as \(p(i)&#x3D;a_i\).<br>Now using this polynomial, we can prove any number of elements in the vector using just a single group element! Note how much more efficient (in terms of proof size) this is compared to Merkle trees</p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a target="_blank" rel="noopener" href="https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html">Dankrad Feist Post</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/03/cryptography/zkp/kzg-commitment/" data-id="clpoya0gr0000pksj12ah1gzj" data-title="kzg polynomial commitment" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-cryptography/zkp/circom" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/03/cryptography/zkp/circom/" class="article-date">
-  <time class="dt-published" datetime="2023-12-03T03:19:44.000Z" itemprop="datePublished">2023-12-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/03/cryptography/zkp/circom/">circom</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
-<h2 id="Arithmetic-Operators"><a href="#Arithmetic-Operators" class="headerlink" title="Arithmetic Operators"></a>Arithmetic Operators</h2><p>| operator |example|explanation|<br>|—|:—:|:—:|—:|<br>||a \b| Quotient of the integer division |<br>|%|a % b| Remainder of the integer division |</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://cliff0412.github.io/2023/12/03/cryptography/zkp/circom/" data-id="clqcbi48m00002y7uaaykdllj" data-title="circom" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -714,7 +731,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arithmatic/" rel="tag">arithmatic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/" rel="tag">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cargo/" rel="tag">cargo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/circom/" rel="tag">circom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cmake/" rel="tag">cmake</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cpp/" rel="tag">cpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cryptography/" rel="tag">cryptography</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ec/" rel="tag">ec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ecdsa/" rel="tag">ecdsa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/field/" rel="tag">field</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geth/" rel="tag">geth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/" rel="tag">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gpu/" rel="tag">gpu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/math/" rel="tag">math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mpc/" rel="tag">mpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/number-theory/" rel="tag">number_theory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-crate/" rel="tag">rust-crate</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust-std/" rel="tag">rust-std</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tool/" rel="tag">tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zkp/" rel="tag">zkp</a></li></ul>
     </div>
   </div>
 
@@ -724,7 +741,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arithmatic/" style="font-size: 12.22px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15.56px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cpp/" style="font-size: 14.44px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 12.22px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.11px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.67px;">geth</a> <a href="/tags/golang/" style="font-size: 11.11px;">golang</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.89px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.33px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.78px;">zkp</a>
+      <a href="/tags/arithmatic/" style="font-size: 12.5px;">arithmatic</a> <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/cargo/" style="font-size: 10px;">cargo</a> <a href="/tags/circom/" style="font-size: 10px;">circom</a> <a href="/tags/cmake/" style="font-size: 10px;">cmake</a> <a href="/tags/cpp/" style="font-size: 15px;">cpp</a> <a href="/tags/cryptography/" style="font-size: 20px;">cryptography</a> <a href="/tags/cuda/" style="font-size: 13.75px;">cuda</a> <a href="/tags/ec/" style="font-size: 11.25px;">ec</a> <a href="/tags/ecdsa/" style="font-size: 10px;">ecdsa</a> <a href="/tags/field/" style="font-size: 10px;">field</a> <a href="/tags/geth/" style="font-size: 16.25px;">geth</a> <a href="/tags/golang/" style="font-size: 11.25px;">golang</a> <a href="/tags/gpu/" style="font-size: 10px;">gpu</a> <a href="/tags/math/" style="font-size: 12.5px;">math</a> <a href="/tags/mpc/" style="font-size: 10px;">mpc</a> <a href="/tags/number-theory/" style="font-size: 10px;">number_theory</a> <a href="/tags/rust/" style="font-size: 18.75px;">rust</a> <a href="/tags/rust-crate/" style="font-size: 10px;">rust-crate</a> <a href="/tags/rust-std/" style="font-size: 13.75px;">rust-std</a> <a href="/tags/tool/" style="font-size: 10px;">tool</a> <a href="/tags/zkp/" style="font-size: 17.5px;">zkp</a>
     </div>
   </div>
 
@@ -733,7 +750,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/11/">November 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">June 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">November 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
     </div>
   </div>
 
@@ -746,6 +763,14 @@
       <ul>
         
           <li>
+            <a href="/2024/11/21/cmake/">cmake</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/21/gpu/">Nvidia cuda dev all in one</a>
+          </li>
+        
+          <li>
             <a href="/2024/06/13/math/polynomials/">polynomials</a>
           </li>
         
@@ -755,14 +780,6 @@
         
           <li>
             <a href="/2024/01/08/math/multi-scalar-multiplication/">multi scalar multiplication (MSM)</a>
-          </li>
-        
-          <li>
-            <a href="/2024/01/01/rust/rust_analyzer/">rust analyzer</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/cpp/build/">cpp build</a>
           </li>
         
       </ul>
