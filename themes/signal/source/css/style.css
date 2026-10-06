@@ -1,6 +1,6 @@
 :root {
-  --paper: #f4f1e9;
-  --paper-raised: #faf8f2;
+  --paper: #ffffff;
+  --paper-raised: #f7f7f5;
   --ink: #171a18;
   --ink-soft: #5d615b;
   --line: #cbc8bd;
@@ -39,9 +39,7 @@ html {
 body {
   margin: 0;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 88% 4%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 24rem),
-    var(--paper);
+  background: var(--paper);
   font: 400 16px/1.7 var(--sans);
   -webkit-font-smoothing: antialiased;
   transition: color .25s ease, background-color .25s ease;
