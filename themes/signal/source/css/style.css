@@ -326,13 +326,14 @@ img { display: block; max-width: 100%; height: auto; }
 }
 .article-aside { min-width: 0; }
 .aside-sticky { position: sticky; top: 28px; }
-.toc { margin-top: 20px; display: flex; flex-direction: column; gap: 11px; }
+.article-aside .aside-label { font-size: 12px; }
+.toc { margin-top: 22px; display: flex; flex-direction: column; gap: 14px; }
 .toc a, .toc > span {
   display: block;
   color: var(--ink-soft);
   font-family: var(--mono);
-  font-size: 10px;
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 1.5;
 }
 .toc a { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px; }
 .toc-number { color: var(--line-strong); }
