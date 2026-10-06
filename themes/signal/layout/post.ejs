@@ -4,24 +4,25 @@
 %>
 <article class="article shell">
   <header class="article-header">
-    <a class="back-link" href="<%- url_for('/') %>">← All notes</a>
-    <div class="article-labels">
-      <time datetime="<%= date_xml(page.date) %>"><%= date(page.date, 'MMMM DD, YYYY') %></time>
-      <% if (tags.length) { %>
-        <span aria-hidden="true">·</span>
-        <% tags.forEach(function(tag, index) { %>
-          <a href="<%- url_for(tag.path) %>"><%= tag.name %></a><% if (index < tags.length - 1) { %><span>,</span><% } %>
-        <% }); %>
-      <% } %>
+    <div class="article-meta-panel">
+      <div class="article-labels">
+        <time datetime="<%= date_xml(page.date) %>"><%= date(page.date, 'MM.DD.YYYY') %></time>
+        <% if (tags.length) { %>
+          <div class="article-topics">
+            <% tags.forEach(function(tag) { %><a href="<%- url_for(tag.path) %>">#<%= tag.name %></a><% }); %>
+          </div>
+        <% } %>
+      </div>
     </div>
-    <h1><%= displayTitle %></h1>
-    <div class="article-rule"><span></span></div>
+    <div class="article-title-block">
+      <h1><%= displayTitle %></h1>
+    </div>
   </header>
 
   <div class="article-layout">
     <aside class="article-aside">
       <div class="aside-sticky">
-        <span class="aside-label">On this page</span>
+        <span class="aside-label">Contents</span>
         <nav class="toc" aria-label="Table of contents"></nav>
       </div>
     </aside>

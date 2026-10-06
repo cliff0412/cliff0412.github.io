@@ -24,13 +24,42 @@
   var article = document.querySelector('.article-body');
   var toc = document.querySelector('.toc');
   if (article && toc) {
-    var headings = Array.prototype.slice.call(article.querySelectorAll('h2, h3'));
+    var headings = Array.prototype.slice.call(article.querySelectorAll('h1, h2, h3'));
+    var firstLevel = headings.reduce(function (lowest, heading) {
+      return Math.min(lowest, Number(heading.tagName.slice(1)));
+    }, 4);
+    var section = 0;
+    var subsection = 0;
     headings.forEach(function (heading, index) {
+      var firstTextNode = Array.prototype.find.call(heading.childNodes, function (node) {
+        return node.nodeType === 3 && node.nodeValue.trim();
+      });
+      if (firstTextNode) {
+        firstTextNode.nodeValue = firstTextNode.nodeValue.replace(/^\s*\d+(?:\.\d+)*\.?\s+/, '');
+      }
+      var level = Number(heading.tagName.slice(1));
+      var number;
+      if (level === firstLevel) {
+        section += 1;
+        subsection = 0;
+        number = String(section);
+        heading.classList.add('section-heading-primary');
+        heading.dataset.section = number;
+      } else {
+        subsection += 1;
+        number = section + '.' + subsection;
+      }
       if (!heading.id) heading.id = 'section-' + (index + 1);
       var link = document.createElement('a');
       link.href = '#' + heading.id;
-      link.textContent = heading.textContent;
-      if (heading.tagName === 'H3') link.className = 'toc-sub';
+      var numeral = document.createElement('span');
+      numeral.className = 'toc-number';
+      numeral.textContent = number;
+      var label = document.createElement('span');
+      label.textContent = heading.textContent;
+      link.appendChild(numeral);
+      link.appendChild(label);
+      if (level > firstLevel) link.className = 'toc-sub';
       toc.appendChild(link);
     });
     if (!headings.length) {
