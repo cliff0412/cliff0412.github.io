@@ -1,0 +1,7 @@
+<% if (page.total > 1) { %>
+  <nav class="pagination" aria-label="Pagination">
+    <div><% if (page.prev) { %><a href="<%- url_for(page.prev_link) %>">← Newer notes</a><% } %></div>
+    <span><%= page.current %> / <%= page.total %></span>
+    <div><% if (page.next) { %><a href="<%- url_for(page.next_link) %>">Older notes →</a><% } %></div>
+  </nav>
+<% } %>

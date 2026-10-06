@@ -1,0 +1,11 @@
+<section class="listing-hero shell">
+  <p class="eyebrow"><span></span>Topic</p>
+  <h1><%= page.tag %></h1>
+  <p><%= page.posts.length %> note<%= page.posts.length === 1 ? '' : 's' %> filed under this topic.</p>
+</section>
+<section class="feed shell listing-feed">
+  <div class="post-grid">
+    <% page.posts.each(function(post) { %><div class="post-cell"><%- partial('_partial/post-card', { post: post }) %></div><% }); %>
+  </div>
+  <%- partial('_partial/pagination') %>
+</section>

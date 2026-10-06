@@ -1,0 +1,24 @@
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="wordmark" href="<%- url_for('/') %>" aria-label="<%= config.title %>, home">
+      <span class="wordmark-mark" aria-hidden="true">C</span>
+      <span class="wordmark-text">cliff<span>/notes</span></span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+      <span></span><span></span><span></span>
+      <span class="sr-only">Toggle navigation</span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Primary navigation">
+      <% Object.keys(theme.menu || {}).forEach(function(label) { %>
+        <a href="<%- url_for(theme.menu[label]) %>"><%= label %></a>
+      <% }); %>
+      <a href="<%= theme.social.github %>" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+      <button class="theme-toggle" type="button" aria-label="Switch color theme">
+        <span class="theme-sun" aria-hidden="true">☼</span>
+        <span class="theme-moon" aria-hidden="true">◐</span>
+      </button>
+    </nav>
+  </div>
+</header>

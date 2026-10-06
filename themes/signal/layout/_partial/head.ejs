@@ -1,0 +1,26 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2efe8">
+  <%
+    var pageTitle = page.title || (page.slug ? page.slug.split('/').pop().replace(/[._-]+/g, ' ') : '');
+    if (is_archive()) pageTitle = page.year ? 'Archive — ' + page.year : 'Archive';
+    if (is_tag()) pageTitle = 'Topic — ' + page.tag;
+    if (is_category()) pageTitle = 'Category — ' + page.category;
+    var description = page.excerpt ? strip_html(page.excerpt) : (config.description || 'Technical notes by Cliff.');
+  %>
+  <title><% if (pageTitle) { %><%= pageTitle %> — <% } %><%= config.title %></title>
+  <meta name="description" content="<%= truncate(description.replace(/\s+/g, ' '), { length: 160 }) %>">
+  <%- open_graph({twitter_id: theme.twitter}) %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <%- css('css/style') %>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('color-scheme');
+      var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    }());
+  </script>
+</head>

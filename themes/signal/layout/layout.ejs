@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="<%= config.language || 'en' %>">
+  <%- partial('_partial/head') %>
+  <body>
+    <div class="reading-progress" aria-hidden="true"></div>
+    <%- partial('_partial/header') %>
+    <main id="content" class="site-main">
+      <%- body %>
+    </main>
+    <%- partial('_partial/footer') %>
+    <script src="<%- url_for('/js/site.js') %>"></script>
+  </body>
+</html>

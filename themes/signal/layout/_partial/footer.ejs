@@ -1,0 +1,13 @@
+<footer class="site-footer">
+  <div class="shell footer-inner">
+    <div>
+      <a class="footer-name" href="<%- url_for('/') %>"><%= config.author %></a>
+      <p><%= theme.footer_note %></p>
+    </div>
+    <div class="footer-meta">
+      <a href="<%= theme.social.github %>" target="_blank" rel="noopener">GitHub</a>
+      <a href="<%- url_for('/archives/') %>">Archive</a>
+      <span>© <%= new Date().getFullYear() %></span>
+    </div>
+  </div>
+</footer>

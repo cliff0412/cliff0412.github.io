@@ -1,0 +1,29 @@
+<%
+  var tags = post.tags ? post.tags.toArray() : [];
+  var displayTitle = post.title || post.slug.split('/').pop().replace(/[._-]+/g, ' ').replace(/\b\w/g, function(letter) { return letter.toUpperCase(); });
+  var summarySource = (post.excerpt || post.content || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<figure[\s\S]*?<\/figure>/gi, ' ')
+    .replace(/<pre[\s\S]*?<\/pre>/gi, ' ');
+  var rawSummary = strip_html(summarySource)
+    .replace(/&amp;/g, '&')
+    .replace(/&#x3D;/gi, '=')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+  var summary = truncate(rawSummary, { length: 190, omission: '…' });
+%>
+<article class="post-card">
+  <div class="post-card-meta">
+    <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'MMM DD, YYYY') %></time>
+    <% if (tags.length) { %>
+      <span class="meta-divider" aria-hidden="true">/</span>
+      <a href="<%- url_for(tags[0].path) %>"><%= tags[0].name %></a>
+    <% } %>
+  </div>
+  <h2><a href="<%- url_for(post.path) %>"><%= displayTitle %></a></h2>
+  <% if (summary) { %><p><%= summary %></p><% } %>
+  <a class="read-link" href="<%- url_for(post.path) %>">Read article <span aria-hidden="true">→</span></a>
+</article>

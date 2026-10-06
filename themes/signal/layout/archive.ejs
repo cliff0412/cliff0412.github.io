@@ -1,0 +1,24 @@
+<%
+  var heading = page.year ? String(page.year) : 'Archive';
+  if (page.month) heading += ' / ' + String(page.month).padStart(2, '0');
+%>
+<section class="listing-hero shell">
+  <p class="eyebrow"><span></span>Collected writing</p>
+  <h1><%= heading %></h1>
+  <p><%= page.year ? 'Notes published during this period.' : 'Every note, in reverse chronological order.' %></p>
+</section>
+<section class="archive-list shell">
+  <% var activeYear; %>
+  <% page.posts.each(function(post) { var year = date(post.date, 'YYYY'); %>
+    <% if (year !== activeYear) { activeYear = year; %>
+      <div class="archive-year"><span><%= year %></span></div>
+    <% } %>
+    <article class="archive-row">
+      <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'MMM DD') %></time>
+      <% var displayTitle = post.title || post.slug.split('/').pop().replace(/[._-]+/g, ' ').replace(/\b\w/g, function(letter) { return letter.toUpperCase(); }); %>
+      <h2><a href="<%- url_for(post.path) %>"><%= displayTitle %></a></h2>
+      <span aria-hidden="true">↗</span>
+    </article>
+  <% }); %>
+  <%- partial('_partial/pagination') %>
+</section>

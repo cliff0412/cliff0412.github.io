@@ -1,0 +1,49 @@
+<%
+  var tags = page.tags ? page.tags.toArray() : [];
+  var displayTitle = page.title || page.slug.split('/').pop().replace(/[._-]+/g, ' ').replace(/\b\w/g, function(letter) { return letter.toUpperCase(); });
+%>
+<article class="article shell">
+  <header class="article-header">
+    <a class="back-link" href="<%- url_for('/') %>">← All notes</a>
+    <div class="article-labels">
+      <time datetime="<%= date_xml(page.date) %>"><%= date(page.date, 'MMMM DD, YYYY') %></time>
+      <% if (tags.length) { %>
+        <span aria-hidden="true">·</span>
+        <% tags.forEach(function(tag, index) { %>
+          <a href="<%- url_for(tag.path) %>"><%= tag.name %></a><% if (index < tags.length - 1) { %><span>,</span><% } %>
+        <% }); %>
+      <% } %>
+    </div>
+    <h1><%= displayTitle %></h1>
+    <div class="article-rule"><span></span></div>
+  </header>
+
+  <div class="article-layout">
+    <aside class="article-aside">
+      <div class="aside-sticky">
+        <span class="aside-label">On this page</span>
+        <nav class="toc" aria-label="Table of contents"></nav>
+      </div>
+    </aside>
+    <div class="article-body">
+      <%- page.content %>
+    </div>
+  </div>
+
+  <footer class="article-end">
+    <div>
+      <span class="section-kicker">Filed under</span>
+      <div class="tag-list">
+        <% tags.forEach(function(tag) { %><a href="<%- url_for(tag.path) %>"><%= tag.name %></a><% }); %>
+      </div>
+    </div>
+    <a class="top-link" href="#content">Back to top ↑</a>
+  </footer>
+
+  <% if (page.prev || page.next) { %>
+    <nav class="post-nav" aria-label="Adjacent articles">
+      <% if (page.prev) { var prevTitle = page.prev.title || page.prev.slug.split('/').pop().replace(/[._-]+/g, ' '); %><a href="<%- url_for(page.prev.path) %>"><span>Previous note</span><strong><%= prevTitle %></strong></a><% } else { %><span></span><% } %>
+      <% if (page.next) { var nextTitle = page.next.title || page.next.slug.split('/').pop().replace(/[._-]+/g, ' '); %><a class="post-nav-next" href="<%- url_for(page.next.path) %>"><span>Next note</span><strong><%= nextTitle %></strong></a><% } %>
+    </nav>
+  <% } %>
+</article>

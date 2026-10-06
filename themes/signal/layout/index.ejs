@@ -1,0 +1,22 @@
+<% var allTags = site.tags.sort('length', -1).toArray().slice(0, 7); %>
+<section class="topic-strip">
+  <div class="shell topic-inner">
+    <span class="topic-label">Explore</span>
+    <div class="topic-links">
+      <% allTags.forEach(function(tag) { %>
+        <a href="<%- url_for(tag.path) %>"><%= tag.name %><sup><%= tag.length %></sup></a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="feed shell">
+  <div class="post-grid">
+    <% page.posts.each(function(post, i) { %>
+      <div class="post-cell <%= i === 0 ? 'post-cell-featured' : '' %>">
+        <%- partial('_partial/post-card', { post: post }) %>
+      </div>
+    <% }); %>
+  </div>
+  <%- partial('_partial/pagination') %>
+</section>
